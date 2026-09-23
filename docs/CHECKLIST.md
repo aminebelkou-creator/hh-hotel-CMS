@@ -10,9 +10,9 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 | --- | --- | --- | --- |
 | Owner actions before week 1 | 4 | 3 | Send the Tencent email, revoke the CAM key, share the repo |
 | Week 1 | 9 | 4 | Engineering done early; BIZ and XT items not started |
-| Week 2 | 7 | 6 | All six proof items done; the Makers gate (waiting on Tencent), the `teo` API (needs a fresh key and a test domain), hotel pack types, fact flow and BIZ items open |
-| Weeks 3–13 | 0 | 45 | As planned, including the four gates; Gate 1 on 12 October |
-| **Total** | **20** | **58** | |
+| Week 2 | 8 | 6 | All six proof items and the fact confirmation flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a fresh key and a test domain), hotel pack types, fact flow and BIZ items open |
+| Weeks 3–13 | 1 | 45 | Content release pipeline v0 done early (week 4 item); the four gates open; Gate 1 on 12 October |
+| **Total** | **22** | **58** | |
 
 ## Before week 1 — owner actions
 
@@ -52,7 +52,8 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 - [ ] **ENG** Makers gate: quotas and pricing in writing, fifty custom domains, Frankfurt pinning confirmed
 - [ ] **ENG** EdgeOne `teo` API exercised from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` against a test site — client and read-only probe done; Makers domains are not reachable via `teo` (finding 20); write test needs a zone on a domain we control (e.g. `staging.hotel-herse-dor.com`)
 - [ ] **ENG** Hotel pack types on paper: Room, Offer, Amenity, Outlet, Policy, LocalGuide (**draft ready: [`07-content-model-and-hotel-pack.md`](07-content-model-and-hotel-pack.md)**, needs team review)
-- [ ] **ENG** Fact confirmation flow; full draft site generated as JSON entries
+- [x] **ENG** Fact confirmation flow — `facts` collection, normaliser, import with the owner's decisions; customer zero: 45 sightings → 35 facts, 3 confirmed, 1 rejected ([`08-ingest-spike.md`](08-ingest-spike.md#from-the-spike-to-the-fact-base-built-23-september))
+- [ ] **ENG** Full draft site generated as JSON entries from confirmed facts — needs the AI model key (owner)
 - [ ] **BIZ** Five hotels in serious talks; concierge offer written
 - [ ] **BIZ** Service tiers drafted; accessibility target set per template
 
@@ -66,10 +67,11 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 
 ## Week 4 (19 Oct)
 
-- [ ] **ENG** Release pipeline v0: build, immutable artifact, deploy, domain bind, rollback
+- [x] **ENG** Release pipeline v0 for content: immutable snapshot + checksum, per-site lock, superseding, verification with automatic rollback, pointer-move rollback, public renderer — done 23 Sep ([`06-release-pipeline-design.md`](06-release-pipeline-design.md#what-v0-implements-23-september))
+- [ ] **ENG** Release pipeline: domain bind — blocked, custom domains disabled on the Makers project (finding 22)
 - [ ] **ENG** Canonical content model live; RLS decision recorded
 - [ ] **ENG** Two template packages, accessibility- and Core Web Vitals-gated in CI
-- [ ] **ENG** Customer 1 ingest and fact confirmation, by hand
+- [ ] **ENG** Customer 1 ingest and fact confirmation, by hand — tooling proven on customer zero (`src/ingest/import-facts.ts`)
 - [ ] **XT** **Cross-team contracts signed**: erasure, chatbot boundary, booking embed
 - [ ] **BIZ** Tiers priced
 
@@ -110,7 +112,7 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 ## Weeks 10–12 (30 Nov to 14 Dec)
 
 - [ ] **ENG** Template canary: upgrade one tenant, then all
-- [ ] **XT** Booking-engine embed on the hotel's domain via the signed contract
+- [ ] **XT** Booking-engine embed on the hotel's domain via the signed contract — adapter and same-domain booking step built early against the **clockPMS BE** mock ([contract](contracts/booking-engine-embed.md#interim-the-clockpms-be-mock))
 - [ ] **ENG** Agent drafts local-guide pages for customers 1–3
 - [ ] **ENG** Per-tenant health view, internal
 - [ ] **XT** Chatbot widget rendered per the boundary, with disclosure and consent gating
@@ -132,7 +134,7 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 | Hosting: Makers confirmed or Cloudflare EU fallback | Gate 1, week 3 | Waiting on Tencent |
 | Studio editor: Puck, Payload enterprise visual editor, or built | Week 6 | Puck by default |
 | Service tiers and pricing shape | Week 4 | Not started |
-| 60 s publish target: content releases only, or all deploys | Gate 2, week 6 | Measured 153 s for code deploys |
+| 60 s publish target: content releases only, or all deploys | Gate 2, week 6 | Code deploys 153–171 s; content releases now measured in milliseconds (docs/06). Proposed: the target applies to content releases |
 | Postgres RLS as defence in depth: on or off in production | Week 4 | Evaluated, works under Payload. Proposed: on, via a restricted app role and a per-request `SET LOCAL` hook, then deny-by-default (see docs/05) |
 | Proof-of-concept deployment: keep public with rotated credentials, or take offline | Now | Kept public, credentials rotated |
 
@@ -143,6 +145,6 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 | Human minutes per site per month | Known for all five customers | — |
 | Ingest to live on own domain | Under one working day for customer 5 | — |
 | Full-site generation | Under 5 minutes | — |
-| Publish to live / rollback | Under 60 s / under 10 s | 153 s code deploy / not measured |
-| Isolation suite | Green on every commit and every Payload upgrade | 26/26 (with RLS) |
+| Publish to live / rollback | Under 60 s / under 10 s | Content release: 14–27 ms / 16–18 ms (local); code deploy 171 s from CI |
+| Isolation suite | Green on every commit and every Payload upgrade | 82/82 locally incl. facts, releases, booking; green in CI on every push |
 | Service checks resolved without a human | Over half by week 12 | — |

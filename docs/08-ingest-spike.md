@@ -35,6 +35,17 @@ The owner settled the open questions the same day. This is the first real fact c
 | Which phone number is current? | **Both**: +33 1 48 87 84 09 and 01 87 44 77 90 | Both confirmed; the site should show them consistently |
 | Which booking engine? | None to integrate yet | A mock called **clockPMS BE** stands in for the xedge booking engine (`apps/platform/src/booking/`) |
 
+## From the spike to the fact base (built 23 September)
+
+The crawler output now goes into Payload:
+
+1. **Normaliser** (`src/ingest/normalise.ts`). It converts phones to E.164, cuts words glued onto emails and addresses by extraction ("…comEmail", "ParisPolitique"), and merges sightings of the same value while keeping each one as evidence. Customer zero's 45 sightings became **35 distinct facts**.
+2. **`facts` collection**, tenant-scoped and under RLS. Every fact is born `unconfirmed`, whoever creates it (ingest, a user or an MCP agent). Confirming or rejecting is a separate step, and the server stamps who decided and when. Agents can propose facts over MCP but cannot confirm them.
+3. **Import with the owner's decisions** (`src/ingest/import-facts.ts` plus `src/ingest/confirmations/hotel-herse-dor.json`). It creates the tenant, site and a minimal home page if they are missing, upserts the facts, then applies the decisions. Re-importing refreshes the evidence and never overwrites a decision.
+4. **Only confirmed facts reach the public site.** A release snapshots confirmed facts only; the renderer's "Practical information" panel is built from them. Customer zero shows check-out 11:00 and both phone numbers. It does not show check-in 15:30 or the address, because nobody has confirmed them yet.
+
+Still to confirm in the admin (Facts, filter `unconfirmed`): check-in 15:30, the address, email, amenities (what "parking" means), room names, and three `0x-1600-1200` numbers that look like Wi-Fi instructions rather than hotel phones.
+
 ## Site audit, a first service-report preview
 
 | Check | Result |

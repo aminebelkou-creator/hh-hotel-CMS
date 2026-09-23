@@ -197,3 +197,21 @@ Finding 21: **the token saved on 22 September (a copy of the CLI's browser-login
 **Re-run with a dedicated Makers API token (16:25): green.** It migrated Neon, re-applied RLS and deployed to Makers in **171 s** (deployment `dpae1gtbybv0`); the live site answers 200. From now on, releases no longer depend on the owner's PC.
 
 Finding 22: **adding a custom domain is disabled in the Makers console for this project** (reported by the owner, 23 September). Likely causes, to confirm with Tencent: the free plan, the direct-upload project type, or the project's area. Together with finding 20 (no `teo` API access to Makers domains), customers' own domains are the least-proven part of the Makers option. The domain test on `site.ouilockers.fr` is deferred until Tencent answers.
+
+## Content releases v0 on production infrastructure — 23 September 2026
+
+Code: `apps/platform/src/releases/`. Design and rules: [`06-release-pipeline-design.md`](06-release-pipeline-design.md#what-v0-implements-23-september).
+
+| Measurement | Local Postgres | Neon Frankfurt + Makers (from Paris) |
+| --- | --- | --- |
+| Migration `facts_booking_releases` | 37 ms (50 tenants), 41 ms (10); 0 tenants' other data changed | 464 ms, in the `deploy` workflow, RLS re-applied to 7 tables |
+| Publish (snapshot, checksum, pointer, verify) | 14–27 ms | **3.1 s**, including an HTTP fetch of the public page through the edge to check `x-release` |
+| Rollback (pointer move) | 16–18 ms | **1.2 s** |
+| First publish of customer zero, after importing 35 facts | — | 7.6 s |
+| Gate 2 targets | publish < 60 s, rollback < 10 s | **Met** |
+
+Finding 23: **content releases do not need a rebuild or a Makers deploy.** The renderer serves the snapshot its site points at, so a publish is a database write plus verification, and a rollback is a pointer move. The 153–171 s code deploy is a separate path. This settles the open question on the 60 s target in favour of "content releases only".
+
+Finding 24: **a lease lock on the site row plus a per-site request sequence neutralises finding 17 ("the last to finish goes live").** The lock serialises publishes across processes and instances; the sequence lets a publish that arrives late stop as `superseded` instead of overwriting newer content. With three concurrent requests, only the newest went live, exactly once.
+
+Finding 25: **a required localized field must be present in each locale before a page validates in that locale.** Creating the customer-zero home page in French and then publishing it in English failed until the hero heading was set in English too. Onboarding writes every required localized field in every enabled locale.

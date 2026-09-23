@@ -10,75 +10,77 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ---
 
-## Current state — 23 September 2026, 14:10 local time
+## Current state — 23 September 2026, 18:40 local time
 
 ### Where we are
 
 | | |
 | --- | --- |
 | Plan position | Day −5. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
-| Week 1 engineering | **Done early**: isolation proof, 50-tenant seed, first Makers deploys, cross-team contract drafts |
-| Week 2 proof items | **6 of 6 done** (23 Sep): RLS, migrations at 10/50 tenants, upgrade path, single-tenant restore, bulk/imports/jobs/admin-cookie isolation, colliding publishes |
-| Isolation suite | **34/34 green on Neon** against the redeployed live app (incl. bulk, imports, jobs, forged tenant cookie); local suites green at 10 and 50 tenants |
-| Deploy time | 153 s for a code deploy; the plan's target is 60 s (open decision, Gate 2) |
-| Gate 1 (week 3) | Waiting on Tencent. The email is drafted but not sent |
-| Tooling | Remote Desktop Commander drops its connection every few minutes. Recommended: move to Claude Code on the PC with Remote Control (see Next actions 1) |
+| Week 1 engineering | **Done early**: isolation proof, 50-tenant seed, first Makers deploys, cross-team contract drafts, ingest spike |
+| Week 2 | **All six proof items done**, plus the **fact confirmation flow** (built 23 Sep) |
+| First product slice | **Live on the proof of concept**: fact base, content release pipeline v0 with rollback, public renderer, booking step on the **clockPMS BE** mock. Customer zero at https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor |
+| Gate 2 (content) | **Met on Neon**: publish 3.1 s including HTTP verification through the edge, rollback 1.2 s (targets 60 s / 10 s). Locally 14–27 ms / 16–18 ms |
+| CI / deploy | Every push: migrations on a fresh Postgres, drift check, seed, typecheck, 11 suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers in 3 min 23 s (`dp0ytz87whim`) |
+| Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains are disabled on the Makers project (finding 22) |
 
 ### What exists
 
 | Thing | Where | State |
 | --- | --- | --- |
-| Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1 (latest stable), Postgres. Seven collections, multi-tenant plugin, MCP plugin (no delete tools). Sites now have `brandName` and `timezone` |
-| Migrations | `apps/platform/src/migrations` | `20260923_120049_baseline` (whole schema), `20260923_132537_site_brand_timezone` (columns + set-based backfill), `20260923_142013_add_jobs` (job queue tables). All applied on local and Neon; `migrate:status` clean |
-| Test suites | `apps/platform/tests/int` | isolation (13), isolation-extended (7: bulk, imports, jobs), overrideAccess audit (2), REST/GraphQL/tenant-cookie (3), RLS raw SQL (7), RLS under Payload (2). Scale with `SEED_TENANTS` |
-| Database tools | `apps/platform/src/db` | `rls.sql` + `apply-rls.ts`, `inspect-rls.ts`, `schema-fingerprint.ts`, `mark-baseline.ts`, `tenant-checksums.ts`, `tenant-backup.ts` (export/restore one tenant), `damage-tenant.ts` (rehearsal only), `verify-site-brand.ts` |
-| Rehearsal scripts | `scripts/` | `migration-rehearsal.ps1`, `restore-rehearsal.ps1`, `upgrade-rehearsal.ps1`, `run-suites.ps1` (local-10, local-50, Neon) |
-| RLS | `src/db/rls.sql` | Context-optional policies plus restricted role `hh_app_rls`, applied on Neon and local. Not yet enforced for real requests: the app connects as the owner role |
-| Live proof of concept | https://hh-platform-poc.edgeone.cool | Makers project `hh-platform-poc` (`makers-gznjppyen95y`), Frankfurt. Redeployed 23 Sep on current code (deployment `dpzceky1owv0`, 177 s) after the Neon migrations |
-| Database | Neon free tier, `eu-central-1`, pooled endpoint, database `neondb` | 50 tenants, 51 users, 50 sites, 150 pages, 50 domains; migrations applied |
-| Local databases | Docker `hh-postgres`, port 5432 | `hh_platform` (50 tenants) and `hh_check` (10 tenants, built purely from migrations) |
-| Documents | `docs/` | Spec (*Hotelier Website Platform — Solution Definition*), plan, checklist, evaluations, spike results (findings 1–14), contracts v0.1, Tencent email draft |
+| Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1. Eight collections (Facts added), multi-tenant plugin, MCP plugin (facts: find and create only; no delete tools anywhere) |
+| Fact base | `src/collections/Facts.ts`, `src/ingest/` | Normaliser, import with owner decisions. Customer zero on Neon and local: 35 facts, 3 confirmed (check-out 11:00, both phones), 1 rejected (10:30), 31 to review |
+| Release pipeline v0 | `src/releases/`, `src/jobs/publishSite.ts` | Lease lock per site, request sequence (superseding), immutable snapshot + sha256, verification (in-process, plus HTTP when `RELEASE_VERIFY_BASE_URL` is set), automatic rollback, manual rollback. `POST /api/sites/:id/publish` and `/rollback` |
+| Public renderer | `src/app/(sites)/s/[site]/` | Serves the current release only; `<meta name="x-release">`; FR/EN; practical information from confirmed facts only |
+| Booking | `src/booking/` | Adapter interface + deterministic **clockPMS BE** mock; `/s/<site>/book` and `/s/<site>/book/availability` on the hotel's domain |
+| Migrations | `src/migrations` | baseline, site_brand_timezone, add_jobs, **facts_booking_releases** (rehearsed at 10 and 50 tenants: 37–41 ms, 0 tenants changed; Neon 464 ms). All applied on local and Neon |
+| Test suites | `tests/int` | 11 files, 82 tests: isolation (13), isolation-extended (7), audit (2), REST (3), RLS (7), RLS under Payload (2), facts (9), releases (13), booking (13), normaliser (5), site over HTTP (7) |
+| RLS | `src/db/rls.sql` | 7 tables incl. `facts`, context-optional, restricted role `hh_app_rls`. Not yet enforcing for live requests |
+| Live proof of concept | https://hh-platform-poc.edgeone.cool | Deployment `dp0ytz87whim`. Admin `/admin`; customer zero `/s/hotel-herse-dor` |
+| Database | Neon Frankfurt | 51 tenants (50 synthetic + customer zero) |
+| Local databases | Docker `hh-postgres` | `hh_platform` (50 tenants), `hh_check` (10 tenants + customer zero), both migrated |
+| Documents | `docs/` | Spec, plan, checklist (22 done / 58 open), evaluations, findings 1–22, release design (v0 implemented), ingest + fact base, **system design illustrated (docs/09)**, contracts (booking mock section) |
 
 ### Watch out
 
-- **Schema changes go through migrations only**: change the collection, `pnpm payload migrate:create <name>`, rehearse with `scripts/migration-rehearsal.ps1` locally, then `payload migrate` on Neon. Push is on only for localhost, and `PAYLOAD_DB_PUSH=false` turns it off there too.
-- **Never downgrade Payload.** 3.90 changed the password-hash format; older versions lock users out. Every upgrade runs `scripts/upgrade-rehearsal.ps1` and ships the migration it reveals.
-- **One seed password everywhere**: local and Neon users both use the value in user environment variable `HH_NEON_SEED_PASSWORD`; set `SEED_PASSWORD` from it before tests. Wrong-password runs lock accounts; `rotate-passwords.ts` unlocks them.
-- **Claude Code permissions**: `.claude/settings.json` (shared, committed) pre-allows routine commands, asks before pushes, deploys, `payload migrate` and database scripts, and denies reading `.env`, killing processes by name, force-pushes and `rm -rf`. Your own `.claude/settings.local.json` (not committed) allows all other shell commands and accepts edits; the shared ask/deny rules still win.
-- `apps/platform/.env` now points at local Docker. Neon is reached by setting `DATABASE_URL` from `NEON_DATABASE_URL` for one command.
-- A dev server may still be running on port 3000 (PID 73616, started against Neon before the migration). Stop it by that exact PID only, never by process name.
+- **Schema changes go through migrations only** (CLAUDE.md 10, 13). New job tasks are migrations too (enum).
+- **Releases only through `src/releases/publish.ts`** (CLAUDE.md 18); **nothing unconfirmed reaches a guest** (CLAUDE.md 19).
+- **Never downgrade Payload** (password-hash format).
+- **Seed password** in user env var `HH_NEON_SEED_PASSWORD`, for local and Neon. Wrong-password runs lock accounts.
+- **A `next dev` from this morning may be listening on port 3000** against `hh_platform` with push on (wrapper `cmd /c next dev`, PID 71316). It is harmless now that `hh_platform` is migrated, but run test servers on port 3100. Stop it only by exact PID.
+- The seed now deletes only the synthetic `tenant-NN` tenants, so customer zero survives a reseed.
 
 ### Next actions, in order
 
 | # | Owner | Action | Why now | Done when |
 | --- | --- | --- | --- | --- |
-| 1 | ENG | Done 23 Sep: `workflow` scope granted, CI pushed and green on the first run (34 tests, about 2 min); secrets `NEON_DATABASE_URL` and `EDGEONE_PAGES_API_TOKEN` set from the PC's environment | — | — |
-| 2 | ENG | Done 23 Sep: `deploy` workflow green with a dedicated Makers API token — migrate Neon + RLS + deploy in 171 s (`dpae1gtbybv0`). Rotate the token before it expires | — | — |
-| 3 | OWN | Start Claude Code with Remote Control in the repo (`claude --remote-control "hh-hotel-CMS"`) | Desktop Commander's relay drops periodically | A session runs `scripts/run-suites.ps1` from the phone |
-| 4 | DEFERRED | Custom-domain test on `site.ouilockers.fr` — adding a domain is disabled in the Makers console (finding 22); waiting on Tencent. Plan when unblocked: owner adds it in the Makers console (project `hh-platform-poc` → Domains), creates the CNAME (and TXT if asked) at the registrar; then measure DNS → verification → certificate → first 200. Makers domains are not reachable via `teo` (finding 20) | Gate 1 evidence for custom domains | Timings in docs/04 |
-| 5 | ENG | Release pipeline v0 design: per-project publish queue (finding 17), migrate-then-deploy, post-publish verification, rollback | Week 4 item; the colliding-publish result changes its design | Design note in docs/, reviewed |
-| 6 | ENG | RLS enforcing mode: restricted login role, per-request `SET LOCAL` hook, deny-by-default | Week 4 decision; proposal in docs/05 | Owner-role connections limited to migrations and allowlisted jobs |
-| 7 | ENG | Ingest v1: AI extraction of rooms, normaliser, Fact collection and confirmation UI in Payload | Spike done (docs/08); generation depends on confirmed facts | Needs the model API key (owner will provide) |
+| 1 | OWN | Review customer zero's 31 unconfirmed facts in `/admin` → Facts (check-in 15:30, address, email, amenities, room names; three `0x-1600-1200` numbers look like Wi-Fi instructions and should be rejected), then publish from the API or ask the agent | Only confirmed facts appear on the site | Facts reviewed; release r3 live |
+| 2 | OWN | Provide the AI model API key | Generation of the draft site from confirmed facts (week 2 item) | Key in a user env var and a GitHub secret |
+| 3 | OWN | Send the Tencent email (now also asking why custom domains are disabled) | Gate 1, 12 October | Written answer |
+| 4 | ENG | Studio publish button: call `POST /api/sites/:id/publish` from the admin (Payload custom component) and show releases per site | Hoteliers cannot call an API | Publish and rollback from `/admin` |
+| 5 | ENG | Hotel pack v0 in `packs/hotel`: Room, Offer, Amenity, Policy as a pack (docs/07), with schema.org `Hotel` output in the renderer | Biggest SEO gap found on customer zero | `Hotel` JSON-LD validated on `/s/hotel-herse-dor` |
+| 6 | ENG | RLS enforcing mode (restricted login role, per-request `SET LOCAL`) | Week 4 decision | Owner-role connections limited to migrations and allowlisted jobs |
+| 7 | DEFERRED | Custom-domain test on `site.ouilockers.fr` — blocked, domains disabled on the Makers project (finding 22) | Gate 1 evidence | Timings in docs/04 |
 
 ### Waiting on the owner
 
 | Action | Blocks |
 | --- | --- |
-| Send the Tencent email: [`docs/outreach/tencent-makers-platforms-email.md`](docs/outreach/tencent-makers-platforms-email.md). Add your name, title and phone | Gate 1 (week 3). With no written answer by 9 October, we fall back to Cloudflare EU |
-| Revoke the Tencent CAM key beginning `IKIDTYWK` (it was pasted in chat) | Security hygiene; the `teo` API work (action 7) needs a fresh key |
-| Share the repository with the team | Anyone but the owner working on it |
-| Shortlist 15 hotels; first conversations | Three design partners signed by week 3 |
-| Collection design review with the team | Canonical content model (week 4) |
+| Send the Tencent email: [`docs/outreach/tencent-makers-platforms-email.md`](docs/outreach/tencent-makers-platforms-email.md) | Gate 1 (week 3). With no written answer by 9 October, we fall back to Cloudflare EU |
+| Revoke the Tencent CAM key beginning `IKIDTYWK` | Security hygiene |
+| AI model API key | Draft-site generation |
+| Review customer zero's unconfirmed facts | A fuller practical-information panel |
+| Share the repository with the team; shortlist 15 hotels | Anyone else working on it; design partners by week 3 |
 
 ### Secrets map (names only; values are never written to the repo or to chat)
 
 | Secret | Lives in |
 | --- | --- |
-| Neon connection string | Windows user environment variable `NEON_DATABASE_URL`; Makers project variable `DATABASE_URL` (production and preview) |
+| Neon connection string | Windows user env var `NEON_DATABASE_URL`; Makers project variable `DATABASE_URL`; GitHub secret `NEON_DATABASE_URL` |
 | Payload secret (production) | Makers project variable `PAYLOAD_SECRET` |
-| Seeded users' password on Neon | Windows user environment variable `HH_NEON_SEED_PASSWORD` |
-| EdgeOne Makers API token | Windows user environment variable `EDGEONE_PAGES_API_TOKEN` (used by `.mcp.json` and the CLI) |
-| Tencent CAM key (new) | Windows user environment variables `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY` (set 23 Sep via a hidden-input prompt) |
+| Seeded users' password | Windows user env var `HH_NEON_SEED_PASSWORD` |
+| EdgeOne Makers API token | Windows user env var `EDGEONE_PAGES_API_TOKEN`; GitHub secret `EDGEONE_PAGES_API_TOKEN` (dedicated CI token; rotate before it expires) |
+| Tencent CAM key (new) | Windows user env vars `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY` |
 
 ### Resume in five commands
 
@@ -106,9 +108,28 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Publish to live under 60 s (Gate 2) | Code deploy measured at 153 s, of which the remote build is ~110 s | Decide before Gate 2: the target applies to content releases, or the build moves to CI with artifact upload |
 | Makers gate opens on day 1 with Tencent | Email drafted, not sent | Every day unsent is a day off the three-week gate |
 | Schema push during development | Push restricted to localhost after it deleted the RLS policies | Migrations from now on for every shared database, earlier than planned |
+| Release pipeline v0 in week 4 | Content releases built in week 0 (23 Sep), Gate 2 content targets met on Neon | Week 4 keeps the domain bind and the ISR-or-static decision; code deploys stay at ~3 min and are proposed out of the 60 s target |
+| Booking-engine embed in weeks 10–12 (XT) | Adapter and same-domain booking step built now against the clockPMS BE mock | Integration with the real engine is a swap behind `bookingAdapterFor` once the xedge team signs the contract |
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-23 · session 7 · `6b7a0ba` → this commit
+
+**Changed**
+- Docs: `docs/09-system-design.md` (seven Mermaid diagrams), system-design section in the README, GitHub About (description, homepage, 10 topics). The owner's answers recorded: check-out 11:00, both phone numbers current, booking engine mocked as **clockPMS BE**.
+- `facts` collection, normaliser, `import-facts.ts` with the owner's decisions; customer zero imported locally and on Neon.
+- Booking adapter + clockPMS BE mock; site booking settings; `/s/<site>/book` and availability JSON.
+- Release pipeline v0: publish/rollback endpoints, `publishSite` job, lease lock, request sequence, immutable snapshot + checksum, verification with automatic rollback; public renderer `/s/<site>`.
+- Migration `facts_booking_releases` (rehearsed 10/50 tenants, applied on Neon by the deploy workflow in 464 ms). RLS extended to `facts`. Site slugs made unique. Seed no longer deletes real tenants.
+- CI runs 11 suites incl. HTTP against the built app; green (2 min 16 s). Deploy workflow green (3 min 23 s, `dp0ytz87whim`).
+
+**Learned**
+- Findings 23–25 in docs/05: content releases need no rebuild and meet Gate 2 by three orders of magnitude; a lease lock plus a request sequence is enough to neutralise "the last to finish wins"; a required localized field must exist in every locale before a page validates there.
+- Publishing identical content twice gives the same checksum (r1 and r2 on Neon), so checksums can later skip no-op publishes.
+
+**Left undone**
+- Admin publish button, hotel pack types and `Hotel` JSON-LD, AI generation (key), RLS enforcing mode, domain test (blocked).
 
 ### 2026-09-23 · session 6 · `467c074` → this commit
 

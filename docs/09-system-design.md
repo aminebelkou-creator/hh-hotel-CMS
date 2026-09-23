@@ -82,7 +82,7 @@ flowchart LR
   REL -. rollback = pointer move .-> LIVE
 ```
 
-Nothing is generated from an unconfirmed fact. On customer zero the ingest found two conflicting check-out times and two phone numbers. The hotel settled them on 23 September: check-out is 11:00, and both numbers are current. See [`08-ingest-spike.md`](08-ingest-spike.md).
+Nothing is generated from an unconfirmed fact, and only confirmed facts enter a release (built 23 September; generation waits for the AI model key). On customer zero the ingest found two conflicting check-out times and two phone numbers. The hotel settled them on 23 September: check-out is 11:00, and both numbers are current. See [`08-ingest-spike.md`](08-ingest-spike.md).
 
 ## 5. Releases: serialised, verified, reversible
 
@@ -106,7 +106,7 @@ sequenceDiagram
   end
 ```
 
-Why the lock matters: Makers queues concurrent deploys and **the last to finish goes live**, even if it is older (finding 17). The platform therefore serialises publishes itself. Design note: [`06-release-pipeline-design.md`](06-release-pipeline-design.md).
+Built as v0 on 23 September: a lease lock on the site row, a request sequence for superseding, and a stored snapshot served by `/s/<site>`. Why the lock matters: Makers queues concurrent deploys and **the last to finish goes live**, even if it is older (finding 17). The platform therefore serialises publishes itself. Design note: [`06-release-pipeline-design.md`](06-release-pipeline-design.md).
 
 ## 6. Schema change and code release
 
@@ -134,6 +134,9 @@ Rules learned the hard way: push is off for shared databases (it deleted the RLS
 | Ingest | `apps/platform/src/ingest/` |
 | Host adapter (EdgeOne) | `apps/platform/src/host/` |
 | Booking-engine adapter (mock clockPMS BE) | `apps/platform/src/booking/` |
+| Release pipeline: publish, rollback, snapshot, checksum | `apps/platform/src/releases/` |
+| Public renderer and booking step | `apps/platform/src/app/(sites)/s/[site]/` |
+| Fact base: normaliser, import, owner decisions | `apps/platform/src/ingest/`, `src/collections/Facts.ts` |
 | Hotel pack (types, blocks, schema.org) | `packs/hotel/`, planned |
 | Rehearsal and deploy scripts | `scripts/` |
 | CI and deploy | `.github/workflows/` |

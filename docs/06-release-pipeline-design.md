@@ -1,6 +1,6 @@
 # Release pipeline v0 — design note
 
-Status: **draft for review**, 23 September 2026. Implements plan week 4 ("build, immutable artifact, deploy, domain bind, rollback") and Gate 2 ("publish under 60 s, rollback under 10 s"). Grounded in measured findings 9, 12–14 and 17 of [`05-week1-spike-results.md`](05-week1-spike-results.md).
+Status: **v0 implemented** for content releases, 23 September 2026 (see "What v0 implements" below). Implements plan week 4 ("build, immutable artifact, deploy, domain bind, rollback") and Gate 2 ("publish under 60 s, rollback under 10 s"). Grounded in measured findings 9, 12–14 and 17 of [`05-week1-spike-results.md`](05-week1-spike-results.md).
 
 ## Two kinds of release
 
@@ -40,6 +40,26 @@ sequenceDiagram
   Q->>E: fetch live URL, check x-release
   Q->>P: release = live (or failed + rollback)
 ```
+
+## What v0 implements (23 September)
+
+Code: `apps/platform/src/releases/`, `src/jobs/publishSite.ts`, `src/app/(sites)/`. Tests: `tests/int/releases.int.spec.ts` (13) and `tests/int/site-http.int.spec.ts` (7).
+
+| Rule | How v0 does it |
+| --- | --- |
+| 1. One publish at a time per hotel | A **lease lock on the site row** (`publish_locked_until`, `publish_locked_by`), taken with one atomic `UPDATE … WHERE lock is free or expired`. It works across processes and serverless instances, and a crashed worker's lease expires after 120 s. A site that is busy returns `busy`; the job retries with backoff |
+| 1. Newer supersedes older, never the reverse | Every request takes the next **request sequence** number on the site. A publish that gets the lock but sees a newer sequence stops as `superseded`, without building anything. Proven with three concurrent requests: only the newest goes live, once |
+| 4. Verify after publishing | The default verifier resolves the site exactly as the renderer does, checks it serves the new release id, and re-hashes the stored snapshot against its checksum. With `RELEASE_VERIFY_BASE_URL` set, it also fetches the public page and reads `<meta name="x-release">`. On any mismatch the pointer moves back automatically and the release is marked `failed` |
+| 5. Rollback is a pointer move | `site.currentRelease` points at an immutable release. Rollback moves it to the most recent earlier release that went live, under the same lock. No rebuild |
+| 6. Everything is recorded | Each release stores who published (`user:<id>`, `job`, `import-facts`), the request sequence, the snapshot, its sha256, page count, duration and verification time. Releases cannot be deleted, and a hook refuses any change to their content fields, even with access control bypassed |
+
+What a release contains: the site settings, every **published** page in every locale, and the **confirmed** facts. Drafts, unconfirmed and rejected facts never enter a release, so the public site cannot show them.
+
+Entry points: `POST /api/sites/:id/publish` (runs now; `?queue=1` queues the `publishSite` job) and `POST /api/sites/:id/rollback`. Both check the caller's own access to the site first, so another tenant's site answers 404.
+
+Measured (local Postgres, 3 pages): publish 14–27 ms, rollback 16–18 ms. Gate 2 asks for under 60 s and under 10 s. On Neon Frankfurt with the app on Makers, measured from Paris: publish 3.1 s including an HTTP check of the public page through the edge, rollback 1.2 s (docs/05, findings 23–24).
+
+v0 renders dynamically from the snapshot stored in Postgres (`/s/<site>/<page>`). That already gives immutability and pointer-move rollback. The open question below (ISR or static artifacts at the edge) is about moving the same snapshot closer to guests, not about correctness.
 
 ## Open questions
 

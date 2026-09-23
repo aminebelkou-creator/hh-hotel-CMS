@@ -34,6 +34,21 @@ The attribution token is minted by the platform on first landing and passed to t
 3. Rates displayed on content pages come from the same read model the engine uses, with a freshness stamp; the platform never displays a rate it invented.
 4. Accessibility: the booking path is manually keyboard- and screen-reader-tested at each release; it is the critical path for EAA conformance.
 
+## Interim: the clockPMS BE mock
+
+Until the xedge booking engine is available, the platform integrates against a mock called **clockPMS BE** (`apps/platform/src/booking/`). It exists so the adapter boundary, the booking step and the tests are real before the engine is.
+
+| | Mock behaviour |
+| --- | --- |
+| Adapter | `BookingEngineAdapter`: `availability(search)` and `bookingUrl(basePath, search, offer)`. The real engine plugs in behind the same interface (`bookingAdapterFor` in `src/booking/index.ts`) |
+| Site settings | `sites.booking`: `engine` (`none` or `clockpms-be-mock`), `propertyCode`, `currency` |
+| Inventory | Three room types (Classic Double, Superior Double, Family Room), two rate plans (flexible, and non-refundable at −10 %), promo code `DIRECT10` |
+| Rates | Deterministic from property, room and date: seasonality, a weekend uplift and a small jitter. About one night in twelve is sold out per room type. Integer minor units |
+| Freshness | Every answer carries `freshAt` and `mock: true` (rule 3) |
+| Same domain | `/s/<site>/book` (page) and `/s/<site>/book/availability` (JSON, `no-store`). Booking URLs stay on the hotel's domain (rule 1). No reservation or payment is ever made |
+
+The mock is labelled on every page it appears on. Nothing it returns is a real rate.
+
 ## To confirm before signing
 
 The mount mechanism (web component, iframe with postMessage, or server include); the theme token contract; the attribution token format; the event bus topic; ownership of the `/book` route's SEO metadata.

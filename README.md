@@ -6,9 +6,9 @@
 
 | | |
 | --- | --- |
-| **Status** | Pre-launch. Week-1 engineering finished early; the 90-day plan runs 28 September to 25 December 2026 |
-| **Proof** | Tenant isolation 26/26 green on production infrastructure (EdgeOne Makers Frankfurt + Neon Postgres Frankfurt), including Postgres row-level security. Migrations at 50 tenants, single-tenant restore and the Payload upgrade path rehearsed |
-| **Live proof of concept** | https://hh-platform-poc.edgeone.cool (test data only) |
+| **Status** | Pre-launch. Weeks 1–2 engineering done early and the first product slice (fact base, releases, renderer, booking mock) is live on the proof of concept; the 90-day plan runs 28 September to 25 December 2026 |
+| **Proof** | 82 tests green on every push (isolation, RLS, facts, releases, booking, HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
+| **Live proof of concept** | https://hh-platform-poc.edgeone.cool — customer zero at [/s/hotel-herse-dor](https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor) (booking via the clockPMS BE mock; no real rates) |
 | **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen |
 | **Owner** | Hotel Hersedor Paris / xedge |
 
@@ -133,17 +133,18 @@ flowchart LR
 
 ## 6. What is built today
 
-The proof-of-concept platform in `apps/platform` exists to prove the risky parts first: tenant isolation, hosting and data residency. There are no customer-facing features yet.
+The proof-of-concept platform in `apps/platform` proved the risky parts first: tenant isolation, hosting and data residency. The first product slice now runs on top of it: a **fact base** with human confirmation, a **content release pipeline** with rollback, a **public renderer**, and a **booking step** backed by a mock of the xedge booking engine (**clockPMS BE**). Customer zero, Hôtel de la Herse d'Or, is the first real tenant.
 
 | Collection | Tenant-scoped | Purpose |
 | --- | --- | --- |
 | `users` | Membership list | Roles `super-admin` / `user`; roles can only be changed by a super-admin |
 | `tenants` | — | One per hotel: name, slug, plan |
-| `sites` | Yes | Enabled locales, default locale, theme tokens, status |
+| `sites` | Yes | Brand name, time zone, locales, theme tokens, status, booking engine settings, current release pointer, publish lock |
 | `pages` | Yes | Drafts and versions; `hero` and `richText` blocks with a provenance group (generated, human or locked, plus the source fact); SEO group |
 | `media` | Yes | Focal point, image sizes, alt text, usage rights |
 | `domains` | Yes | Hostnames per site; only a super-admin can change them, and nobody can delete them |
-| `releases` | Yes | Immutable release records; only a super-admin can change them, and nobody can delete them |
+| `releases` | Yes | Immutable snapshots (published pages + confirmed facts) with a sha256 checksum. Created only by the pipeline; only status and verification change afterwards; never deleted |
+| `facts` | Yes | The fact base: key, value, source, method, confidence, evidence. Born unconfirmed; confirmation is stamped by the server. Agents may propose, never confirm |
 
 | Capability | State |
 | --- | --- |
@@ -151,13 +152,18 @@ The proof-of-concept platform in `apps/platform` exists to prove the risky parts
 | `overrideAccess` audit | Done. Every use in `src/` must be allowlisted with a reason, or the test fails |
 | REST and GraphQL isolation | Done. Tested against the live URL |
 | Postgres RLS | Done as an evaluation: policies, restricted role, 9 tests. Not yet enforced for live requests |
-| MCP server | Plugin enabled: pages (find, create, update), sites (find, update), media (find). No delete tools |
+| MCP server | Plugin enabled: pages (find, create, update), sites (find, update), media (find), facts (find, create: agents propose, people confirm). No delete tools |
 | Seed | 50 tenants, 51 users, 50 sites, 150 pages, 50 domains; idempotent |
 | Migrations | Done. Baseline plus a first real migration, rehearsed at 10 and 50 tenants with per-tenant checksums (`scripts/migration-rehearsal.ps1`) |
 | Single-tenant backup and restore | Done. Export plus a transactional restore of one hotel; the other 49 are proven untouched (`scripts/restore-rehearsal.ps1`) |
 | Payload upgrades | Rehearsal script with a schema-drift check (`scripts/upgrade-rehearsal.ps1`). Upgrades are one-way |
-| Deploy | EdgeOne Makers, Frankfurt cloud functions, 153 s end to end |
-| Not started | Release pipeline, studio, generation, hotel pack, templates, media pipeline, domains automation |
+| Deploy | EdgeOne Makers, Frankfurt cloud functions. From GitHub Actions (`deploy` workflow), 171 s including the Neon migration |
+| CI | Every push: fresh Postgres from the committed migrations, drift check, seed, typecheck, all suites, production build, HTTP suites against the built app |
+| Fact base | Done. Ingest → normaliser → `facts` → confirm/reject in the admin. Customer zero imported: 45 sightings became 35 facts; the owner's 4 decisions applied |
+| Content releases v0 | Done. `POST /api/sites/:id/publish` and `/rollback`, `publishSite` job, per-site lease lock, superseding, verification with automatic rollback. Gate 2 targets (publish < 60 s, rollback < 10 s) met by a wide margin locally; see [docs/06](docs/06-release-pipeline-design.md) |
+| Public renderer v0 | Done. `/s/<site>/<page>` serves the current release only, stamped with `<meta name="x-release">`; practical information comes only from confirmed facts |
+| Booking step | Done with a mock. `/s/<site>/book` and `/s/<site>/book/availability` on the hotel's own domain, from the **clockPMS BE** mock behind the booking-engine adapter |
+| Not started | Studio, AI generation (model key pending), hotel pack types, templates, media pipeline, domains automation, RLS enforcing mode |
 
 ## 7. Tech stack
 
@@ -180,11 +186,17 @@ The proof-of-concept platform in `apps/platform` exists to prove the risky parts
 ├── CLAUDE.md                  non-negotiable rules and gotchas for every coding agent
 ├── apps/
 │   └── platform/              Next.js + Payload application
-│       ├── src/collections/   Users, Tenants, Sites, Pages, Media, Domains, Releases
+│       ├── src/collections/   Users, Tenants, Sites, Pages, Media, Domains, Releases, Facts
 │       ├── src/access/        access helpers + overrideAccess allowlist
-│       ├── src/db/            RLS policies, apply/inspect scripts
-│       ├── src/seed/          50-tenant seed, password rotation
-│       ├── tests/int/         isolation, audit, REST/GraphQL, RLS suites
+│       ├── src/app/(sites)/   public renderer /s/<site> and booking step /s/<site>/book
+│       ├── src/booking/       booking-engine adapter + clockPMS BE mock
+│       ├── src/db/            RLS policies, checksums, backup/restore, fingerprint tools
+│       ├── src/ingest/        crawler spike, normaliser, fact import + owner decisions
+│       ├── src/jobs/          background jobs (tenant carried in the input)
+│       ├── src/migrations/    Payload migrations (the only way shared schemas change)
+│       ├── src/releases/      publish, rollback, snapshot, checksum, renderer lookup
+│       ├── src/seed/          seed, password rotation
+│       ├── tests/int/         isolation, audit, REST/GraphQL, RLS, facts, releases, booking
 │       └── edgeone.json       Makers build and Frankfurt region
 ├── docs/
 │   ├── 01-solution-definition.md   the spec (Hotelier Website Platform)
@@ -227,10 +239,16 @@ Against a local database, Payload's schema push keeps tables in step with the co
 | REST and GraphQL | `tests/int/rest-isolation.int.spec.ts` | The same boundary over HTTP; needs `PLATFORM_URL` |
 | RLS, raw SQL | `tests/int/rls.int.spec.ts` | Postgres refuses cross-tenant read, update, delete and move |
 | RLS under Payload | `tests/int/rls-payload.int.spec.ts` | With access control off, RLS alone keeps Payload's queries in-tenant |
+| Bulk, imports, jobs | `tests/int/isolation-extended.int.spec.ts` | Bulk update/delete by `where`, row-by-row imports and background jobs stay in-tenant |
+| Fact base | `tests/int/facts.int.spec.ts` | Facts are tenant-scoped; born unconfirmed; decision stamps cannot be forged |
+| Releases | `tests/int/releases.int.spec.ts` | Immutability, superseding, lock, concurrent publishes, verification rollback, manual rollback, job tenancy, Gate 2 timings |
+| Booking mock | `tests/int/booking.int.spec.ts` | Determinism, pricing, capacity, sold-out nights, validation, same-domain URLs |
+| Normaliser | `tests/int/normalise.int.spec.ts` | The real extraction glitches from customer zero |
+| Public site over HTTP | `tests/int/site-http.int.spec.ts` | Publish/rollback endpoints refuse other tenants; served page carries the release stamp; booking step; needs `PLATFORM_URL` |
 
 ```bash
 pnpm test:isolation                                              # isolation + audit
-pnpm exec vitest run --config ./vitest.config.mts tests/int      # everything (26 tests)
+pnpm exec vitest run --config ./vitest.config.mts tests/int      # everything (82 tests with a server running)
 PLATFORM_URL=http://localhost:3000 pnpm exec vitest run --config ./vitest.config.mts tests/int/rest-isolation.int.spec.ts
 ```
 
@@ -255,7 +273,7 @@ edgeone makers deploy . -n hh-platform-poc -e production --json --skip-ai-gatewa
 - Tenant isolation is a security-critical subsystem. Every PR that touches tenancy, access control or releases must extend the isolation suite, and the suite runs on every Payload upgrade.
 - Payload security releases are applied within days. Payload is pinned, not floating.
 - The data stays in the EU: functions and database are both in Frankfurt. The DPA and sub-processor list are week-1 deliverables.
-- The public proof of concept holds test data only. Its seeded passwords have been rotated.
+- The public proof of concept holds synthetic test tenants plus customer zero's public business information (name, phones, check-out time). No guest data. Seeded passwords have been rotated.
 
 ## 13. How work is tracked
 
@@ -290,7 +308,7 @@ Not in the first 90 days: self-serve signup, billing automation, the control-pla
 | [`docs/02-90-day-plan.md`](docs/02-90-day-plan.md) | Week-by-week plan to the first paying hotels |
 | [`docs/03-webstudio-evaluation.md`](docs/03-webstudio-evaluation.md) | Prior art: what to take, why not to adopt |
 | [`docs/04-edgeone-makers-evaluation.md`](docs/04-edgeone-makers-evaluation.md) | Hosting: verified facts, quotas, residency, EdgeOne API |
-| [`docs/05-week1-spike-results.md`](docs/05-week1-spike-results.md) | Measured results: isolation, deploys, Neon, RLS |
+| [`docs/05-week1-spike-results.md`](docs/05-week1-spike-results.md) | Measured results and findings 1–25: isolation, deploys, Neon, RLS, migrations, CI, content releases |
 | [`docs/06-release-pipeline-design.md`](docs/06-release-pipeline-design.md) | Release pipeline v0: per-site lock, immutable releases, verify, rollback |
 | [`docs/07-content-model-and-hotel-pack.md`](docs/07-content-model-and-hotel-pack.md) | Platform primitives, provenance, locales, hotel pack types |
 | [`docs/08-ingest-spike.md`](docs/08-ingest-spike.md) | Ingest on customer zero: facts, conflicts, site audit |
