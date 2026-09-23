@@ -9,7 +9,7 @@ Status: **v0 implemented** for content releases, 23 September 2026 (see "What v0
 | What changes | The platform application (Payload, renderer, templates) | One hotel's pages, media, settings |
 | Frequency | Weekly at most, by engineers | Many per day, by hoteliers and agents |
 | Path | CI → migrate Neon → re-apply RLS → deploy to the host | Publish in the studio → release record → render → cache purge for that hotel |
-| Measured today | 153 s (remote build ~110 s) | Not built yet |
+| Measured today | 153 s by CLI, 171–203 s from CI (remote build ~110 s) | v0 built: publish 3.1 s, rollback 1.2 s on Neon + Makers |
 | Gate 2 target | Not bound by 60 s (proposed) | **Under 60 s publish, under 10 s rollback** |
 
 Proposal for the open decision: the 60 s target applies to **content releases**. Code releases carry migrations and a full build, and happen rarely and deliberately. Holding them to 60 s would force building in CI and uploading an artifact, which the Makers CLI does not support today.

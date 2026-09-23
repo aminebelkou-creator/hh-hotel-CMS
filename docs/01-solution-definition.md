@@ -611,10 +611,12 @@ Week-by-week plan, gates and metrics: 90-day plan
 
 *Proven so far (23 September 2026):*
 
-- Tenant isolation 26/26 green on production infrastructure: EdgeOne Makers Frankfurt plus Neon Postgres Frankfurt, across the Local API, REST and GraphQL
+- Tenant isolation green on production infrastructure (EdgeOne Makers Frankfurt plus Neon Postgres Frankfurt), across the Local API, REST, GraphQL, bulk operations, imports and background jobs: 82/82 tests, run on every push by CI
 - Postgres row-level security works under Payload: with Payload's access control switched off, the database alone kept the tenant boundary
-- Code deploy to Makers measured at 153 s against the 60 s publish target; open until Gate 2
-- Still to prove: schema migration at 10 then 50 tenants, a Payload upgrade, single-tenant restore, admin and bulk paths, colliding publishes
+- Schema migrations at 10 then 50 tenants, the Payload upgrade path and single-tenant restore all rehearsed, with no other tenant's data changed
+- Content releases: publish 3.1 s and rollback 1.2 s on Neon and Makers, against Gate 2 targets of 60 s and 10 s. Code deploys (about 3 min from CI) are a separate path; proposed that the 60 s target applies to content releases
+- First product slice live for customer zero: fact base with human confirmation, immutable releases with rollback, public renderer, booking step on a mock of the xedge booking engine (clockPMS BE)
+- Still open: custom domains (disabled on the Makers project, waiting on Tencent), RLS enforcing mode, generation (AI model key pending)
 - Day-to-day status lives in the repository: `HANDOFF.md` and `docs/CHECKLIST.md`
 
 *Open, resolved inside the plan:*

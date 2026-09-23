@@ -85,7 +85,7 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 
 ## Week 6 (2 Nov) — Gate 2: foundations
 
-- [ ] **Gate 2**: publish to live under 60 s, rollback under 10 s, fifty domains served, CI gates blocking. *Open question: code deploys currently take 153 s — decide whether the 60 s target applies to content releases only, or move the build to CI*
+- [ ] **Gate 2**: publish to live under 60 s, rollback under 10 s, fifty domains served, CI gates blocking. *Content releases already meet it on Neon (publish 3.1 s, rollback 1.2 s; docs/05 finding 23). Proposed: the 60 s target applies to content releases; code deploys (about 3 min) are out of scope*
 - [ ] **ENG** Provenance on every field; patch log
 - [ ] **ENG** Puck studio v0 on Payload blocks, desktop
 - [ ] **BIZ** **Customer 1 live on own domain**
