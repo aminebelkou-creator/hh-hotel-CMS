@@ -37,6 +37,7 @@ The Platform and Multi-Tenancy page says SDKs and APIs exist for project creatio
 **5. Domains**
 - Whether Makers custom domains and EdgeOne alias domains (`CreateAliasDomain`) are the same mechanism, and which one a platform should use for customer domains.
 - Apex-domain support (CNAME flattening or A records), and automatic certificate issuance and renewal for customer domains.
+- On our proof-of-concept project, adding a custom domain is disabled in the console. What enables it (plan, project type, area), and can custom domains be bound through an API for a platform?
 
 **6. Support**
 - SLA for the paid tier, support hours in Central European Time, and English-language escalation.

@@ -193,3 +193,7 @@ Finding 18: **the CLI uploads local build output**, and a large upload can push 
 | `deploy` (manual) | first run | Migrate Neon and re-apply RLS: **green from CI**. The Makers deploy step failed with `Invalid EDGEONE_PAGES_API_TOKEN` |
 
 Finding 21: **the token saved on 22 September (a copy of the CLI's browser-login token) is not accepted for deploys from CI.** The CLI on the PC deploys with its own stored login instead, so the copy was never tested until now. Unattended deploys need a dedicated Makers API token created in the console, with the longest expiry, stored as the `EDGEONE_PAGES_API_TOKEN` GitHub secret and rotated on a calendar.
+
+**Re-run with a dedicated Makers API token (16:25): green.** It migrated Neon, re-applied RLS and deployed to Makers in **171 s** (deployment `dpae1gtbybv0`); the live site answers 200. From now on, releases no longer depend on the owner's PC.
+
+Finding 22: **adding a custom domain is disabled in the Makers console for this project** (reported by the owner, 23 September). Likely causes, to confirm with Tencent: the free plan, the direct-upload project type, or the project's area. Together with finding 20 (no `teo` API access to Makers domains), customers' own domains are the least-proven part of the Makers option. The domain test on `site.ouilockers.fr` is deferred until Tencent answers.
