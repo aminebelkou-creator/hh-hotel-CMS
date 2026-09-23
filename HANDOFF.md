@@ -44,6 +44,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 - **Schema changes go through migrations only**: change the collection, `pnpm payload migrate:create <name>`, rehearse with `scripts/migration-rehearsal.ps1` locally, then `payload migrate` on Neon. Push is on only for localhost, and `PAYLOAD_DB_PUSH=false` turns it off there too.
 - **Never downgrade Payload.** 3.90 changed the password-hash format; older versions lock users out. Every upgrade runs `scripts/upgrade-rehearsal.ps1` and ships the migration it reveals.
 - **One seed password everywhere**: local and Neon users both use the value in user environment variable `HH_NEON_SEED_PASSWORD`; set `SEED_PASSWORD` from it before tests. Wrong-password runs lock accounts; `rotate-passwords.ts` unlocks them.
+- **Claude Code permissions**: `.claude/settings.json` (shared, committed) pre-allows routine commands, asks before pushes, deploys, `payload migrate` and database scripts, and denies reading `.env`, killing processes by name, force-pushes and `rm -rf`. Your own `.claude/settings.local.json` (not committed) allows all other shell commands and accepts edits; the shared ask/deny rules still win.
 - `apps/platform/.env` now points at local Docker. Neon is reached by setting `DATABASE_URL` from `NEON_DATABASE_URL` for one command.
 - A dev server may still be running on port 3000 (PID 73616, started against Neon before the migration). Stop it by that exact PID only, never by process name.
 
@@ -51,7 +52,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 | # | Owner | Action | Why now | Done when |
 | --- | --- | --- | --- | --- |
-| 1 | OWN + ENG | Switch tooling: Claude Code on the PC with Remote Control (`claude --remote-control "hh-hotel-CMS"`), plus a permissions allow-list in `.claude/settings.json` | Desktop Commander's relay drops every few minutes | A session runs the suites from the phone without drops |
+| 1 | OWN | Switch tooling: Claude Code is installed (2.1.231) and permissions are configured. Start it in the repo with `claude --remote-control "hh-hotel-CMS"` and connect from the phone | Desktop Commander's relay drops every few minutes | A session runs `scripts/run-suites.ps1` from the phone without drops |
 | 2 | ENG | GitHub Actions: isolation suite on a Postgres service at every push; migrations and Makers deploy on `main` with secrets in GitHub | Nothing should depend on one PC being awake | Green check on a PR; deploy from CI |
 | 3 | ENG | Admin tenant selector, bulk operations, imports, jobs: extend the isolation suite | Last week-2 proof item on isolation | New tests green |
 | 4 | ENG | Two colliding Makers publishes (one build slot on the free plan) | Gate 1 evidence | Behaviour recorded in docs/04 |
