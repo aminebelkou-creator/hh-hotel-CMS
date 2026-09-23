@@ -140,3 +140,36 @@ Findings:
 12. **Payload minor releases can carry schema changes.** 3.90 added a column to `users`. With push off on shared databases, every upgrade must run `migrate:create` and ship a migration, and the rehearsal's drift check catches it.
 13. **Payload upgrades are one-way.** 3.90 stores password hashes in a new, prefixed PBKDF2 format (81 characters against 1,024 hex characters before). 3.89 cannot verify them, so a code rollback locks out everyone who logged in or changed a password after the upgrade. The rollback plan for a bad upgrade is therefore a forward fix, or a database restore together with the previous release. Downgrading packages is not an option. This goes into the release runbook.
 14. Two tests assumed exactly 50 tenants. They now scale with `SEED_TENANTS`, so the suite runs at 10 and at 50.
+
+## Bulk operations, imports, jobs and the admin tenant selector — 23 September 2026
+
+`tests/int/isolation-extended.int.spec.ts` (Local API, 7 tests) plus one REST test. The suite creates its own probe pages and removes them afterwards.
+
+| Path | Test | Result |
+| --- | --- | --- |
+| Bulk update | Tenant A user updates `where slug like 'iso-probe-'` while matching rows exist in A and B | Only A's 2 rows change; B's row untouched |
+| Bulk delete | Same `where`, delete | Only A's 2 rows deleted; B's row still there |
+| Bulk re-tenant | A tries to move every visible row to B in one update | Rows stay in A |
+| Imports | A batch of two rows, one naming A, one naming B | A's row lands, B's row refused, row by row |
+| Imports without tenant | A row with no tenant field | Not placed in B |
+| Background job | A job queued for tenant A that names a tenant B page | B's page unchanged |
+| Background job, control | The same job naming an A page | A's page updated, so the negative result is not a no-op |
+| Admin tenant selector (REST) | A user forges the `payload-tenant` cookie with B's id | Cannot list or read B's page; a create without a tenant does not land in B |
+
+Findings:
+
+15. **Jobs run without a user, so access control does not apply to them.** The pattern is `src/jobs/touchPageSeo.ts`. The tenant travels in the job input, and every query inside the job filters on it. Job files are on the `overrideAccess` allowlist, and each needs a test like the one above.
+16. **Every new job task is a migration.** Payload stores task slugs as a Postgres enum, so adding a task changes the schema (`add_jobs`). Completed jobs are deleted by default, so the audit trail for agent work has to be written deliberately, not read back from the jobs table.
+
+## Two colliding Makers publishes — 23 September 2026
+
+Script: `scripts/collide-publishes.ps1`. It deployed a scratch static project (`hh-collide-test`) twice within 64 ms, as versions A and B, on the free plan with its single build slot.
+
+| Deploy | Started | Finished | Duration | Exit |
+| --- | --- | --- | --- | --- |
+| A | 14:26:45.086 | 14:27:32.307 | 47 s | 0 |
+| B | 14:26:45.150 | 14:27:15.060 | 30 s | 0 |
+
+Five seconds later the live URL served **version A**: the deploy that started first but **finished last**.
+
+Finding 17: **Makers accepts concurrent deploys, queues them and does not reject either one. The last to finish goes live, whatever order they started in.** Both report success, so a slower, older publish can silently overwrite a newer one. The release pipeline must therefore serialise publishes per project itself, one at a time with the newest intent winning, and verify what is live after every publish. It cannot rely on the host to refuse a collision.

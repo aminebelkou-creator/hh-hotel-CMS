@@ -18,7 +18,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | --- | --- |
 | Plan position | Day −5. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
 | Week 1 engineering | **Done early**: isolation proof, 50-tenant seed, first Makers deploys, cross-team contract drafts |
-| Week 2 proof items | **4 of 6 done**: row-level security, schema migration at 10 and 50 tenants, Payload upgrade path, single-tenant restore. Open: admin/bulk/imports/jobs coverage, colliding publishes |
+| Week 2 proof items | **6 of 6 done** (23 Sep): RLS, migrations at 10/50 tenants, upgrade path, single-tenant restore, bulk/imports/jobs/admin-cookie isolation, colliding publishes |
 | Isolation suite | **26/26 green on Neon** after the new migration, REST/GraphQL against the live URL; 24/24 locally at 10 and 50 tenants |
 | Deploy time | 153 s for a code deploy; the plan's target is 60 s (open decision, Gate 2) |
 | Gate 1 (week 3) | Waiting on Tencent. The email is drafted but not sent |
@@ -29,8 +29,8 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Thing | Where | State |
 | --- | --- | --- |
 | Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1 (latest stable), Postgres. Seven collections, multi-tenant plugin, MCP plugin (no delete tools). Sites now have `brandName` and `timezone` |
-| Migrations | `apps/platform/src/migrations` | `20260923_120049_baseline` (whole schema), `20260923_132537_site_brand_timezone` (columns + set-based backfill). Applied on local and Neon; `migrate:status` clean |
-| Test suites | `apps/platform/tests/int` | isolation (13), overrideAccess audit (2), REST/GraphQL (2), RLS raw SQL (7), RLS under Payload (2). Scale with `SEED_TENANTS` |
+| Migrations | `apps/platform/src/migrations` | `20260923_120049_baseline` (whole schema), `20260923_132537_site_brand_timezone` (columns + set-based backfill), `20260923_142013_add_jobs` (job queue tables). All applied on local and Neon; `migrate:status` clean |
+| Test suites | `apps/platform/tests/int` | isolation (13), isolation-extended (7: bulk, imports, jobs), overrideAccess audit (2), REST/GraphQL/tenant-cookie (3), RLS raw SQL (7), RLS under Payload (2). Scale with `SEED_TENANTS` |
 | Database tools | `apps/platform/src/db` | `rls.sql` + `apply-rls.ts`, `inspect-rls.ts`, `schema-fingerprint.ts`, `mark-baseline.ts`, `tenant-checksums.ts`, `tenant-backup.ts` (export/restore one tenant), `damage-tenant.ts` (rehearsal only), `verify-site-brand.ts` |
 | Rehearsal scripts | `scripts/` | `migration-rehearsal.ps1`, `restore-rehearsal.ps1`, `upgrade-rehearsal.ps1`, `run-suites.ps1` (local-10, local-50, Neon) |
 | RLS | `src/db/rls.sql` | Context-optional policies plus restricted role `hh_app_rls`, applied on Neon and local. Not yet enforced for real requests: the app connects as the owner role |
@@ -52,13 +52,13 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 | # | Owner | Action | Why now | Done when |
 | --- | --- | --- | --- | --- |
-| 1 | OWN | Switch tooling: Claude Code is installed (2.1.231) and permissions are configured. Start it in the repo with `claude --remote-control "hh-hotel-CMS"` and connect from the phone | Desktop Commander's relay drops every few minutes | A session runs `scripts/run-suites.ps1` from the phone without drops |
-| 2 | ENG | GitHub Actions: isolation suite on a Postgres service at every push; migrations and Makers deploy on `main` with secrets in GitHub | Nothing should depend on one PC being awake | Green check on a PR; deploy from CI |
-| 3 | ENG | Admin tenant selector, bulk operations, imports, jobs: extend the isolation suite | Last week-2 proof item on isolation | New tests green |
-| 4 | ENG | Two colliding Makers publishes (one build slot on the free plan) | Gate 1 evidence | Behaviour recorded in docs/04 |
-| 5 | ENG | EdgeOne `teo` API from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` on a test domain | Gate 1 evidence for custom domains; needs the fresh CAM key | Script in `scripts/`, result in docs/04 |
-| 6 | ENG | Redeploy the proof of concept with a `payload migrate` step before the build | Live code is one migration behind | Live site on current code; release notes in docs/05 |
-| 7 | ENG | RLS enforcing mode: restricted login role, per-request `SET LOCAL` hook, deny-by-default | Week 4 decision; proposal in docs/05 | Owner-role connections limited to migrations and allowlisted jobs |
+| 1 | OWN | Grant the GitHub CLI the `workflow` scope: `gh auth refresh -h github.com -s workflow` (browser confirmation) | GitHub refuses to accept `.github/workflows/*` without it; the CI and deploy workflows are written and waiting locally (untracked) | Workflows pushed; first CI run green |
+| 2 | ENG | After 1: push the workflows, add repository secrets `NEON_DATABASE_URL` and `EDGEONE_PAGES_API_TOKEN` (from the PC's user environment variables, via `gh secret set`, never through chat), watch the first CI run | Nothing should depend on one PC being awake | Green check on `main`; `deploy` workflow run once manually |
+| 3 | OWN | Start Claude Code with Remote Control in the repo (`claude --remote-control "hh-hotel-CMS"`) | Desktop Commander's relay drops periodically | A session runs `scripts/run-suites.ps1` from the phone |
+| 4 | ENG | EdgeOne `teo` API from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` on a test domain | Gate 1 evidence for custom domains | Blocked on a fresh CAM key and a test (sub)domain with DNS access |
+| 5 | ENG | Release pipeline v0 design: per-project publish queue (finding 17), migrate-then-deploy, post-publish verification, rollback | Week 4 item; the colliding-publish result changes its design | Design note in docs/, reviewed |
+| 6 | ENG | RLS enforcing mode: restricted login role, per-request `SET LOCAL` hook, deny-by-default | Week 4 decision; proposal in docs/05 | Owner-role connections limited to migrations and allowlisted jobs |
+| 7 | ENG | Ingest spike (week 1 item): scrape a hotel site and its Google Business Profile into a fact base | Generation depends on it | Needs the owner's hotel URL and profile link |
 
 ### Waiting on the owner
 
@@ -99,7 +99,8 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Plan says | Reality | Consequence |
 | --- | --- | --- |
 | Week 1 starts 28 September | Engineering started 22 September | Week-1 engineering items are done before the plan starts; buffer for Gate 1 |
-| Isolation proof in weeks 1–2, local | Proven on production infrastructure (Makers + Neon Frankfurt) in week 0 | Gate 1's isolation criterion is mostly evidenced; two proof items remain (admin/bulk/imports/jobs, colliding publishes) |
+| Isolation proof in weeks 1–2, local | Proven on production infrastructure (Makers + Neon Frankfurt) in week 0 | Gate 1's isolation criterion is evidenced in full; all six week-2 proof items done in week 0 |
+| Makers publishes (Gate 2) | Concurrent deploys are queued, both succeed, the last to finish goes live | The release pipeline must serialise publishes per project and verify what is live (finding 17) |
 | Payload upgrade to "the next release" | 3.90.1 is already the latest stable; the path 3.89 → 3.90.1 was rehearsed instead | Upgrades are one-way (password-hash format) and can carry schema changes; the release runbook must say so |
 | RLS evaluated in week 4 | Evaluated in week 0; works under Payload with access control off | Week 4 now only decides on enforcing mode; proposal in docs/05 |
 | Publish to live under 60 s (Gate 2) | Code deploy measured at 153 s, of which the remote build is ~110 s | Decide before Gate 2: the target applies to content releases, or the build moves to CI with artifact upload |
@@ -108,6 +109,20 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-23 · session 6 · `467c074` → this commit
+
+**Changed**
+- Isolation proof completed: `isolation-extended.int.spec.ts` (bulk update/delete, re-tenant, imports, background jobs) and a forged `payload-tenant` cookie REST test. The `runIf` bug in the REST suite is fixed (it always ran).
+- Reference job pattern `src/jobs/touchPageSeo.ts` (tenant in the input, enforced in the query; allowlisted) and migration `add_jobs`, applied on local and Neon.
+- Colliding Makers publishes measured with `scripts/collide-publishes.ps1`; `scripts/deploy-poc.ps1` redeploys the proof of concept with `.env` held out of the upload.
+- CI (`.github/workflows/ci.yml`) and a manual production deploy (`deploy.yml`) written but NOT pushed: GitHub refuses workflow files without the `workflow` token scope.
+
+**Learned**
+- Findings 15–17 in docs/05: jobs bypass access control, so their tenant must be explicit; every job task is a schema migration (enum); Makers queues concurrent deploys and the last to finish goes live.
+
+**Left undone**
+- CI push and secrets (waiting on the owner's `gh auth refresh`), `teo` API test (key and domain), release pipeline design.
 
 ### 2026-09-23 · session 5 · `f7e7712` → this commit
 
