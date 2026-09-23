@@ -50,3 +50,5 @@ Conventional commits. Small PRs. Every PR that touches tenancy, access control o
 13. **Schema changes are migrations**: `pnpm payload migrate:create <name>`, rehearse with `scripts/migration-rehearsal.ps1`, then `payload migrate` on Neon. Backfills are set-based SQL, never row-by-row over the network.
 14. **Never downgrade Payload.** 3.90 changed the password-hash format and older versions lock users out. Every upgrade runs `scripts/upgrade-rehearsal.ps1` and ships the migration its drift check reveals.
 15. **pnpm is a PowerShell shim on Windows**: pass file lists to it by splatting (`@files`), or they arrive as one argument.
+16. **Deploy with `scripts/deploy-poc.ps1`, never a bare `edgeone makers deploy`**: it holds `.env` out and removes `.next` first. A 320 MB `.next` made a deploy time out after 14 minutes.
+17. **Background jobs run without a user.** Carry the tenant in the job input and filter every query on it (`src/jobs/touchPageSeo.ts`); each new task is a migration (Payload stores task slugs as an enum).

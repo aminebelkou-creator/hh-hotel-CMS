@@ -4,7 +4,7 @@ param([string] $Out = "$env:TEMP\suites")
 New-Item -ItemType Directory -Force $Out | Out-Null
 $env:PAYLOAD_DB_PUSH = 'false'
 $env:SEED_PASSWORD = [Environment]::GetEnvironmentVariable('HH_NEON_SEED_PASSWORD', 'User')
-$local = 'tests/int/isolation.int.spec.ts', 'tests/int/override-access.int.spec.ts', 'tests/int/rls.int.spec.ts', 'tests/int/rls-payload.int.spec.ts'
+$local = 'tests/int/isolation.int.spec.ts', 'tests/int/isolation-extended.int.spec.ts', 'tests/int/override-access.int.spec.ts', 'tests/int/rls.int.spec.ts', 'tests/int/rls-payload.int.spec.ts'
 $runs = @(
   @{ Name = 'local-10'; Url = 'postgres://hh:hh_local_dev@localhost:5432/hh_check'; Tenants = '10'; Tests = $local; Platform = '' },
   @{ Name = 'local-50'; Url = 'postgres://hh:hh_local_dev@localhost:5432/hh_platform'; Tenants = '50'; Tests = $local; Platform = '' },

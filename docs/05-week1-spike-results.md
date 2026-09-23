@@ -173,3 +173,14 @@ Script: `scripts/collide-publishes.ps1`. It deployed a scratch static project (`
 Five seconds later the live URL served **version A**: the deploy that started first but **finished last**.
 
 Finding 17: **Makers accepts concurrent deploys, queues them and does not reject either one. The last to finish goes live, whatever order they started in.** Both report success, so a slower, older publish can silently overwrite a newer one. The release pipeline must therefore serialise publishes per project itself, one at a time with the newest intent winning, and verify what is live after every publish. It cannot rely on the host to refuse a collision.
+
+## Proof of concept redeployed on the migrated schema — 23 September 2026
+
+| Attempt | What was uploaded | Result |
+| --- | --- | --- |
+| 1 | `apps/platform` including a local `.next` (320 MB with build cache) | Upload about 4 min, then the remote build sat in `Process` for about 580 s: **Timeout**, 837 s in total. The live site kept serving the previous deployment (200 on `/`, `/admin`, `/api/users/me`) |
+| 2 | The same folder with `.next` removed (`scripts/deploy-poc.ps1` now does this) | **Success in 177 s**, deployment `dpzceky1owv0` |
+
+Afterwards the whole suite ran against Neon and the live URL: **34/34** (isolation 13, extended 7, audit 2, REST/GraphQL/tenant-cookie 3, RLS 7, RLS under Payload 2).
+
+Finding 18: **the CLI uploads local build output**, and a large upload can push the remote build into a timeout. A failed or timed-out deploy does not replace the live version, which is the right failure mode. Deploys must start from a clean tree, in CI or with `.next` removed.

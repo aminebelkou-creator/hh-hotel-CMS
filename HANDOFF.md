@@ -19,7 +19,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Plan position | Day −5. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
 | Week 1 engineering | **Done early**: isolation proof, 50-tenant seed, first Makers deploys, cross-team contract drafts |
 | Week 2 proof items | **6 of 6 done** (23 Sep): RLS, migrations at 10/50 tenants, upgrade path, single-tenant restore, bulk/imports/jobs/admin-cookie isolation, colliding publishes |
-| Isolation suite | **26/26 green on Neon** after the new migration, REST/GraphQL against the live URL; 24/24 locally at 10 and 50 tenants |
+| Isolation suite | **34/34 green on Neon** against the redeployed live app (incl. bulk, imports, jobs, forged tenant cookie); local suites green at 10 and 50 tenants |
 | Deploy time | 153 s for a code deploy; the plan's target is 60 s (open decision, Gate 2) |
 | Gate 1 (week 3) | Waiting on Tencent. The email is drafted but not sent |
 | Tooling | Remote Desktop Commander drops its connection every few minutes. Recommended: move to Claude Code on the PC with Remote Control (see Next actions 1) |
@@ -34,7 +34,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Database tools | `apps/platform/src/db` | `rls.sql` + `apply-rls.ts`, `inspect-rls.ts`, `schema-fingerprint.ts`, `mark-baseline.ts`, `tenant-checksums.ts`, `tenant-backup.ts` (export/restore one tenant), `damage-tenant.ts` (rehearsal only), `verify-site-brand.ts` |
 | Rehearsal scripts | `scripts/` | `migration-rehearsal.ps1`, `restore-rehearsal.ps1`, `upgrade-rehearsal.ps1`, `run-suites.ps1` (local-10, local-50, Neon) |
 | RLS | `src/db/rls.sql` | Context-optional policies plus restricted role `hh_app_rls`, applied on Neon and local. Not yet enforced for real requests: the app connects as the owner role |
-| Live proof of concept | https://hh-platform-poc.edgeone.cool | Makers project `hh-platform-poc` (`makers-gznjppyen95y`), Frankfurt. **Still runs the code from before today's migration** (works: the new columns are nullable). Redeploy when convenient |
+| Live proof of concept | https://hh-platform-poc.edgeone.cool | Makers project `hh-platform-poc` (`makers-gznjppyen95y`), Frankfurt. Redeployed 23 Sep on current code (deployment `dpzceky1owv0`, 177 s) after the Neon migrations |
 | Database | Neon free tier, `eu-central-1`, pooled endpoint, database `neondb` | 50 tenants, 51 users, 50 sites, 150 pages, 50 domains; migrations applied |
 | Local databases | Docker `hh-postgres`, port 5432 | `hh_platform` (50 tenants) and `hh_check` (10 tenants, built purely from migrations) |
 | Documents | `docs/` | Spec (*Hotelier Website Platform — Solution Definition*), plan, checklist, evaluations, spike results (findings 1–14), contracts v0.1, Tencent email draft |
