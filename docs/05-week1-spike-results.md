@@ -184,3 +184,12 @@ Finding 17: **Makers accepts concurrent deploys, queues them and does not reject
 Afterwards the whole suite ran against Neon and the live URL: **34/34** (isolation 13, extended 7, audit 2, REST/GraphQL/tenant-cookie 3, RLS 7, RLS under Payload 2).
 
 Finding 18: **the CLI uploads local build output**, and a large upload can push the remote build into a timeout. A failed or timed-out deploy does not replace the live version, which is the right failure mode. Deploys must start from a clean tree, in CI or with `.next` removed.
+
+## CI on GitHub Actions — 23 September 2026
+
+| Workflow | Run | Result |
+| --- | --- | --- |
+| `ci` (on push) | first run, `72a9ee0` | **Green on the first attempt in about 2 min**. It builds a Postgres from the committed migrations only, finds no schema drift, seeds 10 tenants, typechecks, runs the isolation, extended, audit and both RLS suites, does a production build, then runs REST/GraphQL/tenant-cookie against the built app. 34 tests in all |
+| `deploy` (manual) | first run | Migrate Neon and re-apply RLS: **green from CI**. The Makers deploy step failed with `Invalid EDGEONE_PAGES_API_TOKEN` |
+
+Finding 21: **the token saved on 22 September (a copy of the CLI's browser-login token) is not accepted for deploys from CI.** The CLI on the PC deploys with its own stored login instead, so the copy was never tested until now. Unattended deploys need a dedicated Makers API token created in the console, with the longest expiry, stored as the `EDGEONE_PAGES_API_TOKEN` GitHub secret and rotated on a calendar.
