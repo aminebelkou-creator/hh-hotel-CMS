@@ -39,7 +39,8 @@ beforeAll(async () => {
 })
 
 describe('tenant isolation over REST', () => {
-  it.runIf(() => reachable)('A lists only own pages; cannot read, update or delete B by id', async () => {
+  it('A lists only own pages; cannot read, update or delete B by id', async (ctx) => {
+    if (!reachable) ctx.skip()
     const ta = await loginRest(tenantEmail(1))
     const tb = await loginRest(tenantEmail(2))
     const a = api(ta)
@@ -66,7 +67,8 @@ describe('tenant isolation over REST', () => {
     expect(create.status).toBeGreaterThanOrEqual(400)
   })
 
-  it.runIf(() => reachable)('GraphQL: A cannot read B page', async () => {
+  it('GraphQL: A cannot read B page', async (ctx) => {
+    if (!reachable) ctx.skip()
     const ta = await loginRest(tenantEmail(1))
     const tb = await loginRest(tenantEmail(2))
     const b = api(tb)
@@ -78,5 +80,34 @@ describe('tenant isolation over REST', () => {
     })
     const j = (await r.json()) as { data?: { Page?: unknown }; errors?: unknown[] }
     expect(j.data?.Page ?? null).toBeNull()
+  })
+
+  it('admin tenant selector: a payload-tenant cookie naming B does not widen user A', async (ctx) => {
+    if (!reachable) ctx.skip()
+    const ta = await loginRest(tenantEmail(1))
+    const tb = await loginRest(tenantEmail(2))
+    const pageB = ((await (await api(tb).get('/pages?limit=1')).json()) as { docs: { id: number | string; tenant: unknown }[] }).docs[0]
+    const tenantB = (pageB.tenant as { id?: number | string })?.id ?? pageB.tenant
+    // The admin UI's tenant selector is a cookie; a user can forge it, so it must only narrow.
+    const headers = { authorization: `JWT ${ta}`, cookie: `payload-tenant=${tenantB}` }
+
+    const list = (await (await fetch(`${BASE}/api/pages?limit=1000`, { headers })).json()) as { docs: { id: number | string }[] }
+    expect(list.docs.map((d) => d.id)).not.toContain(pageB.id)
+    const one = await fetch(`${BASE}/api/pages/${pageB.id}`, { headers })
+    expect([403, 404]).toContain(one.status)
+
+    // A create with the forged cookie and no tenant field must not land in B.
+    const siteA = ((await (await api(ta).get('/sites?limit=1')).json()) as { docs: { id: number | string }[] }).docs[0]
+    const created = await fetch(`${BASE}/api/pages`, {
+      method: 'POST',
+      headers: { ...headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ title: 'iso-probe-cookie', slug: 'iso-probe-cookie', site: siteA.id }),
+    })
+    if (created.ok) {
+      const doc = ((await created.json()) as { doc: { id: number | string; tenant: unknown } }).doc
+      const t = (doc.tenant as { id?: number | string })?.id ?? doc.tenant
+      await api(ta).del(`/pages/${doc.id}`)
+      expect(t).not.toBe(tenantB)
+    }
   })
 })

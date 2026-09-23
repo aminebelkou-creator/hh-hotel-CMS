@@ -15,6 +15,7 @@ import { Media } from './collections/Media'
 import { Domains } from './collections/Domains'
 import { Releases } from './collections/Releases'
 import { isSuperAdmin, superAdminFieldOnly } from './access'
+import { touchPageSeo } from './jobs/touchPageSeo'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -31,6 +32,8 @@ export default buildConfig({
     fallback: true,
   },
   editor: lexicalEditor(),
+  // Background jobs carry their tenant in the input and scope every query by it (see src/jobs).
+  jobs: { tasks: [touchPageSeo] },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
