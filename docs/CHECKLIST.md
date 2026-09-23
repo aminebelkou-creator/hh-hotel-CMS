@@ -34,7 +34,7 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 - [x] **ENG** 17/17 green locally **and** on production infrastructure (Makers + Neon Frankfurt) — [`05-week1-spike-results.md`](05-week1-spike-results.md)
 - [x] **ENG** First Makers deploys measured: static 49.6 s, Next.js + Payload 153 s
 - [x] **ENG** Cross-team contract drafts v0.1 — [`contracts/`](contracts/)
-- [ ] **ENG** Collection design on paper: platform primitives, provenance, locale — review with the team
+- [ ] **ENG** Collection design on paper: platform primitives, provenance, locale — review with the team (**draft ready: [`07-content-model-and-hotel-pack.md`](07-content-model-and-hotel-pack.md)**)
 - [ ] **ENG** Ingest spike: scrape a hotel site and Google Business Profile into a fact base
 - [ ] **BIZ** Shortlist 15 hotels; first conversations. The owner's own hotel is customer zero
 - [ ] **BIZ** Draft DPA and sub-processor list
@@ -51,7 +51,7 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
   - [x] Two colliding publishes on Makers' single build slot: both accepted, last to finish goes live (finding 17) — the pipeline must serialise publishes
 - [ ] **ENG** Makers gate: quotas and pricing in writing, fifty custom domains, Frankfurt pinning confirmed
 - [ ] **ENG** EdgeOne `teo` API exercised from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` against a test site
-- [ ] **ENG** Hotel pack types on paper: Room, Offer, Amenity, Outlet, Policy, LocalGuide
+- [ ] **ENG** Hotel pack types on paper: Room, Offer, Amenity, Outlet, Policy, LocalGuide (**draft ready: [`07-content-model-and-hotel-pack.md`](07-content-model-and-hotel-pack.md)**, needs team review)
 - [ ] **ENG** Fact confirmation flow; full draft site generated as JSON entries
 - [ ] **BIZ** Five hotels in serious talks; concierge offer written
 - [ ] **BIZ** Service tiers drafted; accessibility target set per template
