@@ -9,8 +9,9 @@ Start with [`../HANDOFF.md`](../HANDOFF.md): current state, plan deltas, next ac
 | [02-90-day-plan.md](02-90-day-plan.md) | Week-by-week plan, gates, metrics, risks. The baseline; changes only by decision |
 | [03-webstudio-evaluation.md](03-webstudio-evaluation.md) | Prior art |
 | [04-edgeone-makers-evaluation.md](04-edgeone-makers-evaluation.md) | Hosting candidate: quotas, residency, EdgeOne API |
-| [05-week1-spike-results.md](05-week1-spike-results.md) | Measured results and findings 1–18: isolation, Makers deploys, Neon, RLS, migrations, restore, upgrades, jobs, colliding publishes |
+| [05-week1-spike-results.md](05-week1-spike-results.md) | Measured results and findings 1–19: isolation, Makers deploys, Neon, RLS, migrations, restore, upgrades, jobs, colliding publishes |
 | [06-release-pipeline-design.md](06-release-pipeline-design.md) | Release pipeline v0 design note (draft for review) |
 | [07-content-model-and-hotel-pack.md](07-content-model-and-hotel-pack.md) | Platform primitives, provenance, locale rules and the hotel pack types, on paper (draft for review) |
+| [08-ingest-spike.md](08-ingest-spike.md) | Ingest spike on customer zero (hotel-herse-dor.com): facts, conflicts, site audit |
 | [contracts/](contracts/) | Cross-team contracts v0.1 |
 | [outreach/](outreach/) | Vendor correspondence drafts (Tencent Makers for Platforms) |

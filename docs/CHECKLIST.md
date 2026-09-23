@@ -9,10 +9,10 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 | Area | Done | Open | Note |
 | --- | --- | --- | --- |
 | Owner actions before week 1 | 4 | 3 | Send the Tencent email, revoke the CAM key, share the repo |
-| Week 1 | 8 | 5 | Engineering done early; BIZ and XT items not started |
+| Week 1 | 9 | 4 | Engineering done early; BIZ and XT items not started |
 | Week 2 | 7 | 6 | All six proof items done; the Makers gate (waiting on Tencent), the `teo` API (needs a fresh key and a test domain), hotel pack types, fact flow and BIZ items open |
 | Weeks 3–13 | 0 | 45 | As planned, including the four gates; Gate 1 on 12 October |
-| **Total** | **19** | **59** | |
+| **Total** | **20** | **58** | |
 
 ## Before week 1 — owner actions
 
@@ -35,7 +35,7 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 - [x] **ENG** First Makers deploys measured: static 49.6 s, Next.js + Payload 153 s
 - [x] **ENG** Cross-team contract drafts v0.1 — [`contracts/`](contracts/)
 - [ ] **ENG** Collection design on paper: platform primitives, provenance, locale — review with the team (**draft ready: [`07-content-model-and-hotel-pack.md`](07-content-model-and-hotel-pack.md)**)
-- [ ] **ENG** Ingest spike: scrape a hotel site and Google Business Profile into a fact base
+- [x] **ENG** Ingest spike: scrape a hotel site and Google Business Profile into a fact base — site done on customer zero, 41 pages → 45 facts, 2 live conflicts ([`08-ingest-spike.md`](08-ingest-spike.md)); Google Business Profile needs the hotel's authorisation
 - [ ] **BIZ** Shortlist 15 hotels; first conversations. The owner's own hotel is customer zero
 - [ ] **BIZ** Draft DPA and sub-processor list
 - [ ] **XT** Send contract drafts to PMS, CRM and booking-engine teams
@@ -50,7 +50,7 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
   - [x] Admin UI tenant selector, bulk operations, imports and jobs covered by tests — `isolation-extended.int.spec.ts` (7) + forged tenant-cookie REST test; job pattern in `src/jobs/`
   - [x] Two colliding publishes on Makers' single build slot: both accepted, last to finish goes live (finding 17) — the pipeline must serialise publishes
 - [ ] **ENG** Makers gate: quotas and pricing in writing, fifty custom domains, Frankfurt pinning confirmed
-- [ ] **ENG** EdgeOne `teo` API exercised from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` against a test site
+- [ ] **ENG** EdgeOne `teo` API exercised from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` against a test site — client and read-only probe done; Makers domains are not reachable via `teo` (finding 20); write test needs a zone on a domain we control (e.g. `staging.hotel-herse-dor.com`)
 - [ ] **ENG** Hotel pack types on paper: Room, Offer, Amenity, Outlet, Policy, LocalGuide (**draft ready: [`07-content-model-and-hotel-pack.md`](07-content-model-and-hotel-pack.md)**, needs team review)
 - [ ] **ENG** Fact confirmation flow; full draft site generated as JSON entries
 - [ ] **BIZ** Five hotels in serious talks; concierge offer written
