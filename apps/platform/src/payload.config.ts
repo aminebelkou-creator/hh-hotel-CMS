@@ -35,6 +35,10 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL || '' },
+    // Dev-mode schema push only against a local database. Push drops anything it does not
+    // manage (it removed the RLS policies in the week-1 spike) and must never touch a shared
+    // or production database; those change through migrations only.
+    push: /@(localhost|127\.0\.0\.1)[:/]/.test(process.env.DATABASE_URL || ''),
   }),
   sharp,
   plugins: [

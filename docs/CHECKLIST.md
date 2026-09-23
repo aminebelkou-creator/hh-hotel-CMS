@@ -6,9 +6,9 @@ Last updated: 23 September 2026.
 
 ## Before week 1 — owner actions
 
-- [ ] **OWN** Email Tencent Cloud (Platform and Multi-Tenancy page, "product demo") for: Makers Platforms API reference, quotas at 100 / 500 / 1,000 tenants, commercial pricing, DPA covering edge processing, KV and Blob, Frankfurt pinning confirmed, whether Makers custom domains and EdgeOne alias domains are the same mechanism
+- [ ] **OWN** Email Tencent Cloud — **draft ready to send: [`outreach/tencent-makers-platforms-email.md`](outreach/tencent-makers-platforms-email.md)** — for: Makers Platforms API reference, quotas at 100 / 500 / 1,000 tenants, commercial pricing, DPA covering edge processing, KV and Blob, Frankfurt pinning confirmed, whether Makers custom domains and EdgeOne alias domains are the same mechanism
 - [ ] **OWN** Revoke the Tencent CAM API key beginning `IKIDTYWK` (it was pasted in chat); create a fresh one and store it as user environment variables `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY`
-- [ ] **OWN** Decide what to do with the public proof-of-concept deployment: rotate the seeded passwords to random values, or take it offline
+- [x] **OWN** Public proof-of-concept deployment: seeded passwords rotated to a random value (user env var `HH_NEON_SEED_PASSWORD`); default password returns 401 on the live URL
 - [ ] **OWN** Share this repository and the plan with the team; let them push on the dates
 - [x] GitHub repository created and scaffolded
 - [x] EdgeOne CLI, Makers skills, MCP config installed; CLI logged in (Global)
@@ -33,7 +33,7 @@ Last updated: 23 September 2026.
 ## Week 2 (5 Oct)
 
 - [ ] **ENG** Remaining proof items:
-  - [ ] Postgres row-level security enabled on tenant tables; full suite still green
+  - [x] Postgres row-level security enabled on tenant tables; full suite still green — 26/26 on Neon, incl. Payload queries with access control off held by RLS alone ([results](05-week1-spike-results.md#row-level-security-as-defence-in-depth--evaluated-on-neon-frankfurt))
   - [ ] Schema migration applied across 10, then 50 tenants; data verified per tenant
   - [ ] Payload upgrade to the next release; isolation suite re-run
   - [ ] Single-tenant backup and restore without touching other tenants
@@ -123,8 +123,8 @@ Last updated: 23 September 2026.
 | Studio editor: Puck, Payload enterprise visual editor, or built | Week 6 | Puck by default |
 | Service tiers and pricing shape | Week 4 | Not started |
 | 60 s publish target: content releases only, or all deploys | Gate 2, week 6 | Measured 153 s for code deploys |
-| Postgres RLS as defence in depth: on or off in production | Week 4 | To be evaluated in the proof |
-| Proof-of-concept deployment: keep public with rotated credentials, or take offline | Now | Owner |
+| Postgres RLS as defence in depth: on or off in production | Week 4 | Evaluated, works under Payload. Proposed: on, via a restricted app role and a per-request `SET LOCAL` hook, then deny-by-default (see docs/05) |
+| Proof-of-concept deployment: keep public with rotated credentials, or take offline | Now | Kept public, credentials rotated |
 
 ## Metrics tracked from day one
 
@@ -134,5 +134,5 @@ Last updated: 23 September 2026.
 | Ingest to live on own domain | Under one working day for customer 5 | — |
 | Full-site generation | Under 5 minutes | — |
 | Publish to live / rollback | Under 60 s / under 10 s | 153 s code deploy / not measured |
-| Isolation suite | Green on every commit and every Payload upgrade | 17/17 |
+| Isolation suite | Green on every commit and every Payload upgrade | 26/26 (with RLS) |
 | Service checks resolved without a human | Over half by week 12 | — |

@@ -11,7 +11,7 @@
 | REST + GraphQL isolation | 2/2 green against a live server |
 | **Total** | **17/17** |
 
-Not yet covered: Postgres RLS as defence in depth, admin-UI tenant selector behaviour, bulk operations, imports, jobs, backup/restore of a single tenant, schema migration at 50 tenants, a Payload upgrade. These are the rest of the proof.
+Postgres RLS is covered below. Not yet covered: admin-UI tenant selector behaviour, bulk operations, imports, jobs, backup/restore of a single tenant, schema migration at 50 tenants, a Payload upgrade. These are the rest of the proof.
 
 ## Makers deploy
 
@@ -52,3 +52,32 @@ The CLI uploads the project folder and builds remotely. Build logs are not avail
 The platform runs end to end on EdgeOne Makers with EU data: Frankfurt cloud functions, Frankfurt Postgres.
 
 Consequences to carry forward: the 257 s seed shows that bulk operations (imports, migrations, generation writes) must be batched or run close to the database, never row-by-row across regions. Latencies above are single cold requests from Paris, not a benchmark.
+
+## Row-level security as defence in depth — evaluated on Neon Frankfurt
+
+Files: `apps/platform/src/db/rls.sql`, `src/db/apply-rls.ts`, `src/db/inspect-rls.ts`, `tests/int/rls.int.spec.ts`, `tests/int/rls-payload.int.spec.ts`.
+
+Design: a policy `tenant_isolation` on `sites`, `pages`, `_pages_v`, `media`, `domains`, `releases`, keyed on the tenant column, reading the tenant list from `SET LOCAL app.tenant_ids`. Context-optional: with no tenant declared, access is unrestricted, so nothing breaks while the application does not yet set the context. A restricted role `hh_app_rls` (no login, no BYPASSRLS) is what the policies bind.
+
+| Test | Result |
+| --- | --- |
+| RLS enabled and forced on all six tenant tables | green |
+| Raw SQL as tenant A: sees only its 3 pages; cannot see B's pages, sites, domains or page versions | green |
+| Raw SQL as tenant A: update and delete of B rows affect 0 rows | green |
+| Raw SQL as tenant A: moving a row into tenant B is refused by `WITH CHECK` | green |
+| Restricted role with no context: unrestricted (context-optional mode) | green |
+| **Payload `find()` with `overrideAccess: true`** in a transaction scoped to tenant A: returns only A's 3 pages | green |
+| **Payload `update()` with `overrideAccess: true`** of a B page by id, scoped to A: 0 docs changed, page intact | green |
+| Full suite with RLS applied (isolation 13, audit 2, REST/GraphQL 2 against the live Makers URL, RLS 7, RLS-under-Payload 2) | **26/26 green** |
+
+The two Payload tests are the real result: with application access control switched off entirely, the database alone kept the tenant boundary for Payload's own queries. That is what defence in depth means here, and the pattern (`SET LOCAL ROLE` plus `set_config` at the start of a Payload transaction) is what a per-request hook would do.
+
+### Findings
+
+8. **The connection role bypasses RLS.** Neon's `neondb_owner` has `BYPASSRLS`; a local Docker `postgres` is superuser. Under either, the policies are inert, whatever `FORCE ROW LEVEL SECURITY` says. RLS only protects queries that run as a restricted role. The production answer is a dedicated login role without BYPASSRLS for the application, with the owner role kept for migrations only. A test asserts this so it cannot be forgotten.
+9. **Payload's dev-mode schema push silently removes RLS.** Every `getPayload()` in development pulls the schema and pushes Drizzle's view of it, which drops policies it does not know and disables RLS. It ran against Neon from scripts and tests because push defaulted to on. Fixed: push is now enabled only when `DATABASE_URL` points at localhost; shared databases change through migrations only, and RLS must be applied by a migration that runs after Payload's.
+10. **Running the suite with the wrong password locks accounts.** Payload's login lockout triggered on the rotated Neon users after one run without `SEED_PASSWORD`. Fixed: seed constants refuse to load against a non-local database without `SEED_PASSWORD`, and `rotate-passwords.ts` also clears lockouts.
+
+### Decision proposed for week 4 (RLS evaluated per the proof)
+
+Adopt RLS in enforcing mode for request traffic, in three steps: a dedicated application login role without BYPASSRLS; a Payload hook that opens each request's transaction with `SET LOCAL ROLE` and the user's tenant ids (super-admins and system jobs use the owner role explicitly, and each such path joins the overrideAccess allowlist); then flip the policy from context-optional to deny-by-default. Payload access control remains the primary boundary; RLS catches whatever a future bug in it lets through.

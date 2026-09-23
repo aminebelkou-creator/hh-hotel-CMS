@@ -17,6 +17,9 @@ const users = await payload.find({ collection: 'users', where: { email: { like: 
 let n = 0
 for (const u of users.docs) {
   await payload.update({ collection: 'users', id: u.id, data: { password: pw }, overrideAccess: true })
+  // Clear any lockout left by failed logins (for example, tests run with the old password).
+  // Payload's type asks for a password here, but unlock only uses the email (verified at runtime).
+  await payload.unlock({ collection: 'users', data: { email: u.email } as { email: string; password: string }, overrideAccess: true })
   n++
 }
 payload.logger.info(`Rotated ${n} seeded user passwords`)

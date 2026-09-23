@@ -43,3 +43,6 @@ Conventional commits. Small PRs. Every PR that touches tenancy, access control o
 7. **The Makers CLI shows no build log on failure.** Reproduce with `pnpm run build` locally first.
 8. **Never stop processes by name** (`Stop-Process -Name node`, `pkill node`). Agents and tooling on the developer machine run on Node. Stop by exact PID only.
 9. **Bulk writes across regions are slow** (seed: 6 s local, 257 s to Neon Frankfurt). Batch them or run them close to the database.
+10. **Payload's dev schema push drops what it doesn't manage**, including RLS policies. Push is enabled only for a localhost `DATABASE_URL`; shared databases change through migrations, and RLS is (re)applied after them (`src/db/apply-rls.ts`).
+11. **RLS does nothing under the owner role.** Neon's `neondb_owner` has BYPASSRLS; Docker `postgres` is superuser. Policies bind only the restricted role `hh_app_rls` (via `SET LOCAL ROLE`).
+12. **Set `SEED_PASSWORD` before running tests against Neon** (value in user env var `HH_NEON_SEED_PASSWORD`). Wrong-password logins trip Payload's lockout; `rotate-passwords.ts` clears it.
