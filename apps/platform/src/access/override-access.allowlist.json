@@ -4,6 +4,10 @@
     {
       "file": "src/seed/index.ts",
       "reason": "Seed script; system operation run by an engineer, never reachable from a request."
+    },
+    {
+      "file": "src/seed/rotate-passwords.ts",
+      "reason": "Credential rotation for seeded test users; engineer-run system operation, never reachable from a request."
     }
   ]
 }
