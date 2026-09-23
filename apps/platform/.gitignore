@@ -48,3 +48,6 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# ingest spike output (scraped third-party content, not committed)
+/.ingest/

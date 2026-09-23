@@ -123,3 +123,19 @@ Source: [plan comparison](https://edgeone.ai/document/55650). Ceiling to note: 1
 - `CreateAliasDomain`, `ModifyAliasDomain`, `DeleteAliasDomain` — a customer's own domain aliased onto a target domain: the SaaS custom-hostname primitive, **Enterprise-only and in beta** ([doc](https://edgeone.ai/document/51551))
 
 Question for Tencent: are Makers custom domains and EdgeOne alias domains the same mechanism underneath? The answer decides which quota table governs this product.
+
+## API probe with a real key — 23 September 2026
+
+The probe is `apps/platform/src/host/teo-probe.ts`, on a minimal signed client (`src/host/teo.ts`, TC3-HMAC-SHA256, no SDK). The key is a new CAM key stored as user environment variables; the old leaked key is not used.
+
+| Call | Result |
+| --- | --- |
+| `DescribePlans` | One plan: **`plan-free`**, area global, expires 2099. This is the Makers free tier |
+| `DescribeAvailablePlans` | Purchasable: personal, basic and standard (`sta`), each with `_cm` / `_global` variants and bot-protection options. Enterprise is not self-serve |
+| `DescribeZones` | One zone: **`default-pages-zone`**, type `pages`, status `pending`. This is the internal zone Makers projects live in; the account has no zone of its own |
+| `DescribeAccelerationDomains` on that zone | **`UnauthorizedOperation`** |
+
+Finding 20: **Makers custom domains cannot be managed through the public `teo` API.** Makers projects sit in an internal `pages` zone that the account's own API key cannot operate on. Two consequences for Gate 1:
+
+1. For a platform, custom domains on Makers go through either the Makers console or the unpublished Makers for Platforms API. That puts the Platforms API reference on the critical path; it is item 1 of the Tencent email.
+2. The alternative path is EdgeOne proper. Create our own zone for a domain we control, on a paid plan, then attach customer hostnames as acceleration or alias domains in front of the Makers origin. This needs a domain with DNS access and a plan with enough hostnames: 200 on personal, 1,000 on Enterprise per site, as in the plan table above. `teo-probe.ts --write` tests this end to end as soon as a zone exists. The test subdomain should be one the owner controls (for example `staging.hotel-herse-dor.com`): EdgeOne verifies domain ownership, so a made-up test domain cannot be used.
