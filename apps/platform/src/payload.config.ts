@@ -14,8 +14,10 @@ import { Pages } from './collections/Pages'
 import { Media } from './collections/Media'
 import { Domains } from './collections/Domains'
 import { Releases } from './collections/Releases'
+import { Facts } from './collections/Facts'
 import { isSuperAdmin, superAdminFieldOnly } from './access'
 import { touchPageSeo } from './jobs/touchPageSeo'
+import { publishSiteTask } from './jobs/publishSite'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -25,7 +27,7 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
   },
-  collections: [Users, Tenants, Sites, Pages, Media, Domains, Releases],
+  collections: [Users, Tenants, Sites, Pages, Media, Domains, Releases, Facts],
   localization: {
     locales: ['en', 'fr'],
     defaultLocale: 'en',
@@ -33,7 +35,7 @@ export default buildConfig({
   },
   editor: lexicalEditor(),
   // Background jobs carry their tenant in the input and scope every query by it (see src/jobs).
-  jobs: { tasks: [touchPageSeo] },
+  jobs: { tasks: [touchPageSeo, publishSiteTask] },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
@@ -58,6 +60,7 @@ export default buildConfig({
         media: {},
         domains: {},
         releases: {},
+        facts: {},
       },
       userHasAccessToAllTenants: (user) => isSuperAdmin(user),
       tenantsArrayField: {
@@ -84,6 +87,11 @@ export default buildConfig({
         media: {
           enabled: { find: true, create: false, update: false, delete: false },
           description: 'Media library with rights metadata',
+        },
+        // Agents may read and propose facts; only a person confirms them (no update).
+        facts: {
+          enabled: { find: true, create: true, update: false, delete: false },
+          description: 'Fact base: checkable statements about the business, with source and confirmation status. Only confirmed facts may be used in content',
         },
       },
     }),

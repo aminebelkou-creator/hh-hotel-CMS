@@ -62,18 +62,22 @@ jobs:
         run: pnpm seed
       - name: Typecheck
         run: pnpm exec tsc --noEmit
-      - name: Isolation, bulk/imports/jobs, overrideAccess audit, RLS
+      - name: Apply row-level security (as the deploy workflow does after migrating)
+        run: pnpm exec tsx src/db/apply-rls.ts
+      - name: Isolation, bulk/imports/jobs, overrideAccess audit, RLS, facts, releases, booking
         run: >-
           pnpm exec vitest run --config ./vitest.config.mts
           tests/int/isolation.int.spec.ts tests/int/isolation-extended.int.spec.ts
           tests/int/override-access.int.spec.ts tests/int/rls.int.spec.ts tests/int/rls-payload.int.spec.ts
+          tests/int/facts.int.spec.ts tests/int/releases.int.spec.ts
+          tests/int/booking.int.spec.ts tests/int/normalise.int.spec.ts
       - name: Production build
         run: pnpm run build
-      - name: REST, GraphQL and admin tenant-cookie isolation against the built app
+      - name: REST isolation, publish endpoints, public site and booking step against the built app
         run: |
           pnpm exec next start -p 3000 > /tmp/next.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:3000/api/users/me >/dev/null && break; sleep 2; done
-          PLATFORM_URL=http://localhost:3000 pnpm exec vitest run --config ./vitest.config.mts tests/int/rest-isolation.int.spec.ts
+          PLATFORM_URL=http://localhost:3000 pnpm exec vitest run --config ./vitest.config.mts tests/int/rest-isolation.int.spec.ts tests/int/site-http.int.spec.ts
       - name: Server log on failure
         if: failure()
         run: tail -n 100 /tmp/next.log || true

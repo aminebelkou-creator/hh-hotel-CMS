@@ -150,7 +150,7 @@ describe('tenant isolation (Local API, overrideAccess: false)', () => {
   it('user A sees only tenant A sites, domains and releases', async () => {
     const userA = await login(tenantEmail(A))
     const tenantA = await tenantByEmailN(A)
-    for (const collection of ['sites', 'domains', 'releases'] as const) {
+    for (const collection of ['sites', 'domains', 'releases', 'facts'] as const) {
       const res = await payload.find({ collection, user: userA, overrideAccess: false, limit: 1000 })
       for (const d of res.docs) expect(idOf((d as { tenant: unknown }).tenant)).toBe(tenantA.id)
     }

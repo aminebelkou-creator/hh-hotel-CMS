@@ -12,6 +12,22 @@
     {
       "file": "src/jobs/touchPageSeo.ts",
       "reason": "Background job: runs without a user. Tenant scope is enforced by the job's own where clause on input.tenantId; proven by tests/int/isolation-extended.int.spec.ts."
+    },
+    {
+      "file": "src/ingest/import-facts.ts",
+      "reason": "Engineer-run onboarding/import script, never reachable from a request. Every read and write names the tenant from the onboarding file."
+    },
+    {
+      "file": "src/releases/publish.ts",
+      "reason": "Release pipeline, run by the publishSite job or after the endpoint has checked the caller's access to the site. Every query filters on the explicit tenantId; proven by tests/int/releases.int.spec.ts."
+    },
+    {
+      "file": "src/releases/snapshot.ts",
+      "reason": "Builds a release snapshot for (tenantId, siteId) given by the pipeline; every query filters on that tenant. Proven by tests/int/releases.int.spec.ts."
+    },
+    {
+      "file": "src/releases/resolve.ts",
+      "reason": "Public renderer lookup: returns only the immutable snapshot of the release a site points at, and refuses a release whose tenant differs from the site's. Published sites are public by nature."
     }
   ]
 }

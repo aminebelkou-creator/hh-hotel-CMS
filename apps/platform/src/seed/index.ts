@@ -15,9 +15,15 @@ const run = async () => {
   const payload = await getPayload({ config })
   const t0 = Date.now()
 
-  // Idempotent: wipe seeded data first (by slug/email prefix).
-  for (const collection of ['releases', 'domains', 'pages', 'sites'] as const) {
-    await payload.delete({ collection, where: { id: { exists: true } }, overrideAccess: true })
+  // Idempotent: wipe seeded data first (by slug/email prefix). Only the synthetic tenant-NN
+  // tenants are touched, so real tenants (customer zero) survive a reseed.
+  const seeded = await payload.find({ collection: 'tenants', where: { slug: { like: 'tenant-' } }, overrideAccess: true, limit: 0, pagination: false })
+  const seededIds = seeded.docs.map((t) => t.id)
+  if (seededIds.length) {
+    await payload.update({ collection: 'sites', where: { tenant: { in: seededIds } }, data: { currentRelease: null }, overrideAccess: true })
+    for (const collection of ['releases', 'facts', 'domains', 'pages', 'sites'] as const) {
+      await payload.delete({ collection, where: { tenant: { in: seededIds } }, overrideAccess: true })
+    }
   }
   await payload.delete({ collection: 'users', where: { email: { like: '@example.test' } }, overrideAccess: true })
   await payload.delete({ collection: 'tenants', where: { slug: { like: 'tenant-' } }, overrideAccess: true })

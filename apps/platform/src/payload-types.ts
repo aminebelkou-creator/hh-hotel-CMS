@@ -75,6 +75,7 @@ export interface Config {
     media: Media;
     domains: Domain;
     releases: Release;
+    facts: Fact;
     'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -91,6 +92,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     domains: DomainsSelect<false> | DomainsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
+    facts: FactsSelect<false> | FactsSelect<true>;
     'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -112,6 +114,7 @@ export interface Config {
   jobs: {
     tasks: {
       touchPageSeo: TaskTouchPageSeo;
+      publishSite: TaskPublishSite;
       inline: {
         input: unknown;
         output: unknown;
@@ -209,6 +212,9 @@ export interface Site {
   id: number;
   tenant?: (number | null) | Tenant;
   name: string;
+  /**
+   * Platform-wide unique; the public preview lives at /s/<slug>
+   */
   slug: string;
   /**
    * Public name shown on the site. Backfilled from the tenant name by migration.
@@ -233,6 +239,81 @@ export interface Site {
     | boolean
     | null;
   status?: ('draft' | 'live' | 'suspended') | null;
+  /**
+   * Booking engine mounted on the hotel domain at /book (contract: booking-engine-embed).
+   */
+  booking?: {
+    engine?: ('none' | 'clockpms-be-mock') | null;
+    /**
+     * Property identifier in the booking engine
+     */
+    propertyCode?: string | null;
+    currency?: string | null;
+  };
+  /**
+   * Set by the release pipeline. Rollback moves this pointer.
+   */
+  currentRelease?: (number | null) | Release;
+  /**
+   * Release pipeline state. Written only by the publish job.
+   */
+  publish?: {
+    /**
+     * Incremented on every publish request; older requests are superseded
+     */
+    requestSeq?: number | null;
+    lockedUntil?: string | null;
+    lockedBy?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "releases".
+ */
+export interface Release {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  site: number | Site;
+  version: string;
+  /**
+   * Opaque reference from the release pipeline adapter
+   */
+  artifactRef?: string | null;
+  status?: ('built' | 'live' | 'superseded' | 'rolled-back' | 'failed') | null;
+  templateVersion?: string | null;
+  /**
+   * The publish request this release answers
+   */
+  requestSeq?: number | null;
+  /**
+   * user:<id>, agent:<key> or job
+   */
+  publishedBy?: string | null;
+  /**
+   * sha256 of the canonical snapshot
+   */
+  checksum?: string | null;
+  pageCount?: number | null;
+  /**
+   * Lock to verified, in milliseconds
+   */
+  durationMs?: number | null;
+  verifiedAt?: string | null;
+  error?: string | null;
+  /**
+   * Everything the renderer needs: site settings, published pages, confirmed facts
+   */
+  snapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -376,20 +457,52 @@ export interface Domain {
   createdAt: string;
 }
 /**
+ * The fact base. Confirm or reject each fact; only confirmed facts feed generation and releases.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "releases".
+ * via the `definition` "facts".
  */
-export interface Release {
+export interface Fact {
   id: number;
   tenant?: (number | null) | Tenant;
-  site: number | Site;
-  version: string;
   /**
-   * Opaque reference from the release pipeline adapter
+   * Dotted key, e.g. policy.checkout, contact.phone
    */
-  artifactRef?: string | null;
-  status?: ('built' | 'live' | 'superseded' | 'rolled-back') | null;
-  templateVersion?: string | null;
+  key: string;
+  /**
+   * Normalised value
+   */
+  value: string;
+  site?: (number | null) | Site;
+  status: 'unconfirmed' | 'confirmed' | 'rejected';
+  /**
+   * Extraction confidence, 0 to 1
+   */
+  confidence?: number | null;
+  method?: ('structured-data' | 'meta' | 'link' | 'text' | 'keyword' | 'heading' | 'pms' | 'manual' | 'agent') | null;
+  /**
+   * First URL or system the fact was found in
+   */
+  source?: string | null;
+  occurrences?: number | null;
+  /**
+   * Every raw sighting: [{ source, method, raw }]
+   */
+  evidence?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Why it was confirmed or rejected, and by whom if not a platform user
+   */
+  decisionNote?: string | null;
+  decidedBy?: (number | null) | User;
+  decidedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -442,6 +555,16 @@ export interface PayloadMcpApiKey {
      * Allow clients to find media.
      */
     find?: boolean | null;
+  };
+  facts?: {
+    /**
+     * Allow clients to find facts.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create facts.
+     */
+    create?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -520,7 +643,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'touchPageSeo';
+        taskSlug: 'inline' | 'touchPageSeo' | 'publishSite';
         taskID: string;
         input?:
           | {
@@ -553,7 +676,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'touchPageSeo') | null;
+  taskSlug?: ('inline' | 'touchPageSeo' | 'publishSite') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -594,6 +717,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'releases';
         value: number | Release;
+      } | null)
+    | ({
+        relationTo: 'facts';
+        value: number | Fact;
       } | null)
     | ({
         relationTo: 'payload-mcp-api-keys';
@@ -706,6 +833,21 @@ export interface SitesSelect<T extends boolean = true> {
   defaultLocale?: T;
   theme?: T;
   status?: T;
+  booking?:
+    | T
+    | {
+        engine?: T;
+        propertyCode?: T;
+        currency?: T;
+      };
+  currentRelease?: T;
+  publish?:
+    | T
+    | {
+        requestSeq?: T;
+        lockedUntil?: T;
+        lockedBy?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -840,6 +982,35 @@ export interface ReleasesSelect<T extends boolean = true> {
   artifactRef?: T;
   status?: T;
   templateVersion?: T;
+  requestSeq?: T;
+  publishedBy?: T;
+  checksum?: T;
+  pageCount?: T;
+  durationMs?: T;
+  verifiedAt?: T;
+  error?: T;
+  snapshot?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "facts_select".
+ */
+export interface FactsSelect<T extends boolean = true> {
+  tenant?: T;
+  key?: T;
+  value?: T;
+  site?: T;
+  status?: T;
+  confidence?: T;
+  method?: T;
+  source?: T;
+  occurrences?: T;
+  evidence?: T;
+  decisionNote?: T;
+  decidedBy?: T;
+  decidedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -868,6 +1039,12 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
     | T
     | {
         find?: T;
+      };
+  facts?:
+    | T
+    | {
+        find?: T;
+        create?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -969,6 +1146,23 @@ export interface TaskTouchPageSeo {
   };
   output: {
     updated?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskPublishSite".
+ */
+export interface TaskPublishSite {
+  input: {
+    tenantId: number;
+    siteId: number;
+    seq: number;
+    by?: string | null;
+  };
+  output: {
+    outcome?: string | null;
+    version?: string | null;
+    durationMs?: number | null;
   };
 }
 /**

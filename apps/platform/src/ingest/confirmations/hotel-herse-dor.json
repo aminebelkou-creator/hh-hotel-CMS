@@ -1,0 +1,40 @@
+{
+  "$comment": "Customer zero. Onboarding settings and the hotel owner's decisions on ingested facts. Public business information only.",
+  "tenant": { "slug": "hotel-herse-dor", "name": "Hôtel de la Herse d'Or", "plan": "concierge" },
+  "site": {
+    "slug": "hotel-herse-dor",
+    "name": "Hôtel de la Herse d'Or",
+    "brandName": "Hôtel de la Herse d'Or",
+    "timezone": "Europe/Paris",
+    "enabledLocales": ["fr", "en"],
+    "defaultLocale": "fr",
+    "booking": { "engine": "clockpms-be-mock", "propertyCode": "HHDOR", "currency": "EUR" }
+  },
+  "ingestHost": "www.hotel-herse-dor.com",
+  "decisions": [
+    {
+      "key": "policy.checkout",
+      "value": "11:00",
+      "status": "confirmed",
+      "note": "Hotel owner, 23 Sep 2026: check-out is 11:00."
+    },
+    {
+      "key": "policy.checkout",
+      "value": "10:30",
+      "status": "rejected",
+      "note": "Hotel owner, 23 Sep 2026: wrong; the /hotel-et-services/ page must be corrected."
+    },
+    {
+      "key": "contact.phone",
+      "value": "+33148878409",
+      "status": "confirmed",
+      "note": "Hotel owner, 23 Sep 2026: current."
+    },
+    {
+      "key": "contact.phone",
+      "value": "+33187447790",
+      "status": "confirmed",
+      "note": "Hotel owner, 23 Sep 2026: 01 87 44 77 90 is still a current number."
+    }
+  ]
+}

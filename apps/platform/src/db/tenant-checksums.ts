@@ -26,6 +26,7 @@ const TABLES: [string, string][] = [
   ['media', 'tenant_id'],
   ['domains', 'tenant_id'],
   ['releases', 'tenant_id'],
+  ['facts', 'tenant_id'],
 ]
 
 const payload = await getPayload({ config })
@@ -35,6 +36,9 @@ const strip = ignore.map((c) => ` - '${c.replace(/'/g, '')}'`).join('')
 
 const sums: Record<string, Record<string, string>> = {}
 for (const [table, col] of TABLES) {
+  // A table a pending migration will create does not exist yet: nothing to snapshot there.
+  const exists = await pool.query(`select to_regclass($1) as t`, [`public."${table}"`])
+  if (!exists.rows[0]?.t) continue
   const { rows } = await pool.query(
     `select ${col}::text as tenant, md5(string_agg((to_jsonb(t)${strip})::text, '|' order by id)) as sum, count(*)::int as n
      from "${table}" t where ${col} is not null group by 1`,
