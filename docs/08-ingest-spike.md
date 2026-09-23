@@ -25,6 +25,16 @@
 | Profiles | Instagram, Facebook | structured data / links | Google Business Profile not linked from the site |
 | Booking engine | **not detected** in links, iframes or scripts | — | Probably loaded by a widget or linked from somewhere not crawled; ask the hotel |
 
+## The hotel's answers (23 September)
+
+The owner settled the open questions the same day. This is the first real fact confirmation.
+
+| Question | Answer | Effect on the fact base |
+| --- | --- | --- |
+| Check-out: 11:00 or 10:30? | **11:00** | 11:00 confirmed; 10:30 rejected. The /hotel-et-services/ page is wrong and goes on the fix list |
+| Which phone number is current? | **Both**: +33 1 48 87 84 09 and 01 87 44 77 90 | Both confirmed; the site should show them consistently |
+| Which booking engine? | None to integrate yet | A mock called **clockPMS BE** stands in for the xedge booking engine (`apps/platform/src/booking/`) |
+
 ## Site audit, a first service-report preview
 
 | Check | Result |

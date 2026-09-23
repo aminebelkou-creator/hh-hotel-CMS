@@ -79,8 +79,57 @@ flowchart LR
 
 - **Control plane** (authoring): studio, agents and MCP clients all write through the same tenant-scoped API. Agents follow approval policies, and every change is audited and can be reverted.
 - **Data plane** (serving): immutable releases at the edge. A studio outage never takes a hotel's site offline.
-- **Tenant isolation** has two layers. Payload access control through the multi-tenant plugin is the primary boundary. Postgres RLS underneath catches regressions.
+- **Tenant isolation** has three layers. Payload access control through the multi-tenant plugin is the primary boundary. Background jobs, which run without a user, carry the tenant in their input and filter on it. Postgres RLS underneath catches regressions.
 - **Provenance**: every field records whether it was generated, edited by a human or locked. Regeneration and template upgrades do a three-way merge, so human edits are never silently overwritten.
+
+### System design at a glance
+
+The full illustrated design, with containers, schema-change flow and a repository map, is in [**docs/09-system-design.md**](docs/09-system-design.md). Solid lines exist today; dotted lines are designed but not built.
+
+**Context: who and what the platform talks to.** The platform masters content and releases only. Inventory, rates, bookings and guest data stay in the other xedge systems. Until the xedge booking engine is available, a mock called **clockPMS BE** stands in for it.
+
+```mermaid
+flowchart LR
+  H([Hotelier]) -->|edits, approves| P
+  G([Hotel guests]) -->|browse, book| E
+  A([Customer AI agents]) -->|MCP| P
+  subgraph X [xedge]
+    PMS[PMS]
+    BE[Booking engine<br/>mock: clockPMS BE]
+    CRM[CRM + chatbot]
+  end
+  P[Hotelier Website Platform] -->|release| E[Edge / CDN<br/>EdgeOne Makers]
+  PMS -. read-only projection .-> P
+  BE -->|rates, deep links| P
+  CRM -. widget boundary .-> E
+  W[Hotel's current website] -->|ingest| P
+```
+
+**Tenant isolation: three layers, each covered by tests in CI.**
+
+```mermaid
+flowchart TB
+  Q[Request from user A<br/>REST, GraphQL, admin, MCP] --> L1
+  J[Background job<br/>no user] --> L2
+  L1[Layer 1 · Payload access control<br/>multi-tenant plugin] --> DBQ
+  L2[Layer 2 · Tenant carried in job input<br/>every query filters on it] --> DBQ
+  DBQ[SQL query] --> L3[Layer 3 · Postgres RLS<br/>restricted role + tenant context]
+  L3 --> T[(Only tenant A rows)]
+  AUD[[overrideAccess audit<br/>fails CI on any unlisted bypass]] -. guards .-> L1
+```
+
+**From an existing website to a live site.** Nothing is generated from an unconfirmed fact.
+
+```mermaid
+flowchart LR
+  S[Hotel website<br/>+ Google profile] -->|ingest| F[Facts<br/>unconfirmed]
+  F -->|hotel confirms| FC[Confirmed facts]
+  FC -->|generation| C[Draft content]
+  C -->|studio edits| C2[Content]
+  C2 -->|publish, per-site lock| REL[Immutable release<br/>+ checksum]
+  REL --> LIVE[Live site]
+  REL -. rollback = pointer move .-> LIVE
+```
 
 ## 6. What is built today
 
@@ -242,6 +291,10 @@ Not in the first 90 days: self-serve signup, billing automation, the control-pla
 | [`docs/03-webstudio-evaluation.md`](docs/03-webstudio-evaluation.md) | Prior art: what to take, why not to adopt |
 | [`docs/04-edgeone-makers-evaluation.md`](docs/04-edgeone-makers-evaluation.md) | Hosting: verified facts, quotas, residency, EdgeOne API |
 | [`docs/05-week1-spike-results.md`](docs/05-week1-spike-results.md) | Measured results: isolation, deploys, Neon, RLS |
+| [`docs/06-release-pipeline-design.md`](docs/06-release-pipeline-design.md) | Release pipeline v0: per-site lock, immutable releases, verify, rollback |
+| [`docs/07-content-model-and-hotel-pack.md`](docs/07-content-model-and-hotel-pack.md) | Platform primitives, provenance, locales, hotel pack types |
+| [`docs/08-ingest-spike.md`](docs/08-ingest-spike.md) | Ingest on customer zero: facts, conflicts, site audit |
+| [`docs/09-system-design.md`](docs/09-system-design.md) | **System design, illustrated**: context, containers, isolation, ingest, releases, schema changes, repository map |
 | [`docs/contracts/`](docs/contracts/) | Cross-team contracts: erasure and export, chatbot widget, booking-engine embed |
 | [`docs/outreach/`](docs/outreach/) | Vendor correspondence, starting with the Tencent Makers email |
 | [`CLAUDE.md`](CLAUDE.md) | Rules and gotchas for AI coding agents working in this repository |
