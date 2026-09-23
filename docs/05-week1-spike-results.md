@@ -35,6 +35,20 @@ The CLI uploads the project folder and builds remotely. Build logs are not avail
 6. **The deploy uploads the whole app folder, including `.env`.** Production must use Makers environment variables and must not ship `.env`; confirm an ignore mechanism before any real secret exists.
 7. **Publish-to-live of 154 s misses the 60 s target** in the plan. Remote build dominates. Options: build in CI and upload the artifact, trim the server bundle, or accept that the 60 s target applies to content releases, not code deploys. Decide before Gate 2.
 
-## Next unblock
+## Running on Makers against Neon Frankfurt — done
 
-A Postgres database reachable from Makers Frankfurt (Neon `eu-central-1` or equivalent), set as a Makers project environment variable, not in `.env`. Then: re-deploy, confirm admin and API on Makers, run the REST isolation suite against the deployed URL.
+| Measure | Value |
+| --- | --- |
+| Database | Neon free tier, pooled endpoint, `eu-central-1` (Frankfurt) |
+| Configuration | `DATABASE_URL` and a fresh `PAYLOAD_SECRET` set as Makers project environment variables (production and preview); `.env` excluded from the upload |
+| Seed over the network | 257 s (6.3 s against local Postgres): per-row round trips dominate |
+| Deploy end to end | 153 s |
+| Live responses, cold | `/` 1.9 s, `/admin` 0.96 s, `/api/users/me` 0.71 s, login 0.58 s |
+| Tenant 1 via live API | sees exactly its 3 pages |
+| REST + GraphQL isolation against the live URL | **2/2 green** |
+| Local API isolation + overrideAccess audit against Neon | **15/15 green** (54 s over the network) |
+| **Total on production infrastructure** | **17/17** |
+
+The platform runs end to end on EdgeOne Makers with EU data: Frankfurt cloud functions, Frankfurt Postgres.
+
+Consequences to carry forward: the 257 s seed shows that bulk operations (imports, migrations, generation writes) must be batched or run close to the database, never row-by-row across regions. Latencies above are single cold requests from Paris, not a benchmark.
