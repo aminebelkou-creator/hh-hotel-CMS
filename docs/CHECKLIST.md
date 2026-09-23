@@ -10,9 +10,9 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 | --- | --- | --- | --- |
 | Owner actions before week 1 | 4 | 3 | Send the Tencent email, revoke the CAM key, share the repo |
 | Week 1 | 8 | 5 | Engineering done early; BIZ and XT items not started |
-| Week 2 | 1 | 12 | RLS done; five proof items, the Makers gate, the `teo` API, hotel pack types and BIZ items open |
+| Week 2 | 4 | 9 | RLS, migrations at 10/50 tenants, upgrade path, single-tenant restore done; admin/bulk coverage, colliding publishes, the Makers gate, the `teo` API, hotel pack types and BIZ items open |
 | Weeks 3–13 | 0 | 45 | As planned, including the four gates; Gate 1 on 12 October |
-| **Total** | **13** | **65** | |
+| **Total** | **16** | **62** | |
 
 ## Before week 1 — owner actions
 
@@ -44,9 +44,9 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 
 - [ ] **ENG** Remaining proof items:
   - [x] Postgres row-level security enabled on tenant tables; full suite still green — 26/26 on Neon, incl. Payload queries with access control off held by RLS alone ([results](05-week1-spike-results.md#row-level-security-as-defence-in-depth--evaluated-on-neon-frankfurt))
-  - [ ] Schema migration applied across 10, then 50 tenants; data verified per tenant
-  - [ ] Payload upgrade to the next release; isolation suite re-run
-  - [ ] Single-tenant backup and restore without touching other tenants
+  - [x] Schema migration applied across 10, then 50 tenants; data verified per tenant — local and Neon (332 ms), 0 unintended changes ([results](05-week1-spike-results.md#migrations-schema-change-at-10-and-50-tenants-single-tenant-restore--23-september-2026))
+  - [x] Payload upgrade path rehearsed 3.89.0 → 3.90.1 (3.90.1 is the latest stable); suites green; upgrades are one-way and can carry schema changes
+  - [x] Single-tenant backup and restore without touching other tenants — local 35 ms, Neon 1.7 s, 0 of 50 tenants differ
   - [ ] Admin UI tenant selector, bulk operations, imports and jobs covered by tests
   - [ ] Two colliding publishes on Makers' single build slot: observed behaviour recorded
 - [ ] **ENG** Makers gate: quotas and pricing in writing, fifty custom domains, Frankfurt pinning confirmed

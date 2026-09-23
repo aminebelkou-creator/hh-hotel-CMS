@@ -10,7 +10,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ---
 
-## Current state — 23 September 2026, 11:25 local time (code at `0d88e5b`; documentation updated since)
+## Current state — 23 September 2026, 14:10 local time
 
 ### Where we are
 
@@ -18,44 +18,46 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | --- | --- |
 | Plan position | Day −5. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
 | Week 1 engineering | **Done early**: isolation proof, 50-tenant seed, first Makers deploys, cross-team contract drafts |
-| Week 2 proof items | 1 of 6 done (row-level security) |
-| Checklist | 13 done, 65 open (most open items are weeks 2–13, as planned) |
-| Isolation suite | **26/26 green** on production infrastructure (Makers Frankfurt + Neon Frankfurt), with RLS applied |
+| Week 2 proof items | **4 of 6 done**: row-level security, schema migration at 10 and 50 tenants, Payload upgrade path, single-tenant restore. Open: admin/bulk/imports/jobs coverage, colliding publishes |
+| Isolation suite | **26/26 green on Neon** after the new migration, REST/GraphQL against the live URL; 24/24 locally at 10 and 50 tenants |
 | Deploy time | 153 s for a code deploy; the plan's target is 60 s (open decision, Gate 2) |
 | Gate 1 (week 3) | Waiting on Tencent. The email is drafted but not sent |
-| Uncommitted work | None. `main` equals `origin/main` |
+| Tooling | Remote Desktop Commander drops its connection every few minutes. Recommended: move to Claude Code on the PC with Remote Control (see Next actions 1) |
 
 ### What exists
 
 | Thing | Where | State |
 | --- | --- | --- |
-| Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1, Postgres. Seven collections (Users, Tenants, Sites, Pages, Media, Domains, Releases), multi-tenant plugin, MCP plugin (no delete tools) |
-| Test suites | `apps/platform/tests/int` | isolation (13), overrideAccess audit (2), REST/GraphQL (2), RLS raw SQL (7), RLS under Payload (2) |
-| RLS | `src/db/rls.sql`, `apply-rls.ts`, `inspect-rls.ts` | Context-optional policies plus the restricted role `hh_app_rls`. **Applied on Neon; not applied on local Docker.** Not yet enforced for real requests: the app still connects as the owner role |
-| Live proof of concept | https://hh-platform-poc.edgeone.cool | Makers project `hh-platform-poc` (`makers-gznjppyen95y`), Frankfurt cloud functions. Test data only; seeded passwords rotated |
-| Database | Neon free tier, `eu-central-1`, pooled endpoint, database `neondb` | 50 tenants, 51 users, 50 sites, 150 pages, 50 domains |
-| Local database | Docker container `hh-postgres`, port 5432 | Same seed; the default seed password still works here |
-| Documents | `docs/` | Spec (*Hotelier Website Platform — Solution Definition*, exported from the Claude Docs artifact), plan, checklist, evaluations, spike results, contracts v0.1, Tencent email draft |
+| Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1 (latest stable), Postgres. Seven collections, multi-tenant plugin, MCP plugin (no delete tools). Sites now have `brandName` and `timezone` |
+| Migrations | `apps/platform/src/migrations` | `20260923_120049_baseline` (whole schema), `20260923_132537_site_brand_timezone` (columns + set-based backfill). Applied on local and Neon; `migrate:status` clean |
+| Test suites | `apps/platform/tests/int` | isolation (13), overrideAccess audit (2), REST/GraphQL (2), RLS raw SQL (7), RLS under Payload (2). Scale with `SEED_TENANTS` |
+| Database tools | `apps/platform/src/db` | `rls.sql` + `apply-rls.ts`, `inspect-rls.ts`, `schema-fingerprint.ts`, `mark-baseline.ts`, `tenant-checksums.ts`, `tenant-backup.ts` (export/restore one tenant), `damage-tenant.ts` (rehearsal only), `verify-site-brand.ts` |
+| Rehearsal scripts | `scripts/` | `migration-rehearsal.ps1`, `restore-rehearsal.ps1`, `upgrade-rehearsal.ps1`, `run-suites.ps1` (local-10, local-50, Neon) |
+| RLS | `src/db/rls.sql` | Context-optional policies plus restricted role `hh_app_rls`, applied on Neon and local. Not yet enforced for real requests: the app connects as the owner role |
+| Live proof of concept | https://hh-platform-poc.edgeone.cool | Makers project `hh-platform-poc` (`makers-gznjppyen95y`), Frankfurt. **Still runs the code from before today's migration** (works: the new columns are nullable). Redeploy when convenient |
+| Database | Neon free tier, `eu-central-1`, pooled endpoint, database `neondb` | 50 tenants, 51 users, 50 sites, 150 pages, 50 domains; migrations applied |
+| Local databases | Docker `hh-postgres`, port 5432 | `hh_platform` (50 tenants) and `hh_check` (10 tenants, built purely from migrations) |
+| Documents | `docs/` | Spec (*Hotelier Website Platform — Solution Definition*), plan, checklist, evaluations, spike results (findings 1–14), contracts v0.1, Tencent email draft |
 
 ### Watch out
 
-- **`apps/platform/.env` currently points at Neon**, not local Docker. Any `pnpm dev`, `pnpm seed` or test run hits the shared database. Switch `DATABASE_URL` back to `postgres://hh:hh_local_dev@localhost:5432/hh_platform` for local work.
-- **Schema changes no longer reach Neon automatically.** Payload's dev push is now enabled only for localhost, because it deleted the RLS policies. Neon needs a baseline migration before any collection changes (next action 1).
-- **Against Neon, set `SEED_PASSWORD`** from the user environment variable `HH_NEON_SEED_PASSWORD`. The tests refuse to run without it, because the wrong password locks the accounts.
-- A dev server may still be running on port 3000 (PID 73616). Stop it by that exact PID only, never by process name.
+- **Schema changes go through migrations only**: change the collection, `pnpm payload migrate:create <name>`, rehearse with `scripts/migration-rehearsal.ps1` locally, then `payload migrate` on Neon. Push is on only for localhost, and `PAYLOAD_DB_PUSH=false` turns it off there too.
+- **Never downgrade Payload.** 3.90 changed the password-hash format; older versions lock users out. Every upgrade runs `scripts/upgrade-rehearsal.ps1` and ships the migration it reveals.
+- **One seed password everywhere**: local and Neon users both use the value in user environment variable `HH_NEON_SEED_PASSWORD`; set `SEED_PASSWORD` from it before tests. Wrong-password runs lock accounts; `rotate-passwords.ts` unlocks them.
+- `apps/platform/.env` now points at local Docker. Neon is reached by setting `DATABASE_URL` from `NEON_DATABASE_URL` for one command.
+- A dev server may still be running on port 3000 (PID 73616, started against Neon before the migration). Stop it by that exact PID only, never by process name.
 
 ### Next actions, in order
 
 | # | Owner | Action | Why now | Done when |
 | --- | --- | --- | --- | --- |
-| 1 | ENG | Generate a Payload baseline migration from the current schema; run migrations on Neon; re-apply RLS after them (`apply-rls.ts` as a post-migration step) | Push is off for Neon, so this is the only way to change its schema | `payload migrate:status` clean on Neon; 26/26 still green |
-| 2 | ENG | Schema migration across 10, then 50 tenants: add a field with a data backfill, verify per tenant, time it on Neon | Week 2 proof item; also tests batching over the network (seed took 257 s row by row) | Per-tenant verification script green; time recorded in docs/05 |
-| 3 | ENG | Payload upgrade to the latest 3.x; re-run the suite | Week 2 proof item; Payload security releases must land within days | 26/26 on the new version; notes in docs/05 |
-| 4 | ENG | Single-tenant backup and restore: export one tenant, damage it, restore it, prove the other 49 are untouched | Week 2 proof item | Script plus a test; checksums of other tenants unchanged |
-| 5 | ENG | Admin tenant selector, bulk operations, imports, jobs: extend the isolation suite | Week 2 proof item | New tests green |
-| 6 | ENG | Two colliding Makers publishes (one build slot on the free plan) | Gate 1 evidence | Behaviour recorded in docs/04 |
-| 7 | ENG | EdgeOne `teo` API from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` on a test domain | Gate 1 evidence for custom domains | Script in `scripts/`, result in docs/04 |
-| 8 | ENG | RLS enforcing mode: restricted login role for the app, per-request `SET LOCAL` hook, then deny-by-default | Week 4 decision; proposal already in docs/05 | Owner-role connections limited to migrations and allowlisted system jobs |
+| 1 | OWN + ENG | Switch tooling: Claude Code on the PC with Remote Control (`claude --remote-control "hh-hotel-CMS"`), plus a permissions allow-list in `.claude/settings.json` | Desktop Commander's relay drops every few minutes | A session runs the suites from the phone without drops |
+| 2 | ENG | GitHub Actions: isolation suite on a Postgres service at every push; migrations and Makers deploy on `main` with secrets in GitHub | Nothing should depend on one PC being awake | Green check on a PR; deploy from CI |
+| 3 | ENG | Admin tenant selector, bulk operations, imports, jobs: extend the isolation suite | Last week-2 proof item on isolation | New tests green |
+| 4 | ENG | Two colliding Makers publishes (one build slot on the free plan) | Gate 1 evidence | Behaviour recorded in docs/04 |
+| 5 | ENG | EdgeOne `teo` API from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` on a test domain | Gate 1 evidence for custom domains; needs the fresh CAM key | Script in `scripts/`, result in docs/04 |
+| 6 | ENG | Redeploy the proof of concept with a `payload migrate` step before the build | Live code is one migration behind | Live site on current code; release notes in docs/05 |
+| 7 | ENG | RLS enforcing mode: restricted login role, per-request `SET LOCAL` hook, deny-by-default | Week 4 decision; proposal in docs/05 | Owner-role connections limited to migrations and allowlisted jobs |
 
 ### Waiting on the owner
 
@@ -83,8 +85,8 @@ Read this first when you pick the project up, whether you are a person or an AI 
 cd C:\Users\belko\Documents\repos\hh-hotel-CMS ; git pull
 docker start hh-postgres
 cd apps\platform ; pnpm install
-$env:SEED_PASSWORD = [Environment]::GetEnvironmentVariable('HH_NEON_SEED_PASSWORD','User')   # only when .env points at Neon
-pnpm exec vitest run --config ./vitest.config.mts tests/int    # expect 26/26 (set PLATFORM_URL for the REST tests)
+pnpm payload migrate:status                                   # every migration Ran = Yes
+..\..\scripts\run-suites.ps1                                  # local-10, local-50, Neon; summary in %TEMP%\suites
 ```
 
 ---
@@ -96,7 +98,8 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Plan says | Reality | Consequence |
 | --- | --- | --- |
 | Week 1 starts 28 September | Engineering started 22 September | Week-1 engineering items are done before the plan starts; buffer for Gate 1 |
-| Isolation proof in weeks 1–2, local | Proven on production infrastructure (Makers + Neon Frankfurt) in week 0 | Gate 1's isolation criterion is mostly evidenced; five proof items remain |
+| Isolation proof in weeks 1–2, local | Proven on production infrastructure (Makers + Neon Frankfurt) in week 0 | Gate 1's isolation criterion is mostly evidenced; two proof items remain (admin/bulk/imports/jobs, colliding publishes) |
+| Payload upgrade to "the next release" | 3.90.1 is already the latest stable; the path 3.89 → 3.90.1 was rehearsed instead | Upgrades are one-way (password-hash format) and can carry schema changes; the release runbook must say so |
 | RLS evaluated in week 4 | Evaluated in week 0; works under Payload with access control off | Week 4 now only decides on enforcing mode; proposal in docs/05 |
 | Publish to live under 60 s (Gate 2) | Code deploy measured at 153 s, of which the remote build is ~110 s | Decide before Gate 2: the target applies to content releases, or the build moves to CI with artifact upload |
 | Makers gate opens on day 1 with Tencent | Email drafted, not sent | Every day unsent is a day off the three-week gate |
@@ -104,6 +107,24 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-23 · session 5 · `f7e7712` → this commit
+
+**Changed**
+- Migrations adopted: `baseline` generated, proved identical to the pushed schemas by fingerprint, marked applied on local and Neon (`mark-baseline.ts`).
+- First real migration `site_brand_timezone`: two columns plus a set-based backfill, rehearsed at 10 and 50 tenants locally and on Neon (332 ms), with per-tenant checksums proving no other data changed.
+- Single-tenant export and transactional restore (`tenant-backup.ts`), rehearsed with a deliberately damaged tenant locally (35 ms) and on Neon (1.7 s): 0 of 50 tenants differ afterwards.
+- Payload upgrade rehearsal 3.89.0 → 3.90.1 (`upgrade-rehearsal.ps1`).
+- Push can be switched off locally (`PAYLOAD_DB_PUSH=false`); `.env` points at local again; tests scale with `SEED_TENANTS`; one seed password for all databases.
+
+**Learned**
+- Neon's newer Postgres catalogues NOT NULL as constraints; schema comparisons must ignore `contype = 'n'`.
+- Payload 3.90 added `users.reset_password_requested_at` and changed the password-hash format. Upgrades need a migration and cannot be rolled back by downgrading packages.
+- A test run at the wrong version or password locks users (five attempts); the lock lasts ten minutes or until `rotate-passwords.ts`.
+- Desktop Commander's remote relay dropped roughly every five minutes; long steps survived only because every script logs to a file.
+
+**Left undone**
+- Admin/bulk/imports/jobs isolation coverage; colliding publishes; `teo` API; redeploy of the live proof of concept onto the migrated schema; CI.
 
 ### 2026-09-23 · session 4 · `0d88e5b` → docs-only commit
 

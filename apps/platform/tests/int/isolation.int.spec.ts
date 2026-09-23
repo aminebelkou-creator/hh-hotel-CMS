@@ -7,7 +7,7 @@
 import { getPayload, type Payload } from 'payload'
 import config from '@/payload.config'
 import { describe, it, beforeAll, expect } from 'vitest'
-import { SEED_PASSWORD, SUPER_ADMIN_EMAIL, tenantEmail, tenantSlug } from '@/seed/constants'
+import { SEED_PASSWORD, SUPER_ADMIN_EMAIL, TENANT_COUNT, tenantEmail, tenantSlug } from '@/seed/constants'
 
 let payload: Payload
 
@@ -159,11 +159,13 @@ describe('tenant isolation (Local API, overrideAccess: false)', () => {
   it('super-admin sees all seeded tenants', async () => {
     const admin = await login(SUPER_ADMIN_EMAIL)
     const res = await payload.find({ collection: 'tenants', user: admin, overrideAccess: false, limit: 1000 })
-    expect(res.totalDocs).toBeGreaterThanOrEqual(50)
+    expect(res.totalDocs).toBeGreaterThanOrEqual(TENANT_COUNT)
   })
 
   it('matrix: 10 tenant pairs, no cross reads in either direction', async () => {
     const pairs: [number, number][] = [[3, 4], [5, 17], [9, 41], [12, 13], [20, 50], [22, 8], [30, 31], [33, 2], [44, 45], [49, 1]]
+      // Scale-independent: with SEED_TENANTS below 50, pairs outside the seeded range drop out.
+      .filter(([a, b]) => a <= TENANT_COUNT && b <= TENANT_COUNT) as [number, number][]
     for (const [x, y] of pairs) {
       const ux = await login(tenantEmail(x))
       const uy = await login(tenantEmail(y))

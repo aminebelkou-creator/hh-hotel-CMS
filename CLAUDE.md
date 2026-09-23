@@ -46,4 +46,7 @@ Conventional commits. Small PRs. Every PR that touches tenancy, access control o
 9. **Bulk writes across regions are slow** (seed: 6 s local, 257 s to Neon Frankfurt). Batch them or run them close to the database.
 10. **Payload's dev schema push drops what it doesn't manage**, including RLS policies. Push is enabled only for a localhost `DATABASE_URL`; shared databases change through migrations, and RLS is (re)applied after them (`src/db/apply-rls.ts`).
 11. **RLS does nothing under the owner role.** Neon's `neondb_owner` has BYPASSRLS; Docker `postgres` is superuser. Policies bind only the restricted role `hh_app_rls` (via `SET LOCAL ROLE`).
-12. **Set `SEED_PASSWORD` before running tests against Neon** (value in user env var `HH_NEON_SEED_PASSWORD`). Wrong-password logins trip Payload's lockout; `rotate-passwords.ts` clears it.
+12. **Set `SEED_PASSWORD` before running tests against any database** (value in user env var `HH_NEON_SEED_PASSWORD`; local and Neon share it). Wrong-password logins trip Payload's lockout; `rotate-passwords.ts` clears it.
+13. **Schema changes are migrations**: `pnpm payload migrate:create <name>`, rehearse with `scripts/migration-rehearsal.ps1`, then `payload migrate` on Neon. Backfills are set-based SQL, never row-by-row over the network.
+14. **Never downgrade Payload.** 3.90 changed the password-hash format and older versions lock users out. Every upgrade runs `scripts/upgrade-rehearsal.ps1` and ships the migration its drift check reveals.
+15. **pnpm is a PowerShell shim on Windows**: pass file lists to it by splatting (`@files`), or they arrive as one argument.

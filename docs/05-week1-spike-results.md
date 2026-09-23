@@ -81,3 +81,62 @@ The two Payload tests are the real result: with application access control switc
 ### Decision proposed for week 4 (RLS evaluated per the proof)
 
 Adopt RLS in enforcing mode for request traffic, in three steps: a dedicated application login role without BYPASSRLS; a Payload hook that opens each request's transaction with `SET LOCAL ROLE` and the user's tenant ids (super-admins and system jobs use the owner role explicitly, and each such path joins the overrideAccess allowlist); then flip the policy from context-optional to deny-by-default. Payload access control remains the primary boundary; RLS catches whatever a future bug in it lets through.
+
+## Migrations, schema change at 10 and 50 tenants, single-tenant restore — 23 September 2026
+
+### Baseline: from dev push to migrations
+
+The local and Neon databases had been created by Payload's dev push. From now on every shared database changes only through migrations, so a baseline was needed without re-creating tables that already hold data.
+
+| Step | Result |
+| --- | --- |
+| `payload migrate:create baseline` | `20260923_120049_baseline`: the whole schema, 32 KB of SQL |
+| Fresh database migrated from the baseline, compared with the pushed ones | Identical schema fingerprint `8d47087d7592c97b` (442 columns, constraints, indexes, enums) on local push, fresh migrate and Neon |
+| Adoption on local and Neon | `src/db/mark-baseline.ts` records the baseline as applied and removes Payload's `dev` marker. `migrate:status` shows `Ran: Yes, batch 1` on both |
+
+Finding 11: Neon runs a newer Postgres that records NOT NULL as catalogue constraints (`contype = 'n'`). A naive schema comparison reports 104 false differences. The fingerprint tool ignores them, since nullability is already compared per column.
+
+### Schema change across tenants
+
+Migration `20260923_132537_site_brand_timezone` adds `sites.brand_name` and `sites.timezone` (default `Europe/Paris`), and backfills `brand_name` from the tenant name in one set-based `UPDATE ... FROM tenants`. It runs through `scripts/migration-rehearsal.ps1`: snapshot per-tenant checksums, `payload migrate`, verify every tenant, then run the migration's own check.
+
+| Database | Tenants | Migration SQL | `payload migrate` end to end | Other data changed | Backfill check |
+| --- | --- | --- | --- | --- | --- |
+| Local Docker | 10 | 5 ms | 7.6 s | 0 tenants | 10/10 |
+| Local Docker | 50 | 6 ms | 7.6 s | 0 tenants | 50/50 |
+| **Neon Frankfurt** | **50** | **332 ms** | 10.4 s | **0 tenants** | **50/50** |
+
+End-to-end time is mostly Payload start-up. Because the SQL is set-based, the cost over the network is one round trip, not one per tenant. That is the lesson of the 257 s row-by-row seed, applied.
+
+### Single-tenant backup and restore
+
+`src/db/tenant-backup.ts` exports one tenant and restores it in a single transaction. It covers the six tenant tables plus every table hanging off them through Payload's parent keys, found from the Postgres catalogue: 18 tables for one tenant, including locales, blocks, versions and hasMany selects. The restore deletes the tenant's rows children-first and re-inserts them parents-first with their original ids. Any error rolls the whole restore back.
+
+The rehearsal is `scripts/restore-rehearsal.ps1`: snapshot all tenants, export `tenant-07`, damage it (3 page slugs defaced, 3 titles overwritten, its domain deleted), verify, restore, verify again.
+
+| Step | Local (50 tenants) | Neon Frankfurt (50 tenants) |
+| --- | --- | --- |
+| Export | 28 rows, 18 tables | 28 rows, 18 tables |
+| After damage | 1 tenant changed (the damaged one), 0 unexpected | 1 changed, 0 unexpected |
+| Restore transaction | 35 ms | 1,690 ms |
+| After restore | **0 tenants differ from the snapshot** | **0 tenants differ from the snapshot** |
+
+Out of scope by design: the tenant row itself, users and memberships (platform-level records). Also out of scope: Payload's document-lock rows, which a restore clears through cascade. A restore also does not replace a database backup. Neon's point-in-time recovery remains the disaster-recovery layer; this tool is for "restore one hotel without touching the other forty-nine".
+
+### Payload upgrade rehearsal
+
+3.90.1 is the latest stable Payload release. A 4.0 line exists only as canaries. So the rehearsal proves the path from the previous release, 3.89.0, to 3.90.1. The script is `scripts/upgrade-rehearsal.ps1`. For each version it pins every Payload package, installs, typechecks, checks for schema drift with `migrate:create --skip-empty`, and runs the isolation and RLS suites. The old version writes the users' credentials, so the new one must accept them.
+
+| Check | 3.89.0 | 3.90.1 |
+| --- | --- | --- |
+| Install, typecheck | pass | pass |
+| Schema drift against our migrations | **yes**: 3.90 added `users.reset_password_requested_at` | none |
+| Credentials written by 3.89.0 | accepted | **accepted** |
+| Credentials written by 3.90.1 | **rejected, account locked after 5 attempts** | accepted |
+| Isolation + RLS suites (10 tenants, credentials from 3.89.0) | pass, apart from 50-tenant assumptions (fixed) | pass |
+
+Findings:
+
+12. **Payload minor releases can carry schema changes.** 3.90 added a column to `users`. With push off on shared databases, every upgrade must run `migrate:create` and ship a migration, and the rehearsal's drift check catches it.
+13. **Payload upgrades are one-way.** 3.90 stores password hashes in a new, prefixed PBKDF2 format (81 characters against 1,024 hex characters before). 3.89 cannot verify them, so a code rollback locks out everyone who logged in or changed a password after the upgrade. The rollback plan for a bad upgrade is therefore a forward fix, or a database restore together with the previous release. Downgrading packages is not an option. This goes into the release runbook.
+14. Two tests assumed exactly 50 tenants. They now scale with `SEED_TENANTS`, so the suite runs at 10 and at 50.

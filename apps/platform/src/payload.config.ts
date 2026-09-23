@@ -38,7 +38,11 @@ export default buildConfig({
     // Dev-mode schema push only against a local database. Push drops anything it does not
     // manage (it removed the RLS policies in the week-1 spike) and must never touch a shared
     // or production database; those change through migrations only.
-    push: /@(localhost|127\.0\.0\.1)[:/]/.test(process.env.DATABASE_URL || ''),
+    // PAYLOAD_DB_PUSH=false turns it off locally too (migration rehearsals on a local database).
+    push:
+      process.env.PAYLOAD_DB_PUSH !== 'false' &&
+      /@(localhost|127\.0\.0\.1)[:/]/.test(process.env.DATABASE_URL || ''),
+    migrationDir: path.resolve(dirname, 'migrations'),
   }),
   sharp,
   plugins: [

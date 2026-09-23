@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 import { getPayload, type Payload } from 'payload'
 import config from '@/payload.config'
 import { describe, it, beforeAll, expect } from 'vitest'
-import { tenantSlug } from '@/seed/constants'
+import { TENANT_COUNT, tenantSlug } from '@/seed/constants'
 
 type Result = { rows: Record<string, unknown>[]; rowCount: number | null }
 type Client = { query: (sql: string, params?: unknown[]) => Promise<Result>; release: () => void }
@@ -83,7 +83,7 @@ describe('row-level security (database-enforced tenant boundary)', () => {
 
   it('restricted role without a declared context is unrestricted (context-optional mode)', async () => {
     const rows = await inTx({ role: true }, (c) => c.query('select count(*)::int as n from pages'))
-    expect(Number(rows.rows[0].n)).toBeGreaterThanOrEqual(150)
+    expect(Number(rows.rows[0].n)).toBeGreaterThanOrEqual(TENANT_COUNT * 3)
   })
 
   it('FINDING: the connection role bypasses RLS, so the app must SET ROLE for policies to apply', async () => {

@@ -10,6 +10,17 @@ export const Sites: CollectionConfig = {
     { name: 'name', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, index: true },
     {
+      name: 'brandName',
+      type: 'text',
+      admin: { description: 'Public name shown on the site. Backfilled from the tenant name by migration.' },
+    },
+    {
+      name: 'timezone',
+      type: 'text',
+      defaultValue: 'Europe/Paris',
+      admin: { description: 'IANA time zone for offers, events and opening hours.' },
+    },
+    {
       name: 'enabledLocales',
       type: 'select',
       hasMany: true,

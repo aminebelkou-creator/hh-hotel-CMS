@@ -202,6 +202,14 @@ export interface Site {
   tenant?: (number | null) | Tenant;
   name: string;
   slug: string;
+  /**
+   * Public name shown on the site. Backfilled from the tenant name by migration.
+   */
+  brandName?: string | null;
+  /**
+   * IANA time zone for offers, events and opening hours.
+   */
+  timezone?: string | null;
   enabledLocales?: ('en' | 'fr' | 'de' | 'es' | 'it')[] | null;
   defaultLocale?: ('en' | 'fr' | 'de' | 'es' | 'it') | null;
   /**
@@ -592,6 +600,8 @@ export interface SitesSelect<T extends boolean = true> {
   tenant?: T;
   name?: T;
   slug?: T;
+  brandName?: T;
+  timezone?: T;
   enabledLocales?: T;
   defaultLocale?: T;
   theme?: T;

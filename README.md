@@ -7,7 +7,7 @@
 | | |
 | --- | --- |
 | **Status** | Pre-launch. Week-1 engineering finished early; the 90-day plan runs 28 September to 25 December 2026 |
-| **Proof** | Tenant isolation 26/26 green on production infrastructure (EdgeOne Makers Frankfurt + Neon Postgres Frankfurt), including Postgres row-level security |
+| **Proof** | Tenant isolation 26/26 green on production infrastructure (EdgeOne Makers Frankfurt + Neon Postgres Frankfurt), including Postgres row-level security. Migrations at 50 tenants, single-tenant restore and the Payload upgrade path rehearsed |
 | **Live proof of concept** | https://hh-platform-poc.edgeone.cool (test data only) |
 | **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen |
 | **Owner** | Hotel Hersedor Paris / xedge |
@@ -104,6 +104,9 @@ The proof-of-concept platform in `apps/platform` exists to prove the risky parts
 | Postgres RLS | Done as an evaluation: policies, restricted role, 9 tests. Not yet enforced for live requests |
 | MCP server | Plugin enabled: pages (find, create, update), sites (find, update), media (find). No delete tools |
 | Seed | 50 tenants, 51 users, 50 sites, 150 pages, 50 domains; idempotent |
+| Migrations | Done. Baseline plus a first real migration, rehearsed at 10 and 50 tenants with per-tenant checksums (`scripts/migration-rehearsal.ps1`) |
+| Single-tenant backup and restore | Done. Export plus a transactional restore of one hotel; the other 49 are proven untouched (`scripts/restore-rehearsal.ps1`) |
+| Payload upgrades | Rehearsal script with a schema-drift check (`scripts/upgrade-rehearsal.ps1`). Upgrades are one-way |
 | Deploy | EdgeOne Makers, Frankfurt cloud functions, 153 s end to end |
 | Not started | Release pipeline, studio, generation, hotel pack, templates, media pipeline, domains automation |
 
