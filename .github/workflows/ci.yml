@@ -1,0 +1,79 @@
+# Isolation proof on every push and pull request, on a throwaway Postgres built ONLY from the
+# committed migrations (so a missing migration fails here, not in production).
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: hh
+          POSTGRES_PASSWORD: hh_ci
+          POSTGRES_DB: hh_platform
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U hh" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgres://hh:hh_ci@localhost:5432/hh_platform
+      PAYLOAD_SECRET: ci-only-not-a-secret-0f4c2a9e7b1d
+      PAYLOAD_DB_PUSH: 'false'
+      SEED_TENANTS: '10'
+      SEED_PASSWORD: ci-only-seed-password-3b8e61d0
+      NODE_OPTIONS: --no-deprecation
+    defaults:
+      run:
+        working-directory: apps/platform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+      - name: Migrate an empty database from the committed migrations
+        run: pnpm payload migrate
+      - name: Schema drift (collections changed without a migration?)
+        run: |
+          pnpm payload migrate:create ci_drift_check --skip-empty
+          if ls src/migrations/*ci_drift_check* >/dev/null 2>&1; then
+            echo "::error::Collections differ from the committed migrations. Run 'pnpm payload migrate:create <name>' and commit it."
+            cat src/migrations/*ci_drift_check*.ts
+            exit 1
+          fi
+      - name: Seed 10 tenants
+        run: pnpm seed
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+      - name: Isolation, bulk/imports/jobs, overrideAccess audit, RLS
+        run: >-
+          pnpm exec vitest run --config ./vitest.config.mts
+          tests/int/isolation.int.spec.ts tests/int/isolation-extended.int.spec.ts
+          tests/int/override-access.int.spec.ts tests/int/rls.int.spec.ts tests/int/rls-payload.int.spec.ts
+      - name: Production build
+        run: pnpm run build
+      - name: REST, GraphQL and admin tenant-cookie isolation against the built app
+        run: |
+          pnpm exec next start -p 3000 > /tmp/next.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/api/users/me >/dev/null && break; sleep 2; done
+          PLATFORM_URL=http://localhost:3000 pnpm exec vitest run --config ./vitest.config.mts tests/int/rest-isolation.int.spec.ts
+      - name: Server log on failure
+        if: failure()
+        run: tail -n 100 /tmp/next.log || true
