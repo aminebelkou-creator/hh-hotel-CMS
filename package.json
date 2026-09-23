@@ -1,0 +1,12 @@
+{
+  "name": "hh-hotel-cms",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Website-as-a-Service platform for hotels (xedge)",
+  "packageManager": "pnpm@10.0.0",
+  "engines": { "node": ">=22" },
+  "workspaces": ["apps/*", "packages/*", "packs/*", "templates/*"],
+  "scripts": {
+    "setup": "node -e \"console.log('Run scripts/setup.ps1 (Windows) or scripts/setup.sh (macOS/Linux)')\""
+  }
+}
