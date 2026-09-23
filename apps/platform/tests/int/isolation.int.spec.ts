@@ -15,7 +15,7 @@ type AnyUser = Record<string, unknown> & { id: number | string; collection?: str
 
 const login = async (email: string): Promise<AnyUser> => {
   const res = await payload.login({ collection: 'users', data: { email, password: SEED_PASSWORD } })
-  return { ...(res.user as AnyUser), collection: 'users' }
+  return { ...(res.user as unknown as AnyUser), collection: 'users' }
 }
 
 const idOf = (v: unknown): number | string | undefined =>
