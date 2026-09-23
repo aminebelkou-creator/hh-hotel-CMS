@@ -21,6 +21,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Week 2 | **All six proof items done**, plus the **fact confirmation flow** (built 23 Sep) |
 | First product slice | **Live on the proof of concept**: fact base, content release pipeline v0 with rollback, public renderer, booking step on the **clockPMS BE** mock. Customer zero at https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor |
 | Gate 2 (content) | **Met on Neon**: publish 3.1 s including HTTP verification through the edge, rollback 1.2 s (targets 60 s / 10 s). Locally 14–27 ms / 16–18 ms |
+| Suites on production | **82/82 green on Neon against the live app** (18:28): isolation, RLS, facts, releases, booking, and the HTTP suites through the edge. Release timings in-suite on Neon: publish ~1.0 s, rollback 1.2 s |
 | CI / deploy | Every push: migrations on a fresh Postgres, drift check, seed, typecheck, 11 suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers in 3 min 23 s (`dp0ytz87whim`) |
 | Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains are disabled on the Makers project (finding 22) |
 

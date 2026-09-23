@@ -146,5 +146,5 @@ Last updated: 23 September 2026. For the current state, plan deltas and ordered 
 | Ingest to live on own domain | Under one working day for customer 5 | — |
 | Full-site generation | Under 5 minutes | — |
 | Publish to live / rollback | Under 60 s / under 10 s | Content release: 14–27 ms / 16–18 ms (local); code deploy 171 s from CI |
-| Isolation suite | Green on every commit and every Payload upgrade | 82/82 locally incl. facts, releases, booking; green in CI on every push |
+| Isolation suite | Green on every commit and every Payload upgrade | 82/82 locally and on Neon against the live app, incl. facts, releases, booking; green in CI on every push |
 | Service checks resolved without a human | Over half by week 12 | — |
