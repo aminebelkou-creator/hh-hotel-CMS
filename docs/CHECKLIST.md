@@ -2,7 +2,7 @@
 
 Living checklist for the 90-day plan (28 September to 25 December 2026). Tick items in the commit that completes them, with a link to the evidence. Owner codes: **ENG** engineering, **BIZ** sales and partnerships, **OWN** project owner, **XT** another xedge team.
 
-Last updated: 23 September 2026. For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
+Last updated: 23 September 2026, end of session 7 (fact base, release pipeline v0, booking mock). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
 
 ## At a glance
 

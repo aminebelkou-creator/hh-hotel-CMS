@@ -9,7 +9,7 @@
 | **Status** | Pre-launch. Weeks 1–2 engineering done early and the first product slice (fact base, releases, renderer, booking mock) is live on the proof of concept; the 90-day plan runs 28 September to 25 December 2026 |
 | **Proof** | 82 tests green on every push (isolation, RLS, facts, releases, booking, HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
 | **Live proof of concept** | https://hh-platform-poc.edgeone.cool — customer zero at [/s/hotel-herse-dor](https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor) (booking via the clockPMS BE mock; no real rates) |
-| **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen |
+| **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen. Waiting on Tencent; custom domains are disabled on the Makers project |
 | **Owner** | Hotel Hersedor Paris / xedge |
 
 ---
@@ -153,7 +153,7 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 | REST and GraphQL isolation | Done. Tested against the live URL |
 | Postgres RLS | Done as an evaluation: policies, restricted role, 9 tests. Not yet enforced for live requests |
 | MCP server | Plugin enabled: pages (find, create, update), sites (find, update), media (find), facts (find, create: agents propose, people confirm). No delete tools |
-| Seed | 50 tenants, 51 users, 50 sites, 150 pages, 50 domains; idempotent |
+| Seed | 50 synthetic tenants, 51 users, 50 sites, 150 pages, 50 domains; idempotent; leaves real tenants (customer zero) alone |
 | Migrations | Done. Baseline plus a first real migration, rehearsed at 10 and 50 tenants with per-tenant checksums (`scripts/migration-rehearsal.ps1`) |
 | Single-tenant backup and restore | Done. Export plus a transactional restore of one hotel; the other 49 are proven untouched (`scripts/restore-rehearsal.ps1`) |
 | Payload upgrades | Rehearsal script with a schema-drift check (`scripts/upgrade-rehearsal.ps1`). Upgrades are one-way |
@@ -203,7 +203,11 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 │   ├── 02-90-day-plan.md           the plan (baseline)
 │   ├── CHECKLIST.md                progress against the plan
 │   ├── 03-, 04-                    Webstudio and EdgeOne Makers evaluations
-│   ├── 05-week1-spike-results.md   measured results
+│   ├── 05-week1-spike-results.md   measured results, findings 1–25
+│   ├── 06-release-pipeline-design.md   release pipeline (v0 implemented)
+│   ├── 07-content-model-and-hotel-pack.md   content model and hotel pack, on paper
+│   ├── 08-ingest-spike.md          ingest and fact base, customer zero
+│   ├── 09-system-design.md         system design, illustrated
 │   ├── contracts/                  cross-team contracts v0.1
 │   └── outreach/                   vendor correspondence drafts
 ├── packages/                  shared core packages — not started
@@ -224,11 +228,25 @@ pnpm install
 cd apps/platform
 cp .env.example .env     # DATABASE_URL=postgres://hh:hh_local_dev@localhost:5432/hh_platform
                          # PAYLOAD_SECRET=<a long random string>
-pnpm seed                # 50 tenants, 51 users, 50 sites, 150 pages, 50 domains (~6 s locally)
+pnpm payload migrate     # build the schema from the committed migrations
+pnpm exec tsx src/db/apply-rls.ts   # row-level security policies
+pnpm seed                # 50 synthetic tenants (~6 s locally); real tenants are never touched
+pnpm exec tsx src/ingest/import-facts.ts src/ingest/confirmations/hotel-herse-dor.json --publish
+                         # customer zero: tenant, site, facts + owner decisions, first release
 pnpm dev                 # http://localhost:3000/admin — super@example.test / the seed password
+                         # http://localhost:3000/s/hotel-herse-dor — the public site
 ```
 
-Against a local database, Payload's schema push keeps tables in step with the collections automatically. Against any other database, push is off by design: schema changes go through migrations (see `HANDOFF.md`, next action 1).
+The ingest import reads `apps/platform/.ingest/www.hotel-herse-dor.com/facts.json`, which is not committed (third-party content). Produce it with `pnpm exec tsx src/ingest/spike.ts https://www.hotel-herse-dor.com`.
+
+Publishing and rolling back, as a logged-in user of the site's tenant:
+
+```bash
+curl -X POST -H "Authorization: JWT <token>" http://localhost:3000/api/sites/<id>/publish    # ?queue=1 to queue a job
+curl -X POST -H "Authorization: JWT <token>" http://localhost:3000/api/sites/<id>/rollback
+```
+
+Against a local database, Payload's schema push keeps tables in step with the collections automatically; set `PAYLOAD_DB_PUSH=false` to work from migrations only. Against any other database, push is off by design: schema changes go through migrations (`CLAUDE.md` rules 10 and 13).
 
 ## 10. Tests
 
