@@ -2,7 +2,17 @@
 
 Living checklist for the 90-day plan (28 September to 25 December 2026). Tick items in the commit that completes them, with a link to the evidence. Owner codes: **ENG** engineering, **BIZ** sales and partnerships, **OWN** project owner, **XT** another xedge team.
 
-Last updated: 23 September 2026.
+Last updated: 23 September 2026. For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
+
+## At a glance
+
+| Area | Done | Open | Note |
+| --- | --- | --- | --- |
+| Owner actions before week 1 | 4 | 3 | Send the Tencent email, revoke the CAM key, share the repo |
+| Week 1 | 8 | 5 | Engineering done early; BIZ and XT items not started |
+| Week 2 | 1 | 12 | RLS done; five proof items, the Makers gate, the `teo` API, hotel pack types and BIZ items open |
+| Weeks 3–13 | 0 | 45 | As planned, including the four gates; Gate 1 on 12 October |
+| **Total** | **13** | **65** | |
 
 ## Before week 1 — owner actions
 

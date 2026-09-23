@@ -1,8 +1,8 @@
-# Agentic Website Platform — Solution Definition
+# Hotelier Website Platform — Solution Definition
 
 Sep 22, 2026 · @Someone
 
-*Solution definition and target architecture for the multi-tenant website platform: studio, agentic layer, hosting and delivery. Industry verticals, including hotels, are packs on top of this core and are out of scope for v1. Written before evaluating any specific implementation technology.*
+*Solution definition and target architecture for the multi-tenant website platform: studio, agentic layer, hosting and delivery. The core stays industry-neutral; hotels are the launch segment and the first vertical pack. Updated 23 September 2026 with the proof-of-concept results.*
 
 ## Solution statement
 
@@ -30,7 +30,7 @@ Go-to-market is vertical even though the core is not. **Hotels first**: the firs
 - Not a DIY builder the customer is left alone with; self-service is available, not required
 - Not a one-off build with hosting attached
 - Not an agency retainer priced by human hours
-- Not a vertical hotel product in v1; no industry concept enters the core model
+- Not a hotel-only codebase: hotels are the launch pack, and no industry concept enters the core model
 - Not a design tool — there is no free-positioning canvas
 - Not a headless CMS; the platform renders, hosts, serves and operates the sites it builds
 
@@ -597,17 +597,25 @@ Nothing customer-visible. Skipping any of it is what makes phase 2 unshippable.
 - Public API and webhooks hardened for external use
 - Connector framework with two reference connectors
 
-**Phase 4 — verticals and scale**
+**Phase 4 — more verticals and scale**
 
-The hotel pack as the first proof that the extension model works: content types, templates, connectors, structured data profiles, agent skills, onboarding questionnaire — and ideally not one line of core change. Agency workspaces, partner white-label and commerce belong here too.
+The hotel pack ships first, inside the 90-day plan, as the first proof that the extension model works: content types, templates, connectors, structured data profiles, agent skills, onboarding questionnaire — and ideally not one line of core change. Phase 4 adds the second vertical, agency workspaces, partner white-label and commerce.
 
-**Start gate — state on 22 September 2026**
+**Start gate — state on 23 September 2026**
 
 The proof phase starts now; the 90-day plan is in its own tab.
 
 Week-by-week plan, gates and metrics: 90-day plan
 
 *Settled:* positioning as Website-as-a-Service; horizontal core with vertical packs; hotels first; pooled tenancy with immutable releases; one application; Payload on Postgres, unforked; hybrid studio; Makers as assumed provider behind a week-one gate with Cloudflare EU as fallback; compliance as product; the service model; the isolation proof of concept.
+
+*Proven so far (23 September 2026):*
+
+- Tenant isolation 26/26 green on production infrastructure: EdgeOne Makers Frankfurt plus Neon Postgres Frankfurt, across the Local API, REST and GraphQL
+- Postgres row-level security works under Payload: with Payload's access control switched off, the database alone kept the tenant boundary
+- Code deploy to Makers measured at 153 s against the 60 s publish target; open until Gate 2
+- Still to prove: schema migration at 10 then 50 tenants, a Payload upgrade, single-tenant restore, admin and bulk paths, colliding publishes
+- Day-to-day status lives in the repository: `HANDOFF.md` and `docs/CHECKLIST.md`
 
 *Open, resolved inside the plan:*
 
@@ -624,7 +632,7 @@ App marketplace, plugin system, custom code injection, e-commerce checkout, free
 
 **Sequencing note**
 
-The temptation will be to demo generation early, because it is the impressive part, and to defer releases, rollback, entitlements and the domain service because they are not. That ordering produces a convincing prototype that cannot become a product. A second temptation, now that hotels are deferred, is to build hotel shortcuts into the core "temporarily". Both should be refused by name in planning.
+The temptation will be to demo generation early, because it is the impressive part, and to defer releases, rollback, entitlements and the domain service because they are not. That ordering produces a convincing prototype that cannot become a product. A second temptation, now that hotels are the launch segment, is to build hotel shortcuts into the core "temporarily". Both should be refused by name in planning.
 
 ## Risks, open questions and metrics
 
@@ -720,7 +728,7 @@ Payload's 2026 advisory history is heavy for a fast-moving platform: a critical 
 1. Postgres, not MongoDB.
 2. Upgrade discipline: pin versions, apply security releases within days, never sit on an old major.
 3. Tenant isolation is a security-critical subsystem with its own automated suite — a tenant A user can read, create, update and delete only A; cannot reach B through the REST API, GraphQL, the Local API or the admin; cannot reassign a document's tenant — run in CI and on every Payload upgrade.
-4. Defence in depth, proven before adopted: Postgres row-level security keyed on the tenant, underneath Payload's access control, so a plugin regression cannot become a data leak on its own. RLS is evaluated in the proof of concept, not switched on in production by default, because Payload's own lifecycle — migrations, background jobs, the Local API, overrideAccess, backups and restores, super-admin operations — must be shown to work with it first.
+4. Defence in depth, proven before adopted: Postgres row-level security keyed on the tenant, underneath Payload's access control, so a plugin regression cannot become a data leak on its own. RLS is evaluated in the proof of concept, not switched on in production by default, because Payload's own lifecycle — migrations, background jobs, the Local API, overrideAccess, backups and restores, super-admin operations — must be shown to work with it first. Evaluated 23 September 2026: with Payload's access control switched off, RLS alone held the tenant boundary for Payload's own find and update. Two findings shape adoption: the owner role bypasses RLS, and Payload's development schema push deletes the policies. Enforcing mode therefore needs a restricted application role, a per-request tenant context and migrations only on shared databases; the decision is due in week 4.
 
 **Two proposals declined**
 
@@ -741,6 +749,8 @@ Small and brutal, before any platform code. Fifty tenants on one Payload applica
 | Backup and restore | Restore one tenant without touching others; isolation matrix green |
 | Row-level security | Enabled on the tenant tables; every item above still passes |
 | Human minutes | The whole sequence timed, as the first data point for the service-cost metric |
+
+Status on 23 September 2026: isolation matrix green for the Local API, REST and GraphQL (admin, bulk, imports, webhooks and jobs still to cover); overrideAccess audit green; row-level security green, with the findings above; migration, upgrade, restore and human minutes not yet run.
 
 If the sequence passes, freeze the CMS decision and stop researching CMSs. If it fails, the failure is the finding, and it is far cheaper here than at customer two hundred.
 

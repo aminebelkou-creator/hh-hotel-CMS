@@ -1,5 +1,7 @@
 # 90-day plan
 
+> **This is the baseline plan.** It changes only by decision. Progress is ticked in [`CHECKLIST.md`](CHECKLIST.md). Where reality has moved away from this plan, and why, is recorded under *Plan deltas* in [`../HANDOFF.md`](../HANDOFF.md). Status on 23 September 2026: week-1 engineering done early; Gate 1 is waiting on Tencent.
+
 Day 90 ends with three to five hotels paying for sites live on their own domains, served by the minimal pooled platform, with the isolation proof passed, the hosting gate settled, and human minutes per site measured for every one of them. Starts Monday 28 September 2026; ends Friday 25 December 2026.
 
 **Assumptions** — adjust the plan if these are wrong: a core team of four to six engineers with Next.js and Postgres experience, one product or design lead, one person from xedge who can sell to hotels and one who can support them. Payload, Puck and object storage are used as they ship; nothing is forked. Other xedge teams provide read access to PMS data for the design partners by week four.

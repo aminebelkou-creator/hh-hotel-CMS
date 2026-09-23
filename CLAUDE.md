@@ -29,6 +29,7 @@ Conventional commits. Small PRs. Every PR that touches tenancy, access control o
 
 ## Working agreements
 
+- **Start every session by reading `HANDOFF.md`; end it by updating it**: rewrite *Current state*, update *Plan deltas*, and prepend a *Delta log* entry (changed, learned, left undone, commit range). Never edit old delta entries.
 - **Update `docs/CHECKLIST.md` in the same commit** that completes an item, with a link to the evidence (file, test, or results doc). Measured numbers go in `docs/05-week1-spike-results.md` or a successor results doc.
 - The spec in `docs/01-solution-definition.md` is an export of the Claude Docs artifact. Propose spec changes in a PR description; do not silently rewrite it.
 
