@@ -55,10 +55,10 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | 1 | OWN | Grant the GitHub CLI the `workflow` scope: `gh auth refresh -h github.com -s workflow` (browser confirmation) | GitHub refuses to accept `.github/workflows/*` without it; the CI and deploy workflows are written and waiting locally (untracked) | Workflows pushed; first CI run green |
 | 2 | ENG | After 1: push the workflows, add repository secrets `NEON_DATABASE_URL` and `EDGEONE_PAGES_API_TOKEN` (from the PC's user environment variables, via `gh secret set`, never through chat), watch the first CI run | Nothing should depend on one PC being awake | Green check on `main`; `deploy` workflow run once manually |
 | 3 | OWN | Start Claude Code with Remote Control in the repo (`claude --remote-control "hh-hotel-CMS"`) | Desktop Commander's relay drops periodically | A session runs `scripts/run-suites.ps1` from the phone |
-| 4 | ENG | EdgeOne `teo` API from code: `CreateAccelerationDomain` + `ModifyHostsCertificate` on a test domain | Gate 1 evidence for custom domains | Blocked on a fresh CAM key and a test (sub)domain with DNS access |
+| 4 | ENG | EdgeOne `teo` write test (`tsx src/host/teo-probe.ts --write`): client and read-only probe done; Makers domains are not reachable via `teo` (finding 20) | Gate 1 evidence for custom domains | Needs a zone on a domain we control (e.g. `staging.hotel-herse-dor.com`, DNS at the registrar) and a plan decision |
 | 5 | ENG | Release pipeline v0 design: per-project publish queue (finding 17), migrate-then-deploy, post-publish verification, rollback | Week 4 item; the colliding-publish result changes its design | Design note in docs/, reviewed |
 | 6 | ENG | RLS enforcing mode: restricted login role, per-request `SET LOCAL` hook, deny-by-default | Week 4 decision; proposal in docs/05 | Owner-role connections limited to migrations and allowlisted jobs |
-| 7 | ENG | Ingest spike (week 1 item): scrape a hotel site and its Google Business Profile into a fact base | Generation depends on it | Needs the owner's hotel URL and profile link |
+| 7 | ENG | Ingest v1: AI extraction of rooms, normaliser, Fact collection and confirmation UI in Payload | Spike done (docs/08); generation depends on confirmed facts | Needs the model API key (owner will provide) |
 
 ### Waiting on the owner
 
@@ -78,7 +78,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Payload secret (production) | Makers project variable `PAYLOAD_SECRET` |
 | Seeded users' password on Neon | Windows user environment variable `HH_NEON_SEED_PASSWORD` |
 | EdgeOne Makers API token | Windows user environment variable `EDGEONE_PAGES_API_TOKEN` (used by `.mcp.json` and the CLI) |
-| Tencent CAM key | To be recreated as `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY` after the revocation |
+| Tencent CAM key (new) | Windows user environment variables `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY` (set 23 Sep via a hidden-input prompt) |
 
 ### Resume in five commands
 
