@@ -1,0 +1,9 @@
+{
+  "$comment": "Every use of overrideAccess: true in src/ must be listed here with a justification. tests/int/override-access.int.spec.ts fails the build otherwise.",
+  "allowed": [
+    {
+      "file": "src/seed/index.ts",
+      "reason": "Seed script; system operation run by an engineer, never reachable from a request."
+    }
+  ]
+}

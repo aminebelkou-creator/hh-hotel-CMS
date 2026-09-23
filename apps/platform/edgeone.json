@@ -1,0 +1,13 @@
+{
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install --frozen-lockfile=false",
+  "outputDirectory": ".next",
+  "nodeVersion": "22.11.0",
+  "cloudFunctions": {
+    "overseasRegions": ["eu-frankfurt"],
+    "nodejs": {
+      "maxDuration": 60,
+      "externalNodeModules": ["sharp", "pg"]
+    }
+  }
+}

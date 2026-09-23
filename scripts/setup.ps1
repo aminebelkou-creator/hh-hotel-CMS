@@ -1,4 +1,4 @@
-﻿# Requires: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned (once)
+# Requires: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned (once)
 # Setup for Windows. Run from the repository root in PowerShell.
 $ErrorActionPreference = "Stop"
 
