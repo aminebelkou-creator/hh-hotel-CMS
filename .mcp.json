@@ -1,8 +1,11 @@
-{
+﻿{
   "mcpServers": {
     "edgeone-makers": {
       "command": "npx",
-      "args": ["@edgeone/makers-mcp@latest"]
+      "args": ["@edgeone/makers-mcp@latest"],
+      "env": {
+        "EDGEONE_PAGES_API_TOKEN": "${EDGEONE_PAGES_API_TOKEN}"
+      }
     }
   }
 }
