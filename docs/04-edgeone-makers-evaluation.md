@@ -79,3 +79,47 @@ The suggestion that Makers for Platforms could "eventually replace parts of the 
 - [Tencent Cloud International Data Processing Agreement](https://www.tencentcloud.com/document/product/1085/47312)
 - [Tencent EdgeOne on GitHub](https://github.com/tencentedgeone)
 - [MakerStack independent review](https://makerstack.co/reviews/tencent-edgeone-makers-review/)
+
+## Update, 23 September 2026 — recommendation superseded
+
+The recommendation above was written before the hosting decision. The current position is the decision at the top of this document: Makers is the assumed provider behind the week-one gate, with Cloudflare EU as fallback. Two facts have since been established by running it: a Next.js 16 + Payload application builds and runs on Makers with functions pinned to Frankfurt and Postgres on Neon Frankfurt, and the isolation suite passes against the deployed URL. See `05-week1-spike-results.md`.
+
+## Templates and products, checked 23 September 2026
+
+**Templates that matter for this build**
+
+| Template | What it proves | Caveat |
+| --- | --- | --- |
+| [Payload Website Starter](https://github.com/TencentEdgeOne/payload-mongodb-starter) | Payload admin, layout builder, drafts, live preview, form, search and redirect plugins, S3 media and on-demand revalidation run on Makers | MongoDB, which this spec rules out; 1 star. Reference only |
+| Next.js Hybrid Rendering, ISR Starter | SSR, ISR, on-demand `revalidatePath` / `revalidateTag`, cloud and edge functions in one project | — |
+| Neon Starter, Next.js Better Auth | Serverless Postgres reachable from Makers cloud functions | Confirmed in practice by this project |
+| Vibe Coding Agent [Platform] | The Makers-for-Platforms reference | Demonstrates sandboxes and skills, not tenant provisioning APIs |
+| AI Chat Assistant | An embeddable assistant widget | Reference for the chatbot boundary the CRM team owns |
+
+No template exists for a multi-tenant CMS, host-based tenant routing, or Puck. Those are ours.
+
+**Next.js on Makers**: versions 13.5 to 16; SSR, ISR, route handlers, server components, image optimisation, middleware in the edge runtime. **Redirects and rewrites in `next.config` are not supported**; `edgeone.json` holds static project-level redirects only. Per-tenant 301 maps for migrated sites must be resolved in edge middleware from a KV lookup.
+
+**EdgeOne product lines beyond Makers**: CDN, Smart Acceleration, L4 proxy; DDoS protection, Bot Management, Web Protection (WAF), CAPTCHA; Edge Functions, Image Renderer; VOD. Makers' free tier carries four custom security rules and one rate-limit rule, so production WAF and bot management are the separately priced security products.
+
+## The EdgeOne site product and its API
+
+Two Tencent products are in play. **Makers** is the developer platform (free tier, 200-domain project quota). **EdgeOne** is the CDN, security and domain platform underneath, with published plans and a public API.
+
+| Plan | Monthly | Sites | Subdomains per site | Security |
+| --- | --- | --- | --- | --- |
+| Free (beta) | $0 | 1 | 200 | Basic WAF |
+| Personal | $4.2 | 1 | 200 | Basic WAF |
+| Basic | $57 | 1 | 300 | Enhanced ruleset |
+| Standard | $590 | 1 | 500 | Managed rules, bot management pay-as-you-go, DDoS add-on |
+| Enterprise | Custom | 10 | 1,000 | Full custom rules |
+
+Source: [plan comparison](https://edgeone.ai/document/55650). Ceiling to note: 1,000 hostnames per site and ten sites even on Enterprise.
+
+**API**: service `teo`, endpoint `teo.intl.tencentcloudapi.com`, version 2022-09-01, Tencent Cloud v3 signature with a CAM SecretId and SecretKey.
+
+- `CreateAccelerationDomain`, `ModifyAccelerationDomain`, `DescribeAccelerationDomains` — hostnames on a site
+- `ModifyHostsCertificate` with mode `eofreecert`, `ApplyFreeCertificate`, `CheckFreeCertificateVerification` — free certificates per hostname
+- `CreateAliasDomain`, `ModifyAliasDomain`, `DeleteAliasDomain` — a customer's own domain aliased onto a target domain: the SaaS custom-hostname primitive, **Enterprise-only and in beta** ([doc](https://edgeone.ai/document/51551))
+
+Question for Tencent: are Makers custom domains and EdgeOne alias domains the same mechanism underneath? The answer decides which quota table governs this product.

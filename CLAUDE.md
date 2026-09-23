@@ -26,3 +26,20 @@ EdgeOne Makers skills are installed under `.claude/skills/` by `scripts/setup.*`
 ## Commit conventions
 
 Conventional commits. Small PRs. Every PR that touches tenancy, access control or the release pipeline must add or extend the isolation test suite.
+
+## Working agreements
+
+- **Update `docs/CHECKLIST.md` in the same commit** that completes an item, with a link to the evidence (file, test, or results doc). Measured numbers go in `docs/05-week1-spike-results.md` or a successor results doc.
+- The spec in `docs/01-solution-definition.md` is an export of the Claude Docs artifact. Propose spec changes in a PR description; do not silently rewrite it.
+
+## Known gotchas (learned the hard way)
+
+1. **Never name a Payload field `locales`** (or anything ending up as `<collection>_locales`). On Postgres it collides with the table Payload creates for localised fields and breaks queries with `Cannot read properties of undefined (reading 'referencedTable')`.
+2. **The MCP plugin adds an API-key auth collection.** `req.user` may be an API key with no `email`; narrow the type before reading user fields.
+3. **Vitest injects `BASE_URL="/"`.** Use `PLATFORM_URL` for the server under test.
+4. **Turbopack in this pnpm monorepo** needs `turbopack.root` at the repository root (`next.config.ts`), or it cannot find `next`.
+5. **Write files as UTF-8 without BOM.** Windows PowerShell 5 `Set-Content -Encoding utf8` adds a BOM, which breaks `tsx`'s package.json parser. Use `[IO.File]::WriteAllText($p, $t, (New-Object System.Text.UTF8Encoding($false)))`.
+6. **`edgeone makers deploy` uploads the whole folder, including `.env`.** Move `.env` out before deploying; production secrets live in `edgeone makers env set`.
+7. **The Makers CLI shows no build log on failure.** Reproduce with `pnpm run build` locally first.
+8. **Never stop processes by name** (`Stop-Process -Name node`, `pkill node`). Agents and tooling on the developer machine run on Node. Stop by exact PID only.
+9. **Bulk writes across regions are slow** (seed: 6 s local, 257 s to Neon Frankfurt). Batch them or run them close to the database.
