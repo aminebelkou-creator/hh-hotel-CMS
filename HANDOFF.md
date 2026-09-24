@@ -18,7 +18,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | --- | --- |
 | Plan position | Day −4. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
 | Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
-| Customer zero | **Marketing website live on the proof of concept**: https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor (6 pages, FR/EN, room types, gallery, map, schema.org Hotel, sitemap). Content adapted from the hotel's own site; photos served from it |
+| Customer zero | **Marketing website live on the proof of concept** (release r3, deployment `dp9l9q9ymanq`): https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor (6 pages, FR/EN, room types, gallery, map, schema.org Hotel, sitemap). Content adapted from the hotel's own site; photos served from it |
 | Admin | **Fixed**: it rendered a blank page because its import map was stale (finding 26). CI now checks the map |
 | Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
 | CI / deploy | Every push: migrations on a fresh Postgres, drift check, **import-map check**, seed, typecheck, suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers |
@@ -126,6 +126,9 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 - Customer zero's full site (6 pages, FR/EN, 2 room types) as onboarding content, applied and published; demo facts confirmed from the hotel's own site.
 - Migrations `hotel_site_content` + `drop_booking_mock_settings`, rehearsed on 50 tenants + customer zero (0 of 51 changed). `tenant-checksums` now names the tables that changed.
 - The morning's `next dev` (pushing schema into `hh_platform`) stopped; `hh_platform` rebuilt from migrations.
+- Deploy: Makers installs only `apps/platform`, so the first deploy failed on the `workspace:*` pack; `scripts/vendor-packs.mjs` now vendors packs for the upload (CLAUDE.md 26). Live deployment `dp9l9q9ymanq` (171 s).
+- Neon: migrations applied by the deploy workflow; 50 synthetic tenants reseeded with a room type (548 s on the free tier); customer zero's facts and site applied (41 s) and published with HTTP verification through the edge in 4.9 s (release r3).
+- Renderer tolerates older snapshots (`upgradeSnapshot`), so a rollback to a release written before this change still renders.
 
 **Learned**
 - Findings 26–27 in docs/05: stale import map = blank admin; `migrate:create` prompts (and hangs) when a change both drops and adds.

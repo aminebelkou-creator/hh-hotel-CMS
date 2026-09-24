@@ -80,7 +80,7 @@ const setStatus = (payload: Payload, id: number, data: Record<string, unknown>) 
 export const defaultVerifier: Verifier = async (payload, rel) => {
   const live = await loadLiveRelease(payload, rel.siteSlug)
   if (!live || live.release.id !== rel.id) throw new Error(`Renderer resolves release ${live?.release.id ?? 'none'}, expected ${rel.id}`)
-  if (checksumOf(live.release.snapshot) !== rel.checksum) throw new Error('Stored snapshot does not match its checksum')
+  if (checksumOf(live.release.storedSnapshot) !== rel.checksum) throw new Error('Stored snapshot does not match its checksum')
   const base = process.env.RELEASE_VERIFY_BASE_URL
   if (base) {
     const res = await fetch(`${base.replace(/\/$/, '')}/s/${rel.siteSlug}`, { cache: 'no-store' })

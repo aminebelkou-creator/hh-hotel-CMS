@@ -3,7 +3,7 @@ import type { SiteSnapshot } from './snapshot'
 
 export type LiveRelease = {
   site: { id: number; slug: string; status: string | null }
-  release: { id: number; version: string; checksum: string; status: string | null; snapshot: SiteSnapshot }
+  release: { id: number; version: string; checksum: string; status: string | null; snapshot: SiteSnapshot; storedSnapshot: unknown }
 }
 
 /**
@@ -39,7 +39,43 @@ export async function loadLiveRelease(payload: Payload, siteSlug: string): Promi
       version: rel.version,
       checksum: rel.checksum ?? '',
       status: rel.status ?? null,
-      snapshot: rel.snapshot as unknown as SiteSnapshot,
+      snapshot: upgradeSnapshot(rel.snapshot),
+      storedSnapshot: rel.snapshot,
     },
+  }
+}
+
+/**
+ * Releases are immutable, so a rollback can land on a snapshot written by an older renderer.
+ * Fill what later schemas added with neutral defaults instead of failing (schema 1 → 2:
+ * site tagline, logo and header link, page menu fields, pack data).
+ */
+export function upgradeSnapshot(raw: unknown): SiteSnapshot {
+  const s = (raw ?? {}) as Partial<SiteSnapshot> & { site?: Partial<SiteSnapshot['site']> }
+  const site = (s.site ?? {}) as Partial<SiteSnapshot['site']>
+  return {
+    schema: 2,
+    site: {
+      id: Number(site.id ?? 0),
+      slug: String(site.slug ?? ''),
+      name: String(site.name ?? ''),
+      brandName: site.brandName ?? null,
+      tagline: site.tagline ?? null,
+      logoUrl: site.logoUrl ?? null,
+      timezone: site.timezone ?? null,
+      enabledLocales: site.enabledLocales?.length ? site.enabledLocales : ['en'],
+      defaultLocale: site.defaultLocale ?? 'en',
+      theme: site.theme ?? null,
+      cta: { label: site.cta?.label ?? null, href: site.cta?.href ?? null },
+    },
+    pages: (s.pages ?? []).map((p) => ({
+      ...p,
+      navLabel: p.navLabel ?? null,
+      navOrder: Number(p.navOrder ?? 0),
+      showInNav: p.showInNav !== false,
+      blocks: p.blocks ?? [],
+    })),
+    facts: s.facts ?? [],
+    packs: s.packs ?? {},
   }
 }

@@ -8,7 +8,7 @@ import config from '@/payload.config'
 import { describe, it, beforeAll, afterAll, expect } from 'vitest'
 import { SEED_PASSWORD, tenantEmail, tenantSlug } from '@/seed/constants'
 import { nextPublishSeq, publishSite, rollbackSite, type PublishOutcome } from '@/releases/publish'
-import { loadLiveRelease } from '@/releases/resolve'
+import { loadLiveRelease, upgradeSnapshot } from '@/releases/resolve'
 import { checksumOf } from '@/releases/canonical'
 import { poolOf } from '@/releases/db'
 import type { SiteSnapshot } from '@/releases/snapshot'
@@ -122,6 +122,16 @@ describe('publish', () => {
     await poolOf(payload).query(`update sites set status = 'draft' where id = $1`, [A.siteId])
     expect(await loadLiveRelease(payload, 'no-such-site')).toBeNull()
     expect(await loadLiveRelease(payload, '../etc')).toBeNull()
+  })
+})
+
+describe('older snapshots stay servable (rollback can land on them)', () => {
+  it('a schema-1 snapshot is upgraded with neutral defaults', () => {
+    const old = { schema: 1, site: { id: 1, slug: 's', name: 'S', brandName: null, timezone: null, enabledLocales: ['fr'], defaultLocale: 'fr', theme: null, booking: { engine: 'none' } }, pages: [{ id: 1, slug: 'home', title: { fr: 'Accueil' }, blocks: [] }], facts: [] }
+    const s = upgradeSnapshot(old)
+    expect(s.site.cta).toEqual({ label: null, href: null })
+    expect(s.packs).toEqual({})
+    expect(s.pages[0]).toMatchObject({ navOrder: 0, showInNav: true, navLabel: null })
   })
 })
 
