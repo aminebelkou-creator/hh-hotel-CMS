@@ -51,6 +51,7 @@ jobs:
         run: |
           npm install -g edgeone@1.6.41
           rm -f .env .env.*   # runtime secrets live in Makers project variables, never in the upload
+          node ../../scripts/vendor-packs.mjs   # Makers installs only this folder: copy packs/* in (CLAUDE.md 26)
           start=$(date +%s)
           edgeone makers deploy . -n hh-platform-poc -e production -t "$EDGEONE_PAGES_API_TOKEN" --json --skip-ai-gateway-sync
           echo "deploy took $(( $(date +%s) - start )) s"

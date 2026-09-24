@@ -51,3 +51,7 @@ node_modules/
 
 # ingest spike output (scraped third-party content, not committed)
 /.ingest/
+
+# Deploy-time vendoring of workspace packs (scripts/vendor-packs.mjs)
+/vendor/
+/package.json.predeploy

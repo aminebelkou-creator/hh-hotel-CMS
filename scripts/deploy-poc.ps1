@@ -16,11 +16,14 @@ try {
   # is useless there and made the upload take ~4 minutes and the remote build time out.
   $next = Join-Path $app '.next'
   if (Test-Path $next) { Remove-Item $next -Recurse -Force; Say 'removed local .next before upload' }
+  # Makers installs only this folder: copy workspace packs in for the upload, undo afterwards.
+  Push-Location $app; node ..\..\scripts\vendor-packs.mjs | ForEach-Object { Say $_ }; Pop-Location
   $t = Measure-Command { $out = edgeone makers deploy $app -n $Project -e production --json --skip-ai-gateway-sync 2>&1 | Out-String }
   $flat = ($out -replace '\x1b\[[0-9;]*m', '' -replace '\s+', ' ')
   Say ("deploy exit {0} in {1:N0} s" -f $LASTEXITCODE, $t.TotalSeconds)
   Say ("tail: " + $flat.Substring([Math]::Max(0, $flat.Length - 500)))
 } finally {
+  Push-Location $app; node ..\..\scripts\vendor-packs.mjs --restore | ForEach-Object { Say $_ }; Pop-Location
   foreach ($n in $moved) { Move-Item (Join-Path $held $n) (Join-Path $app $n) -Force }
   Say "restored: $($moved -join ', ')"
   Say 'DONE'
