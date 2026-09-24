@@ -66,6 +66,8 @@ export function upgradeSnapshot(raw: unknown): SiteSnapshot {
       enabledLocales: site.enabledLocales?.length ? site.enabledLocales : ['en'],
       defaultLocale: site.defaultLocale ?? 'en',
       theme: site.theme ?? null,
+      template: site.template ?? 'maison',
+      brand: site.brand ?? null,
       cta: { label: site.cta?.label ?? null, href: site.cta?.href ?? null },
     },
     pages: (s.pages ?? []).map((p) => ({

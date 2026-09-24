@@ -1,6 +1,6 @@
 # Email to Tencent Cloud: Makers for Platforms evaluation
 
-Status: **draft, not sent.** Owner: OWN. Send on day one of week 1 (Gate 1 depends on the answers).
+Status: **draft, not sent** (updated 24 Sep: new project in area overseas; the disabled-domain question is answered, finding 22). Owner: OWN. Send on day one of week 1 (Gate 1 depends on the answers).
 Where: Tencent Cloud International support ticket (category EdgeOne) plus the sales contact form linked from the [Platform and Multi-Tenancy](https://edgeone.ai/document/218316253599858688) page. Ask for a named contact and a call in the same message.
 
 ---
@@ -9,7 +9,7 @@ Where: Tencent Cloud International support ticket (category EdgeOne) plus the sa
 
 Hello,
 
-We run a managed website service for independent hotels in Europe, operated from Paris. Our platform is a single multi-tenant application; every hotel gets its own site on its own domain, published as an immutable release. We are evaluating EdgeOne Makers as our production host and have already deployed a proof of concept to Makers with Cloud Functions pinned to Frankfurt (project `makers-gznjppyen95y`).
+We run a managed website service for independent hotels in Europe, operated from Paris. Our platform is a single multi-tenant application; every hotel gets its own site on its own domain, published as an immutable release. We are evaluating EdgeOne Makers as our production host and have already deployed a proof of concept to Makers with Cloud Functions pinned to Frankfurt (project `makers-xxcop75vdalc`, area Global excluding the Chinese mainland).
 
 The Platform and Multi-Tenancy page says SDKs and APIs exist for project creation, artifact upload, deployment, domain binding and certificates, and directs evaluations to you. We need the following in writing to reach a decision by **12 October 2026**:
 
@@ -22,6 +22,7 @@ The Platform and Multi-Tenancy page says SDKs and APIs exist for project creatio
 **2. Quotas at 100, 500 and 1,000 tenants**
 - Projects, custom domains, builds per month and concurrent builds, deployments retained per project, storage, Cloud Function and Edge Function executions.
 - Whether upload-only deployments (a prebuilt artifact, no remote build) are supported, and whether they count against build quotas.
+- Whether the Cloud Function limits (6 MB request body, 120 s wall time) can be raised on a paid plan, and whether EdgeOne image processing (resize, WebP/AVIF) is available to Makers projects.
 - Typical and worst-case time from API deploy call to live traffic on the custom domain.
 
 **3. Pricing**
@@ -33,11 +34,12 @@ The Platform and Multi-Tenancy page says SDKs and APIs exist for project creatio
 - Where Edge Function execution, KV and Blob data are processed and stored for requests from EU visitors; whether they can be restricted to EU locations.
 - Sub-processor list and the transfer mechanism (standard contractual clauses) for any processing outside the EEA.
 - Confirmation that Cloud Functions pinned to `eu-frankfurt` process and log data only in Frankfurt, and log retention periods.
+- From which countries Tencent staff (support, operations) can access customer data and logs, and under which safeguards.
 
 **5. Domains**
 - Whether Makers custom domains and EdgeOne alias domains (`CreateAliasDomain`) are the same mechanism, and which one a platform should use for customer domains.
 - Apex-domain support (CNAME flattening or A records), and automatic certificate issuance and renewal for customer domains.
-- On our proof-of-concept project, adding a custom domain is disabled in the console. What enables it (plan, project type, area), and can custom domains be bound through an API for a platform?
+- Custom domains can be bound in the console on our project. Can they be bound, verified and removed through an API for a platform, and what is the per-account limit?
 
 **6. Support**
 - SLA for the paid tier, support hours in Central European Time, and English-language escalation.

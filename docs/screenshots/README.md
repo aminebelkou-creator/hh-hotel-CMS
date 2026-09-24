@@ -7,6 +7,19 @@ cd apps/platform
 node tests/visual/screenshots.mjs https://hh-platform.edgeone.dev <output-folder>
 ```
 
+## 24 September 2026, evening: three templates (design contract)
+
+The same content (customer zero) in the three templates built in-house, switched in the admin and published with no content change. Local test server; taken with `apps/platform/tests/visual/templates.mjs`. Contract: [`../11-design-contract.md`](../11-design-contract.md).
+
+| | Maison (classic) | Atelier (modern) | Soirée (dark) |
+| --- | --- | --- | --- |
+| Home | [maison-home.jpg](templates/maison-home.jpg) | [atelier-home.jpg](templates/atelier-home.jpg) | [soiree-home.jpg](templates/soiree-home.jpg) |
+| Home on a phone | [maison-home-mobile.jpg](templates/maison-home-mobile.jpg) | [atelier-home-mobile.jpg](templates/atelier-home-mobile.jpg) | [soiree-home-mobile.jpg](templates/soiree-home-mobile.jpg) |
+| Rooms | [maison-rooms.jpg](templates/maison-rooms.jpg) | [atelier-rooms.jpg](templates/atelier-rooms.jpg) | [soiree-rooms.jpg](templates/soiree-rooms.jpg) |
+| Contact | [maison-contact.jpg](templates/maison-contact.jpg) | [atelier-contact.jpg](templates/atelier-contact.jpg) | [soiree-contact.jpg](templates/soiree-contact.jpg) |
+
+Admin: the template choice and the brand fields on a site — [admin-template-brand.jpg](templates/admin-template-brand.jpg).
+
 ## 24 September 2026, later: Phase 1, hotelier self-service
 
 Customer zero now runs on the platform's own photo storage, with offers, house rules, FAQ and legal pages, and an owner account. Live release r4 on https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor (deployment `dpl4w2ghpe63`). Site pages below were taken on the local test server with the same code and content; the two "live" admin shots are from the public deployment, signed in as the hotel's owner.

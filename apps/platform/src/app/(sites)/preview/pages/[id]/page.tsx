@@ -8,6 +8,7 @@ import { buildSnapshot, toSnapshotPage } from '@/releases/snapshot'
 import { labelsFor } from '@/site/i18n'
 import { Blocks } from '@/site/Blocks'
 import { SiteFooter, SiteHeader } from '@/site/Chrome'
+import { themeAttrs } from '@/site/theme'
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ locale?: string }> }
 
@@ -40,7 +41,7 @@ export default async function PreviewPage(props: Props) {
   const t = labelsFor(locale)
 
   return (
-    <div lang={locale}>
+    <div lang={locale} {...themeAttrs(snapshot)}>
       <div role="note" style={{ background: '#1b1814', color: '#fff', padding: '8px 20px', font: '600 13px system-ui, sans-serif', textAlign: 'center' }}>
         {locale === 'fr' ? 'Aperçu du brouillon · pas encore publié' : 'Draft preview · not published yet'}
       </div>

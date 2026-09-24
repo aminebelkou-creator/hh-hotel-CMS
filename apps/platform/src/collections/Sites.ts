@@ -1,8 +1,22 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated, superAdminFieldOnly } from '../access'
 import { publishEndpoint, rollbackEndpoint } from '../releases/endpoints'
+import { isHex } from '../design/color'
+import { resolveTheme, type Brand } from '../design/theme'
+import { CORNERS, DEFAULT_TEMPLATE, FONT_IDS, FONT_LABELS, TEMPLATE_IDS, TEMPLATES } from '../design/templates'
 
-/** Site: the publishing boundary. Theme tokens are separable from content by design. */
+const hexField = (v: unknown) => (v === null || v === undefined || v === '' || isHex(v) ? true : 'Use a colour like #1a2b3c')
+
+/** Background and text colours must stay readable together; everything else is derived. */
+const readableField = (v: unknown, { data, siblingData }: { data?: unknown; siblingData?: unknown }) => {
+  const hex = hexField(v)
+  if (hex !== true) return hex
+  const th = resolveTheme((data as { template?: string } | undefined)?.template, siblingData as Brand)
+  const bad = th.issues.filter((i) => /^(text|secondary text) on/.test(i))
+  return bad.length ? `Text and background are too close to read: ${bad.join('; ')}` : true
+}
+
+/** Site: the publishing boundary. Its look (template + brand) is separable from content by design. */
 export const Sites: CollectionConfig = {
   slug: 'sites',
   admin: { useAsTitle: 'name' },
@@ -45,7 +59,38 @@ export const Sites: CollectionConfig = {
     {
       name: 'theme',
       type: 'json',
-      admin: { description: 'Design tokens (W3C DTCG). Contrast is validated at token level before publish.' },
+      // Superseded by template + brand (design contract, docs/11). Kept for old rows; not used by the renderer.
+      admin: { hidden: true },
+    },
+    {
+      name: 'template',
+      type: 'select',
+      defaultValue: DEFAULT_TEMPLATE,
+      options: TEMPLATE_IDS.map((id) => ({ label: TEMPLATES[id].name, value: id })),
+      admin: {
+        description: TEMPLATE_IDS.map((id) => `${TEMPLATES[id].name}: ${TEMPLATES[id].description.en}`).join(' · '),
+      },
+    },
+    {
+      name: 'brand',
+      type: 'group',
+      label: 'Brand',
+      admin: {
+        description:
+          'Optional: leave empty to use the template as designed. Colours as #rrggbb. Button text, links and secondary text are adjusted automatically to stay readable (WCAG AA).',
+      },
+      fields: [
+        { type: 'row', fields: [
+          { name: 'accent', type: 'text', label: 'Accent colour', validate: hexField, admin: { placeholder: 'template default', width: '33%' } },
+          { name: 'background', type: 'text', label: 'Background colour', validate: readableField, admin: { placeholder: 'template default', width: '33%' } },
+          { name: 'text', type: 'text', label: 'Text colour', validate: readableField, admin: { placeholder: 'template default', width: '33%' } },
+        ] },
+        { type: 'row', fields: [
+          { name: 'headingFont', type: 'select', options: FONT_IDS.map((f) => ({ label: FONT_LABELS[f], value: f })), admin: { width: '33%', description: 'Empty: the template font' } },
+          { name: 'bodyFont', type: 'select', options: FONT_IDS.map((f) => ({ label: FONT_LABELS[f], value: f })), admin: { width: '33%', description: 'Empty: the template font' } },
+          { name: 'corners', type: 'select', options: CORNERS.map((c) => ({ label: c, value: c })), admin: { width: '33%', description: 'Empty: the template corners' } },
+        ] },
+      ],
     },
     {
       name: 'status',

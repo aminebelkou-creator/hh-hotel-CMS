@@ -28,7 +28,15 @@ Customer zero, Hôtel de la Herse d'Or, live on the proof of concept (24 Septemb
 
 <img src="docs/screenshots/phase-1/live-owner-publish.jpg" alt="Admin, signed in as the hotel owner: the site with the Website panel, Publish site, Undo last publish, View site and the list of releases" width="560">
 
-**What comes next** is laid out in [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md): own domain and templates, generating a site from a hotel's URL, the operated service, then five paying hotels.
+**Three templates** (24 September), same content, switched in the admin: Maison (classic), Atelier (modern) and Soirée (dark). A hotel picks one and sets its brand colour; readability is guaranteed by the design contract ([`docs/11-design-contract.md`](docs/11-design-contract.md)).
+
+<p>
+<img src="docs/screenshots/templates/atelier-home-mobile.jpg" alt="Customer zero in the Atelier template on a phone: split layout, sans-serif headline, green button" width="190">
+<img src="docs/screenshots/templates/soiree-home-mobile.jpg" alt="Customer zero in the Soirée template on a phone: dark background, centred italic headline, outline button" width="190">
+<img src="docs/screenshots/templates/maison-home-mobile.jpg" alt="Customer zero in the Maison template on a phone: full-width photo, serif headline" width="190">
+</p>
+
+**What comes next** is laid out in [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md): own domain (templates done), generating a site from a hotel's URL, the operated service, then five paying hotels.
 
 ## 1. The problem
 
@@ -155,7 +163,7 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 | --- | --- | --- |
 | `users` | Membership list | Roles `super-admin` / `owner` / `editor`; roles can only be changed by a super-admin. Hotel owners are created with `src/onboarding/owner.ts` |
 | `tenants` | — | One per hotel: name, slug, plan |
-| `sites` | Yes | Brand name, tagline, logo, locales, theme tokens, header "Book" link, status, current release pointer, publish lock |
+| `sites` | Yes | Brand name, tagline, logo, locales, template and brand (accent, colours, fonts, corners), header "Book" link, status, current release pointer, publish lock |
 | `pages` | Yes | Drafts and versions; menu label and order; blocks: hero, text and image, text, features, gallery, quote, FAQ, call to action, contact details, map, rich text, plus the hotel pack's rooms, offers and policies blocks; footer flag for legal pages; draft preview; provenance on generated blocks; SEO group |
 | `media` | Yes | Photos stored in Postgres (`media_blobs`) and served at `/media/<key>`; WebP sizes 400/960/1920; alt text required; usage rights; source URL for imported photos |
 | `domains` | Yes | Hostnames per site; only a super-admin can change them, and nobody can delete them |
@@ -171,6 +179,7 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 | REST and GraphQL isolation | Done. Tested against the live URL |
 | Postgres RLS | Done as an evaluation: policies on 9 tables, restricted role, 9 tests. Not yet enforced for live requests |
 | Hotelier self-service | Done (Phase 1). Website panel in the admin (publish, undo, view site, releases), draft preview, photo uploads, owner accounts |
+| Templates and brand | Done: design contract, three templates, brand fields with contrast gates, self-hosted fonts (`src/design/`) |
 | MCP server | Plugin enabled: pages (find, create, update), sites (find, update), media (find), facts (find, create: agents propose, people confirm). No delete tools |
 | Seed | 50 synthetic tenants, 51 users, 50 sites, 150 pages, 50 domains; idempotent; leaves real tenants (customer zero) alone |
 | Migrations | Done. Baseline plus a first real migration, rehearsed at 10 and 50 tenants with per-tenant checksums (`scripts/migration-rehearsal.ps1`) |
@@ -354,6 +363,8 @@ Not in the first 90 days: self-serve signup, billing automation, the control-pla
 | [`docs/07-content-model-and-hotel-pack.md`](docs/07-content-model-and-hotel-pack.md) | Platform primitives, provenance, locales, hotel pack types |
 | [`docs/08-ingest-spike.md`](docs/08-ingest-spike.md) | Ingest on customer zero: facts, conflicts, site audit |
 | [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) | **Next phases**: from hotelier self-service to five paying hotels, mapped onto the 90-day plan and its gates |
+| [`docs/11-design-contract.md`](docs/11-design-contract.md) | **Design contract**: templates, brand, tokens, contrast gates, fonts; who designs what |
+| [`docs/12-strategy-decisions.md`](docs/12-strategy-decisions.md) | **Strategy decisions** (24 Sep): architecture, domains, plugins, EdgeOne features, security, GDPR and accessibility, email, design |
 | [`docs/screenshots/`](docs/screenshots/README.md) | Dated screenshots of the live site and admin |
 | [`docs/09-system-design.md`](docs/09-system-design.md) | **System design, illustrated**: context, containers, isolation, ingest, releases, schema changes, repository map |
 | [`docs/contracts/`](docs/contracts/) | Cross-team contracts: erasure and export, chatbot widget, booking-engine embed |

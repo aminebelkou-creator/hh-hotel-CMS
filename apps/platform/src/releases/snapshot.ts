@@ -36,6 +36,9 @@ export type SiteSnapshot = {
     enabledLocales: string[]
     defaultLocale: string
     theme: unknown
+    /** Design template id and the hotel's brand choices (design contract, docs/11). */
+    template: string
+    brand: Record<string, string | null> | null
     cta: { label: Localized<string> | null; href: string | null }
   }
   pages: SnapshotPage[]
@@ -102,6 +105,8 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
       enabledLocales: (site.enabledLocales as string[] | null) ?? ['en'],
       defaultLocale: site.defaultLocale ?? 'en',
       theme: site.theme ?? null,
+      template: (s.template as string) || 'maison',
+      brand: brandOf(s.brand),
       cta: { label: cta.label ?? null, href: cta.href ?? null },
     },
     pages: pages.docs.map(toSnapshotPage),
@@ -110,6 +115,17 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
       .sort((a, b) => a.key.localeCompare(b.key) || a.value.localeCompare(b.value)),
     packs: packData,
   }
+}
+
+/** Only the brand fields the design contract knows, empty values dropped. */
+export function brandOf(v: unknown): Record<string, string | null> | null {
+  if (!v || typeof v !== 'object') return null
+  const out: Record<string, string | null> = {}
+  for (const k of ['accent', 'background', 'text', 'headingFont', 'bodyFont', 'corners']) {
+    const x = (v as Record<string, unknown>)[k]
+    if (typeof x === 'string' && x.trim()) out[k] = x.trim()
+  }
+  return Object.keys(out).length ? out : null
 }
 
 /** Pick a localized value: requested locale, then the site default, then any non-empty value. */

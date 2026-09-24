@@ -1,4 +1,5 @@
 import React from 'react'
+import { fontVariables } from '@/design/fonts'
 import '../s/[site]/site.css'
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +11,7 @@ export default function PreviewLayout(props: { children: React.ReactNode }) {
       <head>
         <meta name="robots" content="noindex, nofollow" />
       </head>
-      <body className="hh-site">{props.children}</body>
+      <body className={`hh-site ${fontVariables}`}>{props.children}</body>
     </html>
   )
 }

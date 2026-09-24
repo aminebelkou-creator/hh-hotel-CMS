@@ -183,3 +183,31 @@ describe('media', () => {
     expect((await fetch(`${BASE}/media/..%2F..%2Fetc%2Fpasswd`)).status).toBe(404)
   })
 })
+
+describe('templates and brand (design contract)', () => {
+  const patchSite = (t: T, data: Record<string, unknown>) =>
+    fetch(`${BASE}/api/sites/${t.siteId}`, { method: 'PATCH', headers: { ...auth(t), 'content-type': 'application/json' }, body: JSON.stringify(data) })
+
+  it('an owner switches template and brand; the published site follows, other tenants cannot', async (ctx) => {
+    if (!reachable) ctx.skip()
+    try {
+      expect((await patchSite(A, { template: 'soiree', brand: { accent: '#2f6f8f' } })).status).toBe(200)
+      expect((await patchSite(B, {})).status).toBe(200)
+      expect([403, 404]).toContain((await fetch(`${BASE}/api/sites/${A.siteId}`, { method: 'PATCH', headers: { ...auth(B), 'content-type': 'application/json' }, body: JSON.stringify({ template: 'atelier' }) })).status)
+      expect((await fetch(`${BASE}/api/sites/${A.siteId}/publish`, { method: 'POST', headers: auth(A) })).status).toBe(200)
+      const html = await (await fetch(`${BASE}/s/${A.slug}`)).text()
+      expect(html).toContain('data-template="soiree"')
+      expect(html).toContain('--hh-accent:#2f6f8f')
+      expect(html).toContain('--hh-f-playfair')
+    } finally {
+      await patchSite(A, { template: 'maison', brand: { accent: null, background: null, text: null } })
+    }
+  })
+
+  it('refuses a text colour too close to the background, with a clear message', async (ctx) => {
+    if (!reachable) ctx.skip()
+    const r = await patchSite(A, { brand: { background: '#777777', text: '#888888' } })
+    expect(r.status).toBe(400)
+    expect(await r.text()).toContain('too close to read')
+  })
+})

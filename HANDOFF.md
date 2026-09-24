@@ -19,6 +19,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Plan position | Day −4. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
 | Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
 | Customer zero | **Marketing website live, content approved by the owner (24 Sep)**: release r4, now served by the new Makers project **`hh-platform` (area overseas)** at https://hh-platform.edgeone.dev/s/hotel-herse-dor (deployment `dpq71p13okqa`). The old project `hh-platform-poc` (area global, custom domains impossible without ICP) still serves the same database at https://hh-platform-poc.edgeone.cool until retired. 6 pages + 3 legal pages, FR/EN, room types, offer, house rules, FAQ, map, schema.org Hotel and FAQPage, sitemap. **Photos now on our own storage** (0 images from the old site). Owner account `proprietaire@hotel-herse-dor.demo` (password in user env var `HH_OWNER_PASSWORD`) |
+| Look | **Three templates** (Maison, Atelier, Soirée) and a brand per site, under the design contract (`docs/11`); customer zero stays on Maison |
 | Admin | **Phase 1 done**: Website panel on sites and pages (Publish site, Undo last publish, View site, releases), Preview button on pages, photo uploads with WebP sizes. Checked live as the owner, who sees only their hotel |
 | Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
 | CI / deploy | Every push: migrations on a fresh Postgres, drift check, **import-map check**, seed, typecheck, suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers |
@@ -55,17 +56,18 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ### Next actions, in order
 
-Phase 1 is done (24 Sep) except amenities as a type. Next is Phase 2 of [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) (own domain, templates, quality gates; 12 Oct – 1 Nov, Gate 1 on 12 Oct).
+Phase 2 of [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md). Done so far: design contract and three templates (24 Sep). Decisions behind the list: [`docs/12-strategy-decisions.md`](docs/12-strategy-decisions.md).
 
-| # | Owner | Action | Why now | Done when |
-| --- | --- | --- | --- | --- |
-| 1 | OWN | Validate the three legal pages (legal notice, privacy, accessibility) and sign in once as the owner | They are drafts written from the hotel's current legal notice | The owner confirms or sends corrections |
-| 2 | ENG | Quality gates in CI: axe (WCAG 2.2 AA), Lighthouse budget, structured-data validation on customer zero's pages | Cheap now, and they protect every later change | A failing page blocks the merge |
-| 3 | ENG | Two templates driven by `sites.theme` design tokens | Hotels need a look of their own without touching content | Customer zero switches look with no content change |
-| 4 | ENG | Contact form (email to the hotel, spam protection); amenities as a hotel-pack type | Last marketing-site basics | Messages reach the hotel's inbox |
-| 5 | OWN | Send the Tencent email; provide a test domain | Gate 1 (12 Oct) and custom domains | Written answer; domain available |
-| 6 | OWN | AI model key; shortlist of hotels | Phase 3 (generation, design partners) | Key stored; first conversations |
-| 7 | DEFERRED | RLS enforcing mode (Phase 4) | Week 4 decision | — |
+| # | Owner | Action | Done when |
+| --- | --- | --- | --- |
+| 1 | ENG | Own-domain serving: hotel recognised from the host, `/` instead of `/s/<site>`, `/admin` only on our domain | Works locally with a test host; live once a domain exists |
+| 2 | ENG | Edge cache of published pages (EdgeOne KV, keyed by release) | Pages under 1 s from Paris |
+| 3 | ENG | Photo uploads under the 6 MB function limit; static map image at publish | A phone photo uploads; no third-party request on public pages |
+| 4 | ENG | Adopt Payload SEO, Redirects, Form Builder, Import/Export; contact form with EU email (SMTP) | Tenant-scoped, isolation-tested; messages stored in the admin |
+| 5 | ENG | Security basics (edge rate limits, headers, Dependabot, code scanning); quality gates in CI for every template | Rules live; a failing page blocks the merge |
+| 6 | OWN | Send the Tencent email (updated draft); delete `hh-platform-poc`; validate the legal pages | Gate 1 answers by 9 Oct |
+| 7 | OWN | Our platform domain + test subdomain; email provider account | Own domain and email live |
+| 8 | OWN | AI model key; shortlist of hotels; a designer later | Phase 3 |
 
 ### Waiting on the owner
 
@@ -121,6 +123,23 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-24 · session 10 · `8d4850e` → this commit
+
+**Changed**
+- Strategy session with the owner, recorded in [`docs/12-strategy-decisions.md`](docs/12-strategy-decisions.md): what a hotel gets (one multi-tenant, multi-site Payload), domains (hotels keep their DNS, one CNAME), the plugins rule and list, EdgeOne KV/Blob/agents, security layers, GDPR and accessibility duties, email provider (Scaleway TEM proposed), design approach. Roadmap and checklist updated with the resulting items.
+- **Design contract** ([`docs/11-design-contract.md`](docs/11-design-contract.md)) and code in `src/design/`: tokens, `resolveTheme()` (derives button text, accent-as-text, secondary text and focus so a brand cannot produce unreadable text; only a text/background pair can be refused), W3C token export, self-hosted OFL fonts (Inter, Manrope, Playfair Display, Cormorant Garamond) through `next/font/local`.
+- **Three templates** built in-house (no designer yet): Maison (customer zero's look, now with its real fonts), Atelier (modern, split hero, square), Soirée (dark, gold, centred italic). `site.css` uses tokens only; per-template layout in `[data-template]` sections.
+- Sites get a `template` select and a `brand` group (accent, background, text, fonts, corners) with validation; the old `theme` JSON is hidden. Releases carry template and brand, so a look change is published and rolled back like content.
+- Migration `site_templates` (additive; rehearsed on 51 tenants: 0 changed). Tests: `design.int.spec.ts` (every template passes; 600 random accents per template and 400 random background/text pairs produce no failing pair) and two HTTP tests (owner switches template and brand; unreadable pair refused). Local-10: 104/104 with HTTP; local-50: 82 + 22 skipped.
+- Tencent email draft updated (new project, staff access, limits). The seeded users' password was rotated on all databases after a fragment appeared in a tool log.
+
+**Learned**
+- A dark background chosen on a light template needs cards that follow the background's lightness, not the template's scheme (first version failed the random-pair test).
+- Full-page screenshots need an explicit wait for lazy images, and the map iframe can keep the network busy: wait on `load`, then images.
+
+**Left undone**
+- Own-domain serving, KV caching, plugins, contact form, security basics (Phase 2 list). The owner still has to delete `hh-platform-poc` in the console.
 
 ### 2026-09-24 · session 9b · `3bc7201` → this commit
 

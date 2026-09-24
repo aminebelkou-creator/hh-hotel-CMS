@@ -10,7 +10,7 @@ import path from 'node:path'
 import { teo, TeoError } from './teo'
 
 const WRITE = process.argv.includes('--write')
-const ORIGIN = 'hh-platform-poc.edgeone.cool'
+const ORIGIN = 'hh-platform.edgeone.dev'
 const log: Record<string, unknown>[] = []
 const step = async (name: string, action: string, params: Record<string, unknown> = {}) => {
   const t0 = Date.now()

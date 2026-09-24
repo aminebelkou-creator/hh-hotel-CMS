@@ -230,9 +230,6 @@ export interface Site {
   timezone?: string | null;
   enabledLocales?: ('en' | 'fr' | 'de' | 'es' | 'it')[] | null;
   defaultLocale?: ('en' | 'fr' | 'de' | 'es' | 'it') | null;
-  /**
-   * Design tokens (W3C DTCG). Contrast is validated at token level before publish.
-   */
   theme?:
     | {
         [k: string]: unknown;
@@ -242,6 +239,30 @@ export interface Site {
     | number
     | boolean
     | null;
+  /**
+   * Maison: Classic and warm: serif headings, cream background, full-width photos. Suits heritage and boutique hotels. · Atelier: Modern and minimal: sans-serif type, white space, square corners, photo beside the headline. Suits design and city hotels. · Soirée: Dark and elegant: night palette, gold accent, centred headlines. Suits luxury and evening-led hotels.
+   */
+  template?: ('maison' | 'atelier' | 'soiree') | null;
+  /**
+   * Optional: leave empty to use the template as designed. Colours as #rrggbb. Button text, links and secondary text are adjusted automatically to stay readable (WCAG AA).
+   */
+  brand?: {
+    accent?: string | null;
+    background?: string | null;
+    text?: string | null;
+    /**
+     * Empty: the template font
+     */
+    headingFont?: ('inter' | 'manrope' | 'playfair' | 'cormorant') | null;
+    /**
+     * Empty: the template font
+     */
+    bodyFont?: ('inter' | 'manrope' | 'playfair' | 'cormorant') | null;
+    /**
+     * Empty: the template corners
+     */
+    corners?: ('square' | 'soft' | 'round') | null;
+  };
   status?: ('draft' | 'live' | 'suspended') | null;
   /**
    * Short line under the name, used in the header and search results
@@ -1186,6 +1207,17 @@ export interface SitesSelect<T extends boolean = true> {
   enabledLocales?: T;
   defaultLocale?: T;
   theme?: T;
+  template?: T;
+  brand?:
+    | T
+    | {
+        accent?: T;
+        background?: T;
+        text?: T;
+        headingFont?: T;
+        bodyFont?: T;
+        corners?: T;
+      };
   status?: T;
   tagline?: T;
   logoUrl?: T;
