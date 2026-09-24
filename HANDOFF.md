@@ -18,11 +18,11 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | --- | --- |
 | Plan position | Day −4. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
 | Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
-| Customer zero | **Marketing website live, content approved by the owner (24 Sep)**: release r4, deployment `dpl4w2ghpe63`, https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor. 6 pages + 3 legal pages, FR/EN, room types, offer, house rules, FAQ, map, schema.org Hotel and FAQPage, sitemap. **Photos now on our own storage** (0 images from the old site). Owner account `proprietaire@hotel-herse-dor.demo` (password in user env var `HH_OWNER_PASSWORD`) |
+| Customer zero | **Marketing website live, content approved by the owner (24 Sep)**: release r4, now served by the new Makers project **`hh-platform` (area overseas)** at https://hh-platform.edgeone.dev/s/hotel-herse-dor (deployment `dpq71p13okqa`). The old project `hh-platform-poc` (area global, custom domains impossible without ICP) still serves the same database at https://hh-platform-poc.edgeone.cool until retired. 6 pages + 3 legal pages, FR/EN, room types, offer, house rules, FAQ, map, schema.org Hotel and FAQPage, sitemap. **Photos now on our own storage** (0 images from the old site). Owner account `proprietaire@hotel-herse-dor.demo` (password in user env var `HH_OWNER_PASSWORD`) |
 | Admin | **Phase 1 done**: Website panel on sites and pages (Publish site, Undo last publish, View site, releases), Preview button on pages, photo uploads with WebP sizes. Checked live as the owner, who sees only their hotel |
 | Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
 | CI / deploy | Every push: migrations on a fresh Postgres, drift check, **import-map check**, seed, typecheck, suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers |
-| Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains are disabled on the Makers project (finding 22) |
+| Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains: **unblocked** — finding 22 was the project's area (global includes mainland China, needs ICP); the new `overseas` project can add them. Next: a test subdomain the owner controls |
 
 ### What exists
 
@@ -121,6 +121,22 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-24 · session 9b · `3bc7201` → this commit
+
+**Changed**
+- Finding 22 solved with the owner: "add custom domain" is disabled because `hh-platform-poc` was created in area `global` (includes mainland China, so ICP filing and identity verification are required). The area cannot be changed after creation.
+- New Makers project `hh-platform` in area `overseas` (Global, Chinese mainland excluded), same Neon database, variables copied without displaying them. Live at https://hh-platform.edgeone.dev; the full live check passed there (pages, legal pages, FAQ JSON-LD, `/media`, preview redirect, owner login, upload and delete).
+- Deploy workflow, `deploy-poc.ps1` (new `-Area`, default `overseas`), `run-suites.ps1` and the README point at the new project.
+
+**Learned**
+- `edgeone makers deploy -a global|overseas` picks the area at creation (default `global`). Overseas projects get `*.edgeone.dev` addresses.
+- `edgeone makers link` silently writes the project's production variables into `apps/platform/.env`; a local `.env` pointing at localhost was put back afterwards (CLAUDE.md 31).
+- Cloud functions cap requests at 6 MB and 120 s (Makers skills); photo uploads need a size limit before hotels use phones.
+- Dynamic pages take about 2.2 s from Paris on both projects: caching is a Phase 2 item.
+
+**Left undone**
+- Retiring `hh-platform-poc` (owner's call). Adding a custom domain (needs a domain the owner controls).
 
 ### 2026-09-24 · session 9 · `739a195` → this commit (code `9f17a11`)
 

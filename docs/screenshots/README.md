@@ -4,7 +4,7 @@ Evidence of what the platform looks like at a given date. Taken with `apps/platf
 
 ```bash
 cd apps/platform
-node tests/visual/screenshots.mjs https://hh-platform-poc.edgeone.cool <output-folder>
+node tests/visual/screenshots.mjs https://hh-platform.edgeone.dev <output-folder>
 ```
 
 ## 24 September 2026, later: Phase 1, hotelier self-service

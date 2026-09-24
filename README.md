@@ -8,7 +8,7 @@
 | --- | --- |
 | **Status** | Pre-launch. Weeks 1–2 engineering and Phase 1 (hotelier self-service) done early. Customer zero's marketing website (FR/EN, room types, offers, FAQ, legal pages, photos on our own storage) is live on the proof of concept and its owner can publish from the admin; the 90-day plan runs 28 September to 25 December 2026 |
 | **Proof** | 94 tests green on every push (isolation, RLS, facts, releases, public site, draft preview and photo uploads over HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
-| **Live proof of concept** | https://hh-platform-poc.edgeone.cool — customer zero at [/s/hotel-herse-dor](https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor) (demo: a marketing website in French and English; admin at `/admin`) |
+| **Live proof of concept** | https://hh-platform.edgeone.dev — customer zero at [/s/hotel-herse-dor](https://hh-platform.edgeone.dev/s/hotel-herse-dor) (demo: a marketing website in French and English; admin at `/admin`) |
 | **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen. Waiting on Tencent; custom domains are disabled on the Makers project |
 | **Owner** | Hotel Hersedor Paris / xedge |
 
@@ -299,14 +299,14 @@ Against Neon, first set `SEED_PASSWORD` to the rotated value. The tests refuse t
 
 ```bash
 cd apps/platform
-edgeone makers link -n hh-platform-poc
+edgeone makers link -n hh-platform        # note: link also pulls the project's variables into .env; restore a local .env afterwards
 edgeone makers env set DATABASE_URL "<neon url>" -e production   # secrets live in Makers, never in .env
 edgeone makers env set PAYLOAD_SECRET "<random>" -e production
 # move .env out of the folder first: the CLI uploads the whole directory
-edgeone makers deploy . -n hh-platform-poc -e production --json --skip-ai-gateway-sync
+edgeone makers deploy . -n hh-platform -a overseas -e production --json --skip-ai-gateway-sync
 ```
 
-`edgeone.json` pins cloud functions to `eu-frankfurt`. Build logs are not shown by the CLI; if a deploy fails, run `pnpm run build` locally.
+`-a overseas` (Global, Chinese mainland excluded) is required: the default area includes mainland China, which needs an ICP filing and disables custom domains (finding 22). `edgeone.json` pins cloud functions to `eu-frankfurt`. The earlier project `hh-platform-poc` (area global) still serves the same database at https://hh-platform-poc.edgeone.cool until it is retired. Build logs are not shown by the CLI; if a deploy fails, run `pnpm run build` locally.
 
 ## 12. Security and data protection
 

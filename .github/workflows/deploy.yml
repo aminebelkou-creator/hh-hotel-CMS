@@ -45,7 +45,7 @@ jobs:
           export PAYLOAD_SECRET="$(openssl rand -hex 32)"   # migrations never sign tokens
           pnpm payload migrate
           pnpm exec tsx src/db/apply-rls.ts
-      - name: Deploy to EdgeOne Makers (Frankfurt)
+      - name: Deploy to EdgeOne Makers (area overseas = Global, Chinese mainland excluded; finding 22)
         env:
           EDGEONE_PAGES_API_TOKEN: ${{ secrets.EDGEONE_PAGES_API_TOKEN }}
         run: |
@@ -53,5 +53,5 @@ jobs:
           rm -f .env .env.*   # runtime secrets live in Makers project variables, never in the upload
           node ../../scripts/vendor-packs.mjs   # Makers installs only this folder: copy packs/* in (CLAUDE.md 26)
           start=$(date +%s)
-          edgeone makers deploy . -n hh-platform-poc -e production -t "$EDGEONE_PAGES_API_TOKEN" --json --skip-ai-gateway-sync
+          edgeone makers deploy . -n hh-platform -a overseas -e production -t "$EDGEONE_PAGES_API_TOKEN" --json --skip-ai-gateway-sync
           echo "deploy took $(( $(date +%s) - start )) s"

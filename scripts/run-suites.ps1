@@ -8,7 +8,7 @@ $local = 'tests/int/isolation.int.spec.ts', 'tests/int/isolation-extended.int.sp
 $runs = @(
   @{ Name = 'local-10'; Url = 'postgres://hh:hh_local_dev@localhost:5432/hh_check'; Tenants = '10'; Tests = $local; Platform = '' },
   @{ Name = 'local-50'; Url = 'postgres://hh:hh_local_dev@localhost:5432/hh_platform'; Tenants = '50'; Tests = $local; Platform = '' },
-  @{ Name = 'neon-50'; Url = [Environment]::GetEnvironmentVariable('NEON_DATABASE_URL', 'User'); Tenants = '50'; Tests = @('tests/int'); Platform = 'https://hh-platform-poc.edgeone.cool' }
+  @{ Name = 'neon-50'; Url = [Environment]::GetEnvironmentVariable('NEON_DATABASE_URL', 'User'); Tenants = '50'; Tests = @('tests/int'); Platform = 'https://hh-platform.edgeone.dev' }
 )
 foreach ($r in $runs) {
   $env:DATABASE_URL = $r.Url; $env:SEED_TENANTS = $r.Tenants; $env:PLATFORM_URL = $r.Platform

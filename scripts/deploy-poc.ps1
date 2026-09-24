@@ -1,7 +1,9 @@
-# Deploys apps/platform to the Makers proof-of-concept project from this PC.
+# Deploys apps/platform to the Makers project from this PC.
+# The project must be in area 'overseas' (Global, Chinese mainland excluded): the CLI default 'global'
+# includes mainland China, which needs an ICP filing and disables custom domains (finding 22).
 # Run migrations on Neon FIRST (pnpm payload migrate with DATABASE_URL from NEON_DATABASE_URL).
 # .env is moved out for the upload (the CLI uploads the whole folder) and always restored.
-param([string] $Project = 'hh-platform-poc', [string] $Log = "$env:TEMP\deploy-poc.log")
+param([string] $Project = 'hh-platform', [string] $Area = 'overseas', [string] $Log = "$env:TEMP\deploy-poc.log")
 function Say($m) { Add-Content -Encoding ascii -Path $Log -Value "[$(Get-Date -Format HH:mm:ss)] $m" }
 $app = Join-Path $PSScriptRoot '..\apps\platform' | Resolve-Path
 $held = Join-Path $env:TEMP 'hh-env-held'
@@ -18,7 +20,7 @@ try {
   if (Test-Path $next) { Remove-Item $next -Recurse -Force; Say 'removed local .next before upload' }
   # Makers installs only this folder: copy workspace packs in for the upload, undo afterwards.
   Push-Location $app; node ..\..\scripts\vendor-packs.mjs | ForEach-Object { Say $_ }; Pop-Location
-  $t = Measure-Command { $out = edgeone makers deploy $app -n $Project -e production --json --skip-ai-gateway-sync 2>&1 | Out-String }
+  $t = Measure-Command { $out = edgeone makers deploy $app -n $Project -a $Area -e production --json --skip-ai-gateway-sync 2>&1 | Out-String }
   $flat = ($out -replace '\x1b\[[0-9;]*m', '' -replace '\s+', ' ')
   Say ("deploy exit {0} in {1:N0} s" -f $LASTEXITCODE, $t.TotalSeconds)
   Say ("tail: " + $flat.Substring([Math]::Max(0, $flat.Length - 500)))
