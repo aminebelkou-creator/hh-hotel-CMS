@@ -616,6 +616,8 @@ Week-by-week plan, gates and metrics: 90-day plan
 - Schema migrations at 10 then 50 tenants, the Payload upgrade path and single-tenant restore all rehearsed, with no other tenant's data changed
 - Content releases: publish 3.1 s and rollback 1.2 s on Neon and Makers, against Gate 2 targets of 60 s and 10 s. Code deploys (about 3 min from CI) are a separate path; proposed that the 60 s target applies to content releases
 - First product slice live for customer zero: fact base with human confirmation, immutable releases with rollback, public renderer, booking step on a mock of the xedge booking engine (clockPMS BE)
+- Product focus (owner, 24 September): a hotel marketing website, operated for the hotel, with no booking logic for now. Customer zero's site is live and approved
+- Next phases: hotelier self-service, own domain and templates, generation from a hotel's URL, operated service, five paying hotels (`docs/10-roadmap-phases.md`)
 - Still open: custom domains (disabled on the Makers project, waiting on Tencent), RLS enforcing mode, generation (AI model key pending)
 - Day-to-day status lives in the repository: `HANDOFF.md` and `docs/CHECKLIST.md`
 

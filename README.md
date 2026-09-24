@@ -14,6 +14,18 @@
 
 ---
 
+## What it looks like
+
+Customer zero, Hôtel de la Herse d'Or, live on the proof of concept (24 September 2026, content approved by the owner). More in [`docs/screenshots/`](docs/screenshots/README.md).
+
+<p>
+<img src="docs/screenshots/2026-09-24/site-home-fr-top.jpg" alt="Home page of the hotel site: hero photo of the lounge, headline 'Au cœur du Marais, depuis 1790'" width="560">
+<img src="docs/screenshots/2026-09-24/site-home-mobile-top.jpg" alt="The same home page on a phone" width="190">
+</p>
+<img src="docs/screenshots/2026-09-24/site-rooms-fr-detail.jpg" alt="Rooms page: Superior room with description, amenities and photos" width="560">
+
+**What comes next** is laid out in five phases in [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md): hotelier self-service (publish from the admin, photo uploads), own domain and templates, generating a site from a hotel's URL, the operated service, then five paying hotels.
+
 ## 1. The problem
 
 Independent hotels lose margin to online travel agencies because their own websites convert badly, go stale, and rarely rank. The fixes are known: fast pages, current rates and offers, structured data, good translations, accessibility, and a booking engine one click away. But nobody at a 30-room hotel has time to do all that every month, and agencies charge for a project, then leave.
@@ -335,6 +347,8 @@ Not in the first 90 days: self-serve signup, billing automation, the control-pla
 | [`docs/06-release-pipeline-design.md`](docs/06-release-pipeline-design.md) | Release pipeline v0: per-site lock, immutable releases, verify, rollback |
 | [`docs/07-content-model-and-hotel-pack.md`](docs/07-content-model-and-hotel-pack.md) | Platform primitives, provenance, locales, hotel pack types |
 | [`docs/08-ingest-spike.md`](docs/08-ingest-spike.md) | Ingest on customer zero: facts, conflicts, site audit |
+| [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) | **Next phases**: from hotelier self-service to five paying hotels, mapped onto the 90-day plan and its gates |
+| [`docs/screenshots/`](docs/screenshots/README.md) | Dated screenshots of the live site and admin |
 | [`docs/09-system-design.md`](docs/09-system-design.md) | **System design, illustrated**: context, containers, isolation, ingest, releases, schema changes, repository map |
 | [`docs/contracts/`](docs/contracts/) | Cross-team contracts: erasure and export, chatbot widget, booking-engine embed |
 | [`docs/outreach/`](docs/outreach/) | Vendor correspondence, starting with the Tencent Makers email |

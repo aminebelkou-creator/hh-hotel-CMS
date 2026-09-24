@@ -2,7 +2,7 @@
 
 Living checklist for the 90-day plan (28 September to 25 December 2026). Tick items in the commit that completes them, with a link to the evidence. Owner codes: **ENG** engineering, **BIZ** sales and partnerships, **OWN** project owner, **XT** another xedge team.
 
-Last updated: 24 September 2026, end of session 8 (admin fix, hotel pack, customer zero marketing site; booking parked). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
+Last updated: 24 September 2026, end of session 8 (admin fix, hotel pack, customer zero marketing site approved by the owner; booking parked). The next phases and their deliverables: [`10-roadmap-phases.md`](10-roadmap-phases.md). Evidence: [`screenshots/`](screenshots/README.md). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
 
 ## At a glance
 
@@ -12,7 +12,31 @@ Last updated: 24 September 2026, end of session 8 (admin fix, hotel pack, custom
 | Week 1 | 9 | 4 | Engineering done early; BIZ and XT items not started |
 | Week 2 | 8 | 6 | All six proof items and the fact confirmation flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a fresh key and a test domain), hotel pack types, fact flow and BIZ items open |
 | Weeks 3–13 | 2 | 44 | Content release pipeline v0 done early (week 4 item); the four gates open; Gate 1 on 12 October |
-| **Total** | **23** | **57** | |
+| Phase 1 (new list) | 1 | 6 | Added 24 Sep; see the phase view |
+| **Total** | **24** | **63** | |
+
+## Phase view (added 24 September)
+
+The weekly items below map onto five phases, detailed in [`10-roadmap-phases.md`](10-roadmap-phases.md):
+
+| Phase | Dates | Headline | Status |
+| --- | --- | --- | --- |
+| 0 — Proof and first site | 22–27 Sep | Isolation, hosting, CI, releases, customer zero's site | **Done**: site live and approved ([screenshots](screenshots/README.md)) |
+| 1 — Hotelier self-service | 28 Sep – 11 Oct | Publish and preview from the admin, photo uploads, hotel pack v1, legal pages | Next |
+| 2 — Own domain, templates, quality gates | 12 Oct – 1 Nov | Gate 1, custom domain, two templates, accessibility/performance in CI | Waiting on Tencent for the domain |
+| 3 — Generate from a URL | 2 – 22 Nov | AI ingest, fact review, generation, translation; design partners | Needs the AI key |
+| 4 — Operated service | 23 Nov – 13 Dec | Scheduled checks, one-tap fixes, monthly report, RLS enforcing | — |
+| 5 — Five paying hotels | 14 – 25 Dec | Gate 4 | — |
+
+Phase 1 items, tracked here until they land in the weekly list:
+
+- [ ] **ENG** Publish, roll back and "View site" from the admin; list of releases per site
+- [ ] **ENG** Draft preview link on each page
+- [ ] **ENG** Media pipeline v0: uploads to EU object storage, resized variants, alt text required; customer zero's photos moved off the old site
+- [ ] **ENG** Hotel pack v1: offers, amenity type, policies, FAQ block
+- [ ] **ENG** Legal notice, privacy page, accessibility statement in the footer
+- [ ] **OWN** Owner account for customer zero (tenant user, not super-admin)
+- [x] **OWN** Customer zero's demo content reviewed — approved 24 Sep ("the website info are alright")
 
 ## Before week 1 — owner actions
 
@@ -71,7 +95,7 @@ Last updated: 24 September 2026, end of session 8 (admin fix, hotel pack, custom
 - [ ] **ENG** Release pipeline: domain bind — blocked, custom domains disabled on the Makers project (finding 22)
 - [ ] **ENG** Canonical content model live; RLS decision recorded
 - [ ] **ENG** Two template packages, accessibility- and Core Web Vitals-gated in CI
-- [ ] **ENG** Customer 1 ingest and fact confirmation, by hand — done for customer zero (24 Sep): ingest, facts, and a full FR/EN marketing site built by hand from `src/onboarding/`
+- [ ] **ENG** Customer 1 ingest and fact confirmation, by hand — done for customer zero (24 Sep): ingest, facts, and a full FR/EN marketing site built by hand from `src/onboarding/`, **approved by the owner** ([screenshots](screenshots/README.md)); stays open for the first design partner
 - [ ] **XT** **Cross-team contracts signed**: erasure, chatbot boundary, booking embed
 - [ ] **BIZ** Tiers priced
 

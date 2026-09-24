@@ -1,6 +1,6 @@
 # 90-day plan
 
-> **This is the baseline plan.** It changes only by decision. Progress is ticked in [`CHECKLIST.md`](CHECKLIST.md). Where reality has moved away from this plan, and why, is recorded under *Plan deltas* in [`../HANDOFF.md`](../HANDOFF.md). Status on 23 September 2026: week-1 and week-2 engineering done early; the week-4 content release pipeline built early (Gate 2 content targets met on Neon); Gate 1 is waiting on Tencent. See the checklist for item-level progress.
+> **This is the baseline plan.** It changes only by decision. Progress is ticked in [`CHECKLIST.md`](CHECKLIST.md). Where reality has moved away from this plan, and why, is recorded under *Plan deltas* in [`../HANDOFF.md`](../HANDOFF.md). Status on 23 September 2026: week-1 and week-2 engineering done early; the week-4 content release pipeline built early (Gate 2 content targets met on Neon); Gate 1 is waiting on Tencent. See the checklist for item-level progress. Since 24 September the product focus is a hotel marketing website with no booking logic, and the remaining weeks are grouped into five phases in [`10-roadmap-phases.md`](10-roadmap-phases.md).
 
 Day 90 ends with three to five hotels paying for sites live on their own domains, served by the minimal pooled platform, with the isolation proof passed, the hosting gate settled, and human minutes per site measured for every one of them. Starts Monday 28 September 2026; ends Friday 25 December 2026.
 

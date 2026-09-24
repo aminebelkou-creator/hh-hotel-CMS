@@ -46,6 +46,10 @@ The crawler output now goes into Payload:
 
 Still to confirm in the admin (Facts, filter `unconfirmed`): check-in 15:30, the address, email, amenities (what "parking" means), room names, and three `0x-1600-1200` numbers that look like Wi-Fi instructions rather than hotel phones.
 
+## Owner's approval (24 September)
+
+The owner reviewed the demo site built from these facts and approved its content ("the website info are alright"), including the points flagged for checking: the lift, the approximate map position and the absence of room sizes. Engineering's "Demo" confirmations therefore stand as the hotel's.
+
 ## Site audit, a first service-report preview
 
 | Check | Result |

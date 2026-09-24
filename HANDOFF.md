@@ -18,7 +18,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | --- | --- |
 | Plan position | Day −4. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
 | Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
-| Customer zero | **Marketing website live on the proof of concept** (release r3, deployment `dp0ew3tuxuyf`): https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor (6 pages, FR/EN, room types, gallery, map, schema.org Hotel, sitemap). Content adapted from the hotel's own site; photos served from it |
+| Customer zero | **Marketing website live and approved by the owner (24 Sep)** on the proof of concept (release r3, deployment `dp0ew3tuxuyf`): https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor (6 pages, FR/EN, room types, gallery, map, schema.org Hotel, sitemap). Content adapted from the hotel's own site; photos served from it |
 | Admin | **Fixed**: it rendered a blank page because its import map was stale (finding 26). CI now checks the map |
 | Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
 | CI / deploy | Every push: migrations on a fresh Postgres, drift check, **import-map check**, seed, typecheck, suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers |
@@ -52,25 +52,27 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ### Next actions, in order
 
+Phase 1 of [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) (hotelier self-service, 28 Sep – 11 Oct).
+
 | # | Owner | Action | Why now | Done when |
 | --- | --- | --- | --- | --- |
-| 1 | OWN | Look at the demo site and say what to change (text, photos, order of sections, colours) | Customer zero is the reference site for every hotel after it | A list of changes, or "good" |
-| 2 | ENG | Admin editing comfort: a "Publish" button and a "View site" link in the admin, and live preview of drafts | Today publishing needs the API or a script | Publish and preview from `/admin` |
-| 3 | ENG | Media pipeline v0: upload photos into the platform (object storage) instead of hot-linking | Week 5 item; removes the dependency on the old site | Customer zero's photos served from our storage |
-| 4 | OWN | Send the Tencent email (also asks why custom domains are disabled) | Gate 1, 12 October | Written answer |
-| 5 | ENG | Templates: a second visual theme from `sites.theme` tokens, accessibility and Core Web Vitals checks in CI | Week 4 item | Two themes, checks blocking |
-| 6 | OWN | AI model key | Generating a first site for a new hotel from its facts | Key stored |
-| 7 | DEFERRED | Custom-domain test; RLS enforcing mode | Blocked on Tencent; week 4 decision | — |
+| 1 | ENG | Publish, roll back and "View site" from the admin, with the list of releases per site | Today publishing needs the API or a script | The owner republishes after an edit, from `/admin`, in under a minute |
+| 2 | ENG | Draft preview link on each page | Hoteliers must see changes before they go live | Preview opens the draft with the site's design |
+| 3 | ENG | Media pipeline v0: uploads to EU object storage, resized variants, alt text required; move customer zero's photos | Photos are hot-linked from the old site | No image on the site comes from www.hotel-herse-dor.com |
+| 4 | ENG | Hotel pack v1: offers, amenity type, policies, FAQ block; legal notice, privacy page, accessibility statement | A complete hotel marketing site | Present on customer zero's site |
+| 5 | OWN | Send the Tencent email; provide a test domain we may point at the platform | Gate 1 (12 Oct) and custom domains (Phase 2) | Written answer; domain available |
+| 6 | OWN | AI model key; shortlist of hotels | Phase 3 (generation, design partners) | Key stored; first conversations |
+| 7 | DEFERRED | RLS enforcing mode (Phase 4) | Week 4 decision | — |
 
 ### Waiting on the owner
 
 | Action | Blocks |
 | --- | --- |
-| Feedback on the demo site | Next iteration of customer zero and the default template |
-| Send the Tencent email: [`docs/outreach/tencent-makers-platforms-email.md`](docs/outreach/tencent-makers-platforms-email.md) | Gate 1 |
+| Send the Tencent email: [`docs/outreach/tencent-makers-platforms-email.md`](docs/outreach/tencent-makers-platforms-email.md) | Gate 1, custom domains |
+| A test domain for the custom-domain work | Phase 2 |
+| AI model key | Phase 3 |
 | Revoke the Tencent CAM key beginning `IKIDTYWK` | Security hygiene |
-| AI model key | Generation |
-| Share the repository with the team; shortlist 15 hotels | Anyone else working on it; design partners by week 3 |
+| Share the repository with the team; shortlist 15 hotels | Anyone else working on it; design partners |
 
 ### Secrets map (names only; values are never written to the repo or to chat)
 
@@ -136,6 +138,9 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 **Left undone**
 - Publish button and preview in the admin, media upload, second theme, AI generation, domain test.
+
+**Afterwards (same day)**
+- The owner approved the demo site's content. Screenshots added (`docs/screenshots/`), next phases written up (`docs/10-roadmap-phases.md`), checklist given a phase view.
 
 ### 2026-09-23 · session 7 · `6b7a0ba` → this commit
 
