@@ -223,3 +223,11 @@ Finding 26: **the admin rendered an empty white page, locally and on Makers, wit
 Finding 27: **`payload migrate:create` hangs in a non-interactive shell when a change both removes and adds schema objects**: drizzle asks whether each new enum or column is a rename of a removed one. Splitting the change into two migrations (additions, then removals) avoids the prompt and keeps each migration additive-first, as the release rules require.
 
 Decision (owner, 24 September): **the product for now is a hotel marketing website**, with no booking logic and no PMS work. The booking step built on 23 September is removed from the site and its adapter parked; the header's "Book" button is a link. Customer zero's facts no longer wait for the owner's review: engineering confirmed the ones the hotel's own website supports, marked "Demo" in the decision note.
+
+## Hotelier self-service (Phase 1) — 24 September 2026
+
+Finding 28: **a serverless host needs somewhere other than disk for uploads.** Makers functions have no durable file system, so Payload's default local upload directory would lose photos between invocations. Media v0 stores the bytes in Postgres (`media_blobs`, same Neon Frankfurt database) behind the cloud-storage plugin's adapter interface, and serves them publicly at `/media/<key>` with year-long immutable caching. Customer zero's 20 photos, converted to WebP with their smaller sizes, take 54 stored files and 2.8 MB: fine for tens of hotels, not for thousands. Moving to EU object storage later only replaces the adapter.
+
+Finding 29: **Payload's duplicate-filename check is scoped by tenant, but storage keys are not.** With tenant-scoped reads, two hotels uploading `room.jpg` would both get `room.jpg` and the second would overwrite the first's file. Every upload now gets a random 8-character prefix; a test uploads the same name from two tenants and checks two separate files exist.
+
+Finding 30: **publishing from the admin needed no new server code.** The panel calls the existing publish and rollback endpoints, which already check the caller's access; releases stay create-only for super-admins. Draft preview reuses the release snapshot builder and swaps in the draft page, so a preview looks exactly like the published site.

@@ -6,8 +6,8 @@
 
 | | |
 | --- | --- |
-| **Status** | Pre-launch. Weeks 1–2 engineering done early and customer zero's marketing website (6 pages, FR/EN, room types, schema.org Hotel) is live on the proof of concept; the 90-day plan runs 28 September to 25 December 2026 |
-| **Proof** | 82 tests green on every push (isolation, RLS, facts, releases, public site over HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
+| **Status** | Pre-launch. Weeks 1–2 engineering and Phase 1 (hotelier self-service) done early. Customer zero's marketing website (FR/EN, room types, offers, FAQ, legal pages, photos on our own storage) is live on the proof of concept and its owner can publish from the admin; the 90-day plan runs 28 September to 25 December 2026 |
+| **Proof** | 94 tests green on every push (isolation, RLS, facts, releases, public site, draft preview and photo uploads over HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
 | **Live proof of concept** | https://hh-platform-poc.edgeone.cool — customer zero at [/s/hotel-herse-dor](https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor) (demo: a marketing website in French and English; admin at `/admin`) |
 | **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen. Waiting on Tencent; custom domains are disabled on the Makers project |
 | **Owner** | Hotel Hersedor Paris / xedge |
@@ -24,7 +24,11 @@ Customer zero, Hôtel de la Herse d'Or, live on the proof of concept (24 Septemb
 </p>
 <img src="docs/screenshots/2026-09-24/site-rooms-fr-detail.jpg" alt="Rooms page: Superior room with description, amenities and photos" width="560">
 
-**What comes next** is laid out in five phases in [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md): hotelier self-service (publish from the admin, photo uploads), own domain and templates, generating a site from a hotel's URL, the operated service, then five paying hotels.
+**Phase 1, hotelier self-service, is done** (24 September): the owner signs in to `/admin`, edits a page, previews the draft, and publishes or undoes a publish from the site's Website panel.
+
+<img src="docs/screenshots/phase-1/live-owner-publish.jpg" alt="Admin, signed in as the hotel owner: the site with the Website panel, Publish site, Undo last publish, View site and the list of releases" width="560">
+
+**What comes next** is laid out in [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md): own domain and templates, generating a site from a hotel's URL, the operated service, then five paying hotels.
 
 ## 1. The problem
 
@@ -149,14 +153,15 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 
 | Collection | Tenant-scoped | Purpose |
 | --- | --- | --- |
-| `users` | Membership list | Roles `super-admin` / `user`; roles can only be changed by a super-admin |
+| `users` | Membership list | Roles `super-admin` / `owner` / `editor`; roles can only be changed by a super-admin. Hotel owners are created with `src/onboarding/owner.ts` |
 | `tenants` | — | One per hotel: name, slug, plan |
 | `sites` | Yes | Brand name, tagline, logo, locales, theme tokens, header "Book" link, status, current release pointer, publish lock |
-| `pages` | Yes | Drafts and versions; menu label and order; blocks: hero, text and image, features, gallery, quote, call to action, contact details, map, rich text, plus the hotel pack's rooms block; provenance on generated blocks; SEO group |
-| `media` | Yes | Focal point, image sizes, alt text, usage rights |
+| `pages` | Yes | Drafts and versions; menu label and order; blocks: hero, text and image, text, features, gallery, quote, FAQ, call to action, contact details, map, rich text, plus the hotel pack's rooms, offers and policies blocks; footer flag for legal pages; draft preview; provenance on generated blocks; SEO group |
+| `media` | Yes | Photos stored in Postgres (`media_blobs`) and served at `/media/<key>`; WebP sizes 400/960/1920; alt text required; usage rights; source URL for imported photos |
 | `domains` | Yes | Hostnames per site; only a super-admin can change them, and nobody can delete them |
 | `releases` | Yes | Immutable snapshots (published pages + confirmed facts) with a sha256 checksum. Created only by the pipeline; only status and verification change afterwards; never deleted |
 | `rooms` (hotel pack) | Yes | Room types: localized name, summary, description, occupancy, bed, view, features, photos |
+| `offers` (hotel pack) | Yes | Offers and packages: title, highlight, summary, conditions, validity dates, photo, link; shown only while valid |
 | `facts` | Yes | The fact base: key, value, source, method, confidence, evidence. Born unconfirmed; confirmation is stamped by the server. Agents may propose, never confirm |
 
 | Capability | State |
@@ -164,7 +169,8 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 | Multi-tenant access control | Done. 13-case isolation matrix across read, write, move, join and self-promotion |
 | `overrideAccess` audit | Done. Every use in `src/` must be allowlisted with a reason, or the test fails |
 | REST and GraphQL isolation | Done. Tested against the live URL |
-| Postgres RLS | Done as an evaluation: policies, restricted role, 9 tests. Not yet enforced for live requests |
+| Postgres RLS | Done as an evaluation: policies on 9 tables, restricted role, 9 tests. Not yet enforced for live requests |
+| Hotelier self-service | Done (Phase 1). Website panel in the admin (publish, undo, view site, releases), draft preview, photo uploads, owner accounts |
 | MCP server | Plugin enabled: pages (find, create, update), sites (find, update), media (find), facts (find, create: agents propose, people confirm). No delete tools |
 | Seed | 50 synthetic tenants, 51 users, 50 sites, 150 pages, 50 domains; idempotent; leaves real tenants (customer zero) alone |
 | Migrations | Done. Baseline plus a first real migration, rehearsed at 10 and 50 tenants with per-tenant checksums (`scripts/migration-rehearsal.ps1`) |

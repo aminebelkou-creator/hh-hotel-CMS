@@ -10,7 +10,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ---
 
-## Current state — 24 September 2026, 02:00 local time
+## Current state — 24 September 2026, end of session 9
 
 ### Where we are
 
@@ -18,8 +18,8 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | --- | --- |
 | Plan position | Day −4. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
 | Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
-| Customer zero | **Marketing website live and approved by the owner (24 Sep)** on the proof of concept (release r3, deployment `dp0ew3tuxuyf`): https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor (6 pages, FR/EN, room types, gallery, map, schema.org Hotel, sitemap). Content adapted from the hotel's own site; photos served from it |
-| Admin | **Fixed**: it rendered a blank page because its import map was stale (finding 26). CI now checks the map |
+| Customer zero | **Marketing website live, content approved by the owner (24 Sep)**: release r4, deployment `dpl4w2ghpe63`, https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor. 6 pages + 3 legal pages, FR/EN, room types, offer, house rules, FAQ, map, schema.org Hotel and FAQPage, sitemap. **Photos now on our own storage** (0 images from the old site). Owner account `proprietaire@hotel-herse-dor.demo` (password in user env var `HH_OWNER_PASSWORD`) |
+| Admin | **Phase 1 done**: Website panel on sites and pages (Publish site, Undo last publish, View site, releases), Preview button on pages, photo uploads with WebP sizes. Checked live as the owner, who sees only their hotel |
 | Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
 | CI / deploy | Every push: migrations on a fresh Postgres, drift check, **import-map check**, seed, typecheck, suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers |
 | Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains are disabled on the Makers project (finding 22) |
@@ -29,16 +29,18 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Thing | Where | State |
 | --- | --- | --- |
 | Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1. Collections: users, tenants, sites, pages, media, domains, releases, facts, plus `rooms` from the hotel pack. Multi-tenant and MCP plugins (no delete tools) |
-| Hotel pack | `packs/hotel` (`@hh/pack-hotel`) | Room types collection, rooms page block, snapshot contribution, schema.org `Hotel`, room card renderer. Loaded only through `src/packs.ts` |
-| Page blocks | `src/collections/Pages.ts` | hero (image, call to action), text and image, features, gallery, quote, call to action, contact details, map, rich text; menu label and order per page |
+| Hotel pack | `packs/hotel` (`@hh/pack-hotel`) | Room types and offers collections; rooms, offers and policies blocks; snapshot contribution (offers filtered by date at render); schema.org `Hotel`. Loaded only through `src/packs.ts` |
+| Page blocks | `src/collections/Pages.ts` | hero, text and image, text (with subheadings), features, gallery, quote, FAQ, call to action, contact details, map, rich text; menu label and order, footer flag; reserved slugs refused |
+| Admin self-service | `src/admin/PublishPanel.tsx`, `src/app/(sites)/preview/` | Website panel (publish, undo, view site, last 6 releases); draft preview for signed-in users (other tenants: 404, noindex) |
+| Photos | `src/media/`, `src/app/media/`, `src/collections/Media.ts` | Bytes in Postgres `media_blobs` through a cloud-storage adapter; public `/media/<key>`, immutable cache; random filename prefix per upload |
 | Public site | `src/app/(sites)/s/[site]/`, `src/site/` | `/s/<site>[/<locale>][/<page>]`, default locale without prefix; hreflang, canonical, Open Graph, schema.org Hotel on home, `sitemap.xml`, `robots.txt`; sticky header with mobile menu; "Book" button = link set per site |
-| Onboarding | `src/onboarding/` | Customer zero's site as content (`sites/hotel-herse-dor*.ts`) and `apply.ts` to build it in every locale and publish |
+| Onboarding | `src/onboarding/` | Customer zero's site as content (`sites/hotel-herse-dor*.ts`, legal pages in `.legal.ts`); `import-images.ts` copies photos into media; `apply.ts` builds every locale and publishes; `owner.ts` creates the owner account |
 | Fact base | `src/collections/Facts.ts`, `src/ingest/` | Customer zero: 21 confirmed, 6 rejected, 12 unconfirmed. Engineering confirmed what the hotel's own site supports ("Demo" note); coordinates approximate |
 | Release pipeline v0 | `src/releases/`, `src/jobs/publishSite.ts` | Unchanged; snapshots now carry pack data (rooms) and site tagline/logo/CTA (schema 2) |
 | Booking (parked) | `src/booking/` | Adapter + clockPMS BE mock, unused by the site; unit tests keep it compiling |
-| Migrations | `src/migrations` | + `hotel_site_content` (additive: rooms, new blocks, site and page fields) and `drop_booking_mock_settings` (removals). Rehearsed on 50 tenants + customer zero: 282 ms + 4 ms, 0 of 51 tenants' other data changed |
-| Test suites | `tests/int` | 11 files: isolation (incl. rooms), extended, audit (now also scans `packs/`), REST/GraphQL, RLS (8 tables), RLS under Payload, facts, releases, booking (parked), normaliser, public site over HTTP |
-| RLS | `src/db/rls.sql` | 8 tables incl. `facts` and `rooms`, context-optional. Not yet enforcing for live requests |
+| Migrations | `src/migrations` | Latest: `phase1_selfservice` (additive: offers, text/FAQ/offers/policies blocks, footer flag, media source URL, `media_blobs`). Rehearsed on 50 tenants + customer zero: 185 ms locally, 0 of 51 changed; 1.3 s on Neon |
+| Test suites | `tests/int` | 12 files, 94 tests: isolation (incl. rooms, offers), extended, audit (scans `packs/`), REST/GraphQL, RLS (9 tables), RLS under Payload, facts, releases, booking (parked), normaliser, public site over HTTP, self-service (preview, uploads, offers, FAQ) |
+| RLS | `src/db/rls.sql` | 9 tables incl. `facts`, `rooms`, `offers`, context-optional. Not yet enforcing for live requests |
 | Local databases | Docker `hh-postgres` | `hh_platform` rebuilt from migrations (50 tenants + customer zero), `hh_check` (10 + customer zero). The old `next dev` that pushed schema into `hh_platform` is stopped |
 
 ### Watch out
@@ -47,20 +49,21 @@ Read this first when you pick the project up, whether you are a person or an AI 
 - **After changing plugins or admin components, regenerate the import map** (CLAUDE.md 24); CI fails otherwise.
 - **Hotel concepts go in `packs/hotel`** (CLAUDE.md 23). Releases only through `src/releases/publish.ts`; nothing unconfirmed reaches a guest.
 - **Seed password** in user env var `HH_NEON_SEED_PASSWORD`. Never downgrade Payload.
-- Photos are hot-linked from www.hotel-herse-dor.com until the media pipeline exists; if the old site changes, images break.
+- Photos live in Postgres (`media_blobs`); fine for tens of hotels. Moving to object storage replaces only the adapter (CLAUDE.md 27).
+- The legal pages are drafts: the owner must validate them before the site replaces the hotel's current one.
 - Never run `next dev` against `hh_platform` or `hh_check` for long: dev mode pushes schema. Use `next start` on port 3100 for local checks.
 
 ### Next actions, in order
 
-Phase 1 of [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) (hotelier self-service, 28 Sep – 11 Oct).
+Phase 1 is done (24 Sep) except amenities as a type. Next is Phase 2 of [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) (own domain, templates, quality gates; 12 Oct – 1 Nov, Gate 1 on 12 Oct).
 
 | # | Owner | Action | Why now | Done when |
 | --- | --- | --- | --- | --- |
-| 1 | ENG | Publish, roll back and "View site" from the admin, with the list of releases per site | Today publishing needs the API or a script | The owner republishes after an edit, from `/admin`, in under a minute |
-| 2 | ENG | Draft preview link on each page | Hoteliers must see changes before they go live | Preview opens the draft with the site's design |
-| 3 | ENG | Media pipeline v0: uploads to EU object storage, resized variants, alt text required; move customer zero's photos | Photos are hot-linked from the old site | No image on the site comes from www.hotel-herse-dor.com |
-| 4 | ENG | Hotel pack v1: offers, amenity type, policies, FAQ block; legal notice, privacy page, accessibility statement | A complete hotel marketing site | Present on customer zero's site |
-| 5 | OWN | Send the Tencent email; provide a test domain we may point at the platform | Gate 1 (12 Oct) and custom domains (Phase 2) | Written answer; domain available |
+| 1 | OWN | Validate the three legal pages (legal notice, privacy, accessibility) and sign in once as the owner | They are drafts written from the hotel's current legal notice | The owner confirms or sends corrections |
+| 2 | ENG | Quality gates in CI: axe (WCAG 2.2 AA), Lighthouse budget, structured-data validation on customer zero's pages | Cheap now, and they protect every later change | A failing page blocks the merge |
+| 3 | ENG | Two templates driven by `sites.theme` design tokens | Hotels need a look of their own without touching content | Customer zero switches look with no content change |
+| 4 | ENG | Contact form (email to the hotel, spam protection); amenities as a hotel-pack type | Last marketing-site basics | Messages reach the hotel's inbox |
+| 5 | OWN | Send the Tencent email; provide a test domain | Gate 1 (12 Oct) and custom domains | Written answer; domain available |
 | 6 | OWN | AI model key; shortlist of hotels | Phase 3 (generation, design partners) | Key stored; first conversations |
 | 7 | DEFERRED | RLS enforcing mode (Phase 4) | Week 4 decision | — |
 
@@ -81,6 +84,7 @@ Phase 1 of [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) (hotelier se
 | Neon connection string | Windows user env var `NEON_DATABASE_URL`; Makers project variable `DATABASE_URL`; GitHub secret `NEON_DATABASE_URL` |
 | Payload secret (production) | Makers project variable `PAYLOAD_SECRET` |
 | Seeded users' password | Windows user env var `HH_NEON_SEED_PASSWORD` |
+| Customer zero owner's password (`proprietaire@hotel-herse-dor.demo`) | Windows user env var `HH_OWNER_PASSWORD` |
 | EdgeOne Makers API token | Windows user env var `EDGEONE_PAGES_API_TOKEN`; GitHub secret `EDGEONE_PAGES_API_TOKEN` (dedicated CI token; rotate before it expires) |
 | Tencent CAM key (new) | Windows user env vars `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY` |
 
@@ -112,10 +116,32 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Schema push during development | Push restricted to localhost after it deleted the RLS policies | Migrations from now on for every shared database, earlier than planned |
 | Release pipeline v0 in week 4 | Content releases built in week 0 (23 Sep), Gate 2 content targets met on Neon | Week 4 keeps the domain bind and the ISR-or-static decision; code deploys stay at ~3 min and are proposed out of the 60 s target |
 | Booking-engine embed in weeks 10–12 (XT) | Owner decision 24 Sep: no booking logic on the site for now; the 23 Sep adapter and mock are parked | The site's "Book" button is a link; the XT embed item waits until the owner asks for it |
+| Hotelier self-service (Phase 1) from 28 Sep to 11 Oct | Done on 24 Sep, except amenities as a type. Photos in Postgres, not object storage | Phase 2 can start early; object storage becomes a later swap of the storage adapter |
 | Hotel pack in week 5 | Pack v0 built in week 0 (rooms collection, rooms block, schema.org Hotel) as a workspace package, with no hotel concept in the core | Week 5 extends it (offers, amenities as a type, policies) rather than creating it |
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-24 · session 9 · `739a195` → this commit (code `9f17a11`)
+
+**Changed**
+- Phase 1, hotelier self-service, done early. Admin Website panel on sites and pages: Publish site, Undo last publish, View site, last six releases. It calls the existing access-checked endpoints.
+- Draft preview (`/preview/pages/<id>`, Preview button on pages): signed-in users only, with their own access; another tenant's page is a 404; noindex. Page slugs that collide with routes are refused.
+- Media v0: photos stored in Postgres (`media_blobs`) through the cloud-storage plugin's adapter, served at `/media/<key>` with immutable caching. WebP sizes 400/960/1920, alt text required, random filename prefix per upload.
+- Customer zero's 20 photos imported (`import-images.ts`), so the live site loads 0 images from the old site.
+- Hotel pack v1: `offers` collection (tenant-scoped, RLS, validity dates) with offers block, and a policies block (check-in/out from facts plus house rules). Core text and FAQ blocks; the FAQ adds FAQPage structured data.
+- Footer legal links: legal notice, privacy and cookies, accessibility statement. They are drafts from the hotel's current legal notice.
+- Owner account script (`owner.ts`); customer zero's owner created on Neon.
+- Migration `phase1_selfservice`, additive. Rehearsed on 50 tenants + customer zero: 0 changed. RLS is now on 9 tables.
+- New suite `self-service.int.spec.ts`: preview auth, uploads, same-name uploads across tenants, delete, offers date filter, FAQ JSON-LD. 94/94 locally with HTTP, 74 + 20 skipped at 50 tenants, CI green.
+- Deployed `dpl4w2ghpe63` (deploy workflow, Neon migrated in 1.3 s). Customer zero release r4 was published with HTTP verification in 5.3 s.
+- Checked live as the owner: login, sees only their hotel, uploads a photo (201 in 3.6 s, sizes served), deletes it (files gone).
+
+**Learned**
+- Findings 28–30 in docs/05. Serverless needs non-disk upload storage. Payload's duplicate-filename check is tenant-scoped but storage keys are global. Publishing from the admin needed no new server code.
+
+**Left undone**
+- Amenities as a hotel-pack type. The owner has not validated the legal pages. Object storage (Postgres is enough for now).
 
 ### 2026-09-24 · session 8 · `339a46b` → this commit
 

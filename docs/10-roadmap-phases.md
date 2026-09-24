@@ -22,6 +22,8 @@ flowchart LR
 
 Goal: a hotelier changes and publishes their own site from the admin, without an engineer.
 
+**Status, 24 September: done early**, except amenities as a type. Live as customer zero's release r4. What differs from the plan: photos are stored in Postgres (Neon Frankfurt) behind a storage adapter, not in object storage (docs/05 finding 28); the legal pages are drafts for the owner to validate. Evidence: [screenshots](screenshots/README.md), tests in `tests/int/self-service.int.spec.ts`.
+
 | Deliverable | Done when |
 | --- | --- |
 | **Publish and roll back from the admin**: buttons on the site, list of releases, "View site" link | Customer zero republishes after an edit, from `/admin`, in under a minute |
