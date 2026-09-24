@@ -1,0 +1,86 @@
+{
+  "$description": "Soirée 1.0.0 (dark): Dark and elegant: night palette, gold accent, centred headlines. Suits luxury and evening-led hotels.",
+  "color": {
+    "paper": {
+      "$type": "color",
+      "$value": "#15171d"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": "#1d2028"
+    },
+    "tint": {
+      "$type": "color",
+      "$value": "#1a1c23"
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "#f2ede4"
+    },
+    "muted": {
+      "$type": "color",
+      "$value": "#b3ab9e"
+    },
+    "line": {
+      "$type": "color",
+      "$value": "#30333d"
+    },
+    "accent": {
+      "$type": "color",
+      "$value": "#c9a45c"
+    },
+    "inverse": {
+      "$type": "color",
+      "$value": "#0d0e12"
+    },
+    "inverseInk": {
+      "$type": "color",
+      "$value": "#efe9de"
+    },
+    "inverseMuted": {
+      "$type": "color",
+      "$value": "#a49c8f"
+    },
+    "accentInk": {
+      "$type": "color",
+      "$value": "#000000"
+    },
+    "accentText": {
+      "$type": "color",
+      "$value": "#c9a45c"
+    },
+    "focus": {
+      "$type": "color",
+      "$value": "#8ab4f8"
+    }
+  },
+  "font": {
+    "heading": {
+      "$type": "fontFamily",
+      "$value": "playfair"
+    },
+    "body": {
+      "$type": "fontFamily",
+      "$value": "inter"
+    }
+  },
+  "radius": {
+    "card": {
+      "$type": "dimension",
+      "$value": "14px"
+    },
+    "media": {
+      "$type": "dimension",
+      "$value": "10px"
+    },
+    "button": {
+      "$type": "dimension",
+      "$value": "999px"
+    }
+  },
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "template": {
+    "$type": "string",
+    "$value": "soiree"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "$description": "Maison 1.0.0 (light): Classic and warm: serif headings, cream background, full-width photos. Suits heritage and boutique hotels.",
+  "color": {
+    "paper": {
+      "$type": "color",
+      "$value": "#fbf8f3"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": "#ffffff"
+    },
+    "tint": {
+      "$type": "color",
+      "$value": "#f3ede4"
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "#1f1b16"
+    },
+    "muted": {
+      "$type": "color",
+      "$value": "#6d655b"
+    },
+    "line": {
+      "$type": "color",
+      "$value": "#e5dccf"
+    },
+    "accent": {
+      "$type": "color",
+      "$value": "#8a5a2b"
+    },
+    "inverse": {
+      "$type": "color",
+      "$value": "#1b1814"
+    },
+    "inverseInk": {
+      "$type": "color",
+      "$value": "#f4efe7"
+    },
+    "inverseMuted": {
+      "$type": "color",
+      "$value": "#b8ad9f"
+    },
+    "accentInk": {
+      "$type": "color",
+      "$value": "#ffffff"
+    },
+    "accentText": {
+      "$type": "color",
+      "$value": "#8a5a2b"
+    },
+    "focus": {
+      "$type": "color",
+      "$value": "#1a5fb4"
+    }
+  },
+  "font": {
+    "heading": {
+      "$type": "fontFamily",
+      "$value": "cormorant"
+    },
+    "body": {
+      "$type": "fontFamily",
+      "$value": "inter"
+    }
+  },
+  "radius": {
+    "card": {
+      "$type": "dimension",
+      "$value": "14px"
+    },
+    "media": {
+      "$type": "dimension",
+      "$value": "10px"
+    },
+    "button": {
+      "$type": "dimension",
+      "$value": "999px"
+    }
+  },
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "template": {
+    "$type": "string",
+    "$value": "maison"
+  }
+}

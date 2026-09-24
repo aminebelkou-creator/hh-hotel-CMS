@@ -1,6 +1,6 @@
 # Instructions for AI coding agents
 
-This repository builds a Website-as-a-Service platform for hotels. Read `docs/01-solution-definition.md` before proposing architecture. The decisions there are settled; argue with them in a PR description, not by silently diverging.
+This repository builds a Website-as-a-Service platform for hotels. Start with `docs/13-how-it-works.md` (what the platform is, the words we use, where things live), then `HANDOFF.md` (current state). Read `docs/01-solution-definition.md` before proposing architecture. The decisions there are settled; argue with them in a PR description, not by silently diverging.
 
 ## Rules that are not negotiable
 

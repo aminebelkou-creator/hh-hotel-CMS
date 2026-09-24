@@ -1,0 +1,86 @@
+{
+  "$description": "Atelier 1.0.0 (light): Modern and minimal: sans-serif type, white space, square corners, photo beside the headline. Suits design and city hotels.",
+  "color": {
+    "paper": {
+      "$type": "color",
+      "$value": "#ffffff"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": "#ffffff"
+    },
+    "tint": {
+      "$type": "color",
+      "$value": "#f3f3f0"
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "#141414"
+    },
+    "muted": {
+      "$type": "color",
+      "$value": "#5a5a57"
+    },
+    "line": {
+      "$type": "color",
+      "$value": "#e2e2de"
+    },
+    "accent": {
+      "$type": "color",
+      "$value": "#1f4d3a"
+    },
+    "inverse": {
+      "$type": "color",
+      "$value": "#f3f3f0"
+    },
+    "inverseInk": {
+      "$type": "color",
+      "$value": "#141414"
+    },
+    "inverseMuted": {
+      "$type": "color",
+      "$value": "#5a5a57"
+    },
+    "accentInk": {
+      "$type": "color",
+      "$value": "#ffffff"
+    },
+    "accentText": {
+      "$type": "color",
+      "$value": "#1f4d3a"
+    },
+    "focus": {
+      "$type": "color",
+      "$value": "#1a5fb4"
+    }
+  },
+  "font": {
+    "heading": {
+      "$type": "fontFamily",
+      "$value": "manrope"
+    },
+    "body": {
+      "$type": "fontFamily",
+      "$value": "inter"
+    }
+  },
+  "radius": {
+    "card": {
+      "$type": "dimension",
+      "$value": "2px"
+    },
+    "media": {
+      "$type": "dimension",
+      "$value": "0px"
+    },
+    "button": {
+      "$type": "dimension",
+      "$value": "2px"
+    }
+  },
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "template": {
+    "$type": "string",
+    "$value": "atelier"
+  }
+}

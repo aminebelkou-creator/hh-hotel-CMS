@@ -1,0 +1,37 @@
+{
+  "$description": "What a hotel can change on top of a template (sites.brand). Everything else is derived and checked; see docs/11-design-contract.md.",
+  "accent": "hex colour, optional",
+  "background": "hex colour, optional",
+  "text": "hex colour, optional (must stay readable on the background)",
+  "headingFont": [
+    "inter: Inter (sans serif, neutral)",
+    "manrope: Manrope (sans serif, geometric)",
+    "playfair: Playfair Display (serif, high contrast)",
+    "cormorant: Cormorant Garamond (serif, classic)"
+  ],
+  "bodyFont": [
+    "inter: Inter (sans serif, neutral)",
+    "manrope: Manrope (sans serif, geometric)",
+    "playfair: Playfair Display (serif, high contrast)",
+    "cormorant: Cormorant Garamond (serif, classic)"
+  ],
+  "corners": [
+    "square",
+    "soft",
+    "round"
+  ],
+  "contrastGates": [
+    "text on background: ink on paper >= 4.5:1",
+    "text on cards: ink on surface >= 4.5:1",
+    "text on alternate sections: ink on tint >= 4.5:1",
+    "secondary text on background: muted on paper >= 4.5:1",
+    "secondary text on cards: muted on surface >= 4.5:1",
+    "secondary text on alternate sections: muted on tint >= 4.5:1",
+    "accent text on background: accentText on paper >= 4.5:1",
+    "accent text on alternate sections: accentText on tint >= 4.5:1",
+    "button text on accent: accentInk on accent >= 4.5:1",
+    "footer text: inverseInk on inverse >= 4.5:1",
+    "footer secondary text: inverseMuted on inverse >= 4.5:1",
+    "keyboard focus ring: focus on paper >= 3:1"
+  ]
+}

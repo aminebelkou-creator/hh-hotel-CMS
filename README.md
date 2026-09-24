@@ -2,14 +2,14 @@
 
 **Website-as-a-Service for independent hotels.** A multi-tenant platform that generates a hotel's direct-booking website from its own data, hosts it on managed EU infrastructure, and keeps it current on the hotel's behalf. Part of the **xedge** project.
 
-> **Start here:** [`HANDOFF.md`](HANDOFF.md) for where things stand and what to do next · [`docs/CHECKLIST.md`](docs/CHECKLIST.md) for progress · [`docs/02-90-day-plan.md`](docs/02-90-day-plan.md) for the plan.
+> **Start here:** [`docs/13-how-it-works.md`](docs/13-how-it-works.md) for how the platform works in plain words · [`HANDOFF.md`](HANDOFF.md) for where things stand and what to do next · [`docs/CHECKLIST.md`](docs/CHECKLIST.md) for progress · [`docs/02-90-day-plan.md`](docs/02-90-day-plan.md) for the plan.
 
 | | |
 | --- | --- |
-| **Status** | Pre-launch. Weeks 1–2 engineering and Phase 1 (hotelier self-service) done early. Customer zero's marketing website (FR/EN, room types, offers, FAQ, legal pages, photos on our own storage) is live on the proof of concept and its owner can publish from the admin; the 90-day plan runs 28 September to 25 December 2026 |
-| **Proof** | 94 tests green on every push (isolation, RLS, facts, releases, public site, draft preview and photo uploads over HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
+| **Status** | Pre-launch. Weeks 1–2 engineering and Phase 1 (hotelier self-service) done early, plus a design contract and three templates. Customer zero's marketing website (FR/EN, room types, offers, FAQ, legal pages, photos on our own storage) is live on the proof of concept and its owner can publish from the admin; the 90-day plan runs 28 September to 25 December 2026 |
+| **Proof** | 104 tests green on every push (isolation, RLS, facts, releases, design contract, public site, draft preview, photo uploads and templates over HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
 | **Live proof of concept** | https://hh-platform.edgeone.dev — customer zero at [/s/hotel-herse-dor](https://hh-platform.edgeone.dev/s/hotel-herse-dor) (demo: a marketing website in French and English; admin at `/admin`) |
-| **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen. Waiting on Tencent; custom domains are disabled on the Makers project |
+| **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen. Waiting on Tencent. Custom domains now possible (project moved to area overseas, finding 22); waiting for a test domain |
 | **Owner** | Hotel Hersedor Paris / xedge |
 
 ---
@@ -216,10 +216,13 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 ├── apps/
 │   └── platform/              Next.js + Payload application
 │       ├── src/collections/   Users, Tenants, Sites, Pages, Media, Domains, Releases, Facts
+│       ├── src/admin/         Website panel (publish, undo, view site, releases)
+│       ├── src/design/        design contract in code: templates, theme resolution, colour maths, fonts
+│       ├── src/media/         photo storage adapter (Postgres); public route in src/app/media
 │       ├── src/access/        access helpers + overrideAccess allowlist
 │       ├── src/app/(sites)/   public site routes /s/<site>[/<locale>][/<page>], sitemap.xml, robots.txt
 │       ├── src/site/          block renderers, header and footer, locale routing
-│       ├── src/onboarding/    a hotel's first-site content (customer zero) and the apply script
+│       ├── src/onboarding/    a hotel's first-site content (customer zero), apply, photo import, owner accounts
 │       ├── src/packs.ts       loads vertical packs (hotel) into the app
 │       ├── src/booking/       parked: booking adapter and mock, not used by the site
 │       ├── src/db/            RLS policies, checksums, backup/restore, fingerprint tools
@@ -228,23 +231,31 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 │       ├── src/migrations/    Payload migrations (the only way shared schemas change)
 │       ├── src/releases/      publish, rollback, snapshot, checksum, renderer lookup
 │       ├── src/seed/          seed, password rotation
-│       ├── tests/int/         isolation, audit, REST/GraphQL, RLS, facts, releases, public site
+│       ├── tests/int/         isolation, audit, REST/GraphQL, RLS, facts, releases, design, public site, self-service
+│       ├── tests/visual/      screenshot scripts (site, admin, every template)
 │       └── edgeone.json       Makers build and Frankfurt region
 ├── docs/
 │   ├── 01-solution-definition.md   the spec (Hotelier Website Platform)
 │   ├── 02-90-day-plan.md           the plan (baseline)
 │   ├── CHECKLIST.md                progress against the plan
 │   ├── 03-, 04-                    Webstudio and EdgeOne Makers evaluations
-│   ├── 05-week1-spike-results.md   measured results, findings 1–25
+│   ├── 05-week1-spike-results.md   measured results, findings 1–30
 │   ├── 06-release-pipeline-design.md   release pipeline (v0 implemented)
 │   ├── 07-content-model-and-hotel-pack.md   content model and hotel pack, on paper
 │   ├── 08-ingest-spike.md          ingest and fact base, customer zero
 │   ├── 09-system-design.md         system design, illustrated
+│   ├── 10-roadmap-phases.md        phases 1–5 with deliverables
+│   ├── 11-design-contract.md       templates, brand, tokens, gates
+│   ├── 12-strategy-decisions.md    architecture, domains, plugins, security, compliance, design
+│   ├── 13-how-it-works.md          plain-words guide, glossary, repository map, reading guide
+│   ├── 14-designer-brief.md        brief and example prompts for new templates
+│   ├── design-tokens/              each template's tokens (W3C format)
+│   ├── screenshots/                dated evidence
 │   ├── contracts/                  cross-team contracts v0.1
 │   └── outreach/                   vendor correspondence drafts
-├── packages/                  shared core packages — not started
-├── packs/hotel/               hotel pack (@hh/pack-hotel): room types, rooms block, schema.org Hotel
-├── templates/                 versioned template packages — not started
+├── packages/                  reserved for shared packages (empty)
+├── packs/hotel/               hotel pack (@hh/pack-hotel): room types, offers, rooms/offers/policies blocks, schema.org Hotel
+├── templates/                 reserved; templates live in apps/platform/src/design for now
 ├── scripts/                   setup.ps1 / setup.sh
 └── .claude/skills/            EdgeOne Makers skills for agents
 ```
@@ -364,6 +375,8 @@ Not in the first 90 days: self-serve signup, billing automation, the control-pla
 | [`docs/08-ingest-spike.md`](docs/08-ingest-spike.md) | Ingest on customer zero: facts, conflicts, site audit |
 | [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) | **Next phases**: from hotelier self-service to five paying hotels, mapped onto the 90-day plan and its gates |
 | [`docs/11-design-contract.md`](docs/11-design-contract.md) | **Design contract**: templates, brand, tokens, contrast gates, fonts; who designs what |
+| [`docs/13-how-it-works.md`](docs/13-how-it-works.md) | **How the platform works**: one multi-tenant Payload, glossary, flows, repository map, common questions, reading guide |
+| [`docs/14-designer-brief.md`](docs/14-designer-brief.md) | **Designer brief** with example prompts; tokens in [`docs/design-tokens/`](docs/design-tokens/) |
 | [`docs/12-strategy-decisions.md`](docs/12-strategy-decisions.md) | **Strategy decisions** (24 Sep): architecture, domains, plugins, EdgeOne features, security, GDPR and accessibility, email, design |
 | [`docs/screenshots/`](docs/screenshots/README.md) | Dated screenshots of the live site and admin |
 | [`docs/09-system-design.md`](docs/09-system-design.md) | **System design, illustrated**: context, containers, isolation, ingest, releases, schema changes, repository map |

@@ -2,7 +2,7 @@
 
 Living checklist for the 90-day plan (28 September to 25 December 2026). Tick items in the commit that completes them, with a link to the evidence. Owner codes: **ENG** engineering, **BIZ** sales and partnerships, **OWN** project owner, **XT** another xedge team.
 
-Last updated: 24 September 2026, session 10 (strategy decisions; design contract and three templates; platform moved to a Makers project where custom domains work). The next phases and their deliverables: [`10-roadmap-phases.md`](10-roadmap-phases.md). Evidence: [`screenshots/`](screenshots/README.md). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
+Last updated: 24 September 2026, session 11 (how-it-works guide, designer brief with example prompts, template tokens exported; before that: strategy decisions, design contract and three templates, platform moved to a Makers project where custom domains work). The next phases and their deliverables: [`10-roadmap-phases.md`](10-roadmap-phases.md). Evidence: [`screenshots/`](screenshots/README.md). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
 
 ## At a glance
 
@@ -13,8 +13,8 @@ Last updated: 24 September 2026, session 10 (strategy decisions; design contract
 | Week 2 | 8 | 6 | All six proof items and the fact confirmation flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a fresh key and a test domain), hotel pack types, fact flow and BIZ items open |
 | Weeks 3–13 | 2 | 44 | Content release pipeline v0 done early (week 4 item); the four gates open; Gate 1 on 12 October |
 | Phase 1 (new list) | 7 | 1 | Done 24 Sep except amenities as a type; see the phase view |
-| Phase 2 and beyond (new list) | 3 | 17 | From the 24 Sep strategy session ([`12-strategy-decisions.md`](12-strategy-decisions.md)) |
-| **Total** | **33** | **75** | |
+| Phase 2 and beyond (new list) | 4 | 17 | From the 24 Sep strategy session ([`12-strategy-decisions.md`](12-strategy-decisions.md)) |
+| **Total** | **34** | **75** | |
 
 ## Phase view (added 24 September)
 
@@ -45,6 +45,7 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 - [x] **ENG** Design contract: tokens, brand fields, contrast gates, self-hosted fonts — [`11-design-contract.md`](11-design-contract.md)
 - [x] **ENG** Three templates built in-house (Maison, Atelier, Soirée); a hotel switches with no content change — [screenshots](screenshots/README.md)
 - [x] **ENG** Platform moved to a Makers project in area overseas, so custom domains can be added (finding 22)
+- [x] **ENG** Guides: how the platform works ([`13-how-it-works.md`](13-how-it-works.md)); designer brief with example prompts ([`14-designer-brief.md`](14-designer-brief.md)); template tokens for designers ([`design-tokens/`](design-tokens/))
 - [ ] **ENG** Own-domain serving: hotel recognised from the domain, `/` instead of `/s/<site>`, `/admin` only on our domain
 - [ ] **ENG** Edge cache of published pages (EdgeOne KV keyed by release); target under 1 s
 - [ ] **ENG** Photo uploads from phones under the 6 MB function limit
