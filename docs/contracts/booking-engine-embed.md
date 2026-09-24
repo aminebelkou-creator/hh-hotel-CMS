@@ -34,9 +34,11 @@ The attribution token is minted by the platform on first landing and passed to t
 3. Rates displayed on content pages come from the same read model the engine uses, with a freshness stamp; the platform never displays a rate it invented.
 4. Accessibility: the booking path is manually keyboard- and screen-reader-tested at each release; it is the critical path for EAA conformance.
 
-## Interim: the clockPMS BE mock
+## Interim: the clockPMS BE mock (parked 24 September 2026)
 
-Until the xedge booking engine is available, the platform integrates against a mock called **clockPMS BE** (`apps/platform/src/booking/`). It exists so the adapter boundary, the booking step and the tests are real before the engine is.
+**Parked at the owner's request:** the product for now is a hotel marketing website with no booking logic. The public site's "Book" button is a plain link set per site (`sites.cta`); the `/book` routes were removed. The adapter and mock below stay in `apps/platform/src/booking/` with their unit tests, unused, until the xedge booking engine integration is scheduled.
+
+What was built on 23 September, for reference:
 
 | | Mock behaviour |
 | --- | --- |

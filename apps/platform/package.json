@@ -20,6 +20,7 @@
         "test:isolation": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/isolation.int.spec.ts tests/int/override-access.int.spec.ts"
     },
     "dependencies": {
+        "@hh/pack-hotel": "workspace:*",
         "@payloadcms/db-postgres": "3.90.1",
         "@payloadcms/next": "3.90.1",
         "@payloadcms/plugin-mcp": "3.90.1",

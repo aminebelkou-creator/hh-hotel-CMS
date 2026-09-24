@@ -1,5 +1,5 @@
 /**
- * Seed: 50 tenants, one user each, one site, three pages, one domain, plus one super-admin.
+ * Seed: 50 tenants, one user each, one site, three pages, one room type, one domain, plus one super-admin.
  * Run with: pnpm seed   (payload run src/seed/index.ts)
  *
  * This is a system operation and uses overrideAccess: true on purpose. It is listed in
@@ -21,7 +21,7 @@ const run = async () => {
   const seededIds = seeded.docs.map((t) => t.id)
   if (seededIds.length) {
     await payload.update({ collection: 'sites', where: { tenant: { in: seededIds } }, data: { currentRelease: null }, overrideAccess: true })
-    for (const collection of ['releases', 'facts', 'domains', 'pages', 'sites'] as const) {
+    for (const collection of ['releases', 'facts', 'rooms', 'domains', 'pages', 'sites'] as const) {
       await payload.delete({ collection, where: { tenant: { in: seededIds } }, overrideAccess: true })
     }
   }
@@ -69,6 +69,11 @@ const run = async () => {
         overrideAccess: true,
       })
     }
+    await payload.create({
+      collection: 'rooms',
+      data: { tenant: tenant.id, slug: 'standard', name: `Standard room of tenant ${n}`, order: 1, maxOccupancy: 2 },
+      overrideAccess: true,
+    })
     await payload.create({
       collection: 'domains',
       data: { hostname: `${tenantSlug(n)}.example.test`, site: site.id, primary: true, status: 'pending', tenant: tenant.id },

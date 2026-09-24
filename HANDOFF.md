@@ -10,67 +10,66 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ---
 
-## Current state — 23 September 2026, 18:40 local time
+## Current state — 24 September 2026, 02:00 local time
 
 ### Where we are
 
 | | |
 | --- | --- |
-| Plan position | Day −5. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
-| Week 1 engineering | **Done early**: isolation proof, 50-tenant seed, first Makers deploys, cross-team contract drafts, ingest spike |
-| Week 2 | **All six proof items done**, plus the **fact confirmation flow** (built 23 Sep) |
-| First product slice | **Live on the proof of concept**: fact base, content release pipeline v0 with rollback, public renderer, booking step on the **clockPMS BE** mock. Customer zero at https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor |
-| Gate 2 (content) | **Met on Neon**: publish 3.1 s including HTTP verification through the edge, rollback 1.2 s (targets 60 s / 10 s). Locally 14–27 ms / 16–18 ms |
-| Suites on production | **82/82 green on Neon against the live app** (18:28): isolation, RLS, facts, releases, booking, and the HTTP suites through the edge. Release timings in-suite on Neon: publish ~1.0 s, rollback 1.2 s |
-| CI / deploy | Every push: migrations on a fresh Postgres, drift check, seed, typecheck, 11 suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers in 3 min 23 s (`dp0ytz87whim`) |
+| Plan position | Day −4. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
+| Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
+| Customer zero | **Marketing website live on the proof of concept**: https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor (6 pages, FR/EN, room types, gallery, map, schema.org Hotel, sitemap). Content adapted from the hotel's own site; photos served from it |
+| Admin | **Fixed**: it rendered a blank page because its import map was stale (finding 26). CI now checks the map |
+| Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
+| CI / deploy | Every push: migrations on a fresh Postgres, drift check, **import-map check**, seed, typecheck, suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers |
 | Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains are disabled on the Makers project (finding 22) |
 
 ### What exists
 
 | Thing | Where | State |
 | --- | --- | --- |
-| Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1. Eight collections (Facts added), multi-tenant plugin, MCP plugin (facts: find and create only; no delete tools anywhere) |
-| Fact base | `src/collections/Facts.ts`, `src/ingest/` | Normaliser, import with owner decisions. Customer zero on Neon and local: 35 facts, 3 confirmed (check-out 11:00, both phones), 1 rejected (10:30), 31 to review |
-| Release pipeline v0 | `src/releases/`, `src/jobs/publishSite.ts` | Lease lock per site, request sequence (superseding), immutable snapshot + sha256, verification (in-process, plus HTTP when `RELEASE_VERIFY_BASE_URL` is set), automatic rollback, manual rollback. `POST /api/sites/:id/publish` and `/rollback` |
-| Public renderer | `src/app/(sites)/s/[site]/` | Serves the current release only; `<meta name="x-release">`; FR/EN; practical information from confirmed facts only |
-| Booking | `src/booking/` | Adapter interface + deterministic **clockPMS BE** mock; `/s/<site>/book` and `/s/<site>/book/availability` on the hotel's domain |
-| Migrations | `src/migrations` | baseline, site_brand_timezone, add_jobs, **facts_booking_releases** (rehearsed at 10 and 50 tenants: 37–41 ms, 0 tenants changed; Neon 464 ms). All applied on local and Neon |
-| Test suites | `tests/int` | 11 files, 82 tests: isolation (13), isolation-extended (7), audit (2), REST (3), RLS (7), RLS under Payload (2), facts (9), releases (13), booking (13), normaliser (5), site over HTTP (7) |
-| RLS | `src/db/rls.sql` | 7 tables incl. `facts`, context-optional, restricted role `hh_app_rls`. Not yet enforcing for live requests |
-| Live proof of concept | https://hh-platform-poc.edgeone.cool | Deployment `dp0ytz87whim`. Admin `/admin`; customer zero `/s/hotel-herse-dor` |
-| Database | Neon Frankfurt | 51 tenants (50 synthetic + customer zero) |
-| Local databases | Docker `hh-postgres` | `hh_platform` (50 tenants), `hh_check` (10 tenants + customer zero), both migrated |
-| Documents | `docs/` | Spec, plan, checklist (22 done / 58 open), evaluations, findings 1–22, release design (v0 implemented), ingest + fact base, **system design illustrated (docs/09)**, contracts (booking mock section) |
+| Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1. Collections: users, tenants, sites, pages, media, domains, releases, facts, plus `rooms` from the hotel pack. Multi-tenant and MCP plugins (no delete tools) |
+| Hotel pack | `packs/hotel` (`@hh/pack-hotel`) | Room types collection, rooms page block, snapshot contribution, schema.org `Hotel`, room card renderer. Loaded only through `src/packs.ts` |
+| Page blocks | `src/collections/Pages.ts` | hero (image, call to action), text and image, features, gallery, quote, call to action, contact details, map, rich text; menu label and order per page |
+| Public site | `src/app/(sites)/s/[site]/`, `src/site/` | `/s/<site>[/<locale>][/<page>]`, default locale without prefix; hreflang, canonical, Open Graph, schema.org Hotel on home, `sitemap.xml`, `robots.txt`; sticky header with mobile menu; "Book" button = link set per site |
+| Onboarding | `src/onboarding/` | Customer zero's site as content (`sites/hotel-herse-dor*.ts`) and `apply.ts` to build it in every locale and publish |
+| Fact base | `src/collections/Facts.ts`, `src/ingest/` | Customer zero: 21 confirmed, 6 rejected, 12 unconfirmed. Engineering confirmed what the hotel's own site supports ("Demo" note); coordinates approximate |
+| Release pipeline v0 | `src/releases/`, `src/jobs/publishSite.ts` | Unchanged; snapshots now carry pack data (rooms) and site tagline/logo/CTA (schema 2) |
+| Booking (parked) | `src/booking/` | Adapter + clockPMS BE mock, unused by the site; unit tests keep it compiling |
+| Migrations | `src/migrations` | + `hotel_site_content` (additive: rooms, new blocks, site and page fields) and `drop_booking_mock_settings` (removals). Rehearsed on 50 tenants + customer zero: 282 ms + 4 ms, 0 of 51 tenants' other data changed |
+| Test suites | `tests/int` | 11 files: isolation (incl. rooms), extended, audit (now also scans `packs/`), REST/GraphQL, RLS (8 tables), RLS under Payload, facts, releases, booking (parked), normaliser, public site over HTTP |
+| RLS | `src/db/rls.sql` | 8 tables incl. `facts` and `rooms`, context-optional. Not yet enforcing for live requests |
+| Local databases | Docker `hh-postgres` | `hh_platform` rebuilt from migrations (50 tenants + customer zero), `hh_check` (10 + customer zero). The old `next dev` that pushed schema into `hh_platform` is stopped |
 
 ### Watch out
 
-- **Schema changes go through migrations only** (CLAUDE.md 10, 13). New job tasks are migrations too (enum).
-- **Releases only through `src/releases/publish.ts`** (CLAUDE.md 18); **nothing unconfirmed reaches a guest** (CLAUDE.md 19).
-- **Never downgrade Payload** (password-hash format).
-- **Seed password** in user env var `HH_NEON_SEED_PASSWORD`, for local and Neon. Wrong-password runs lock accounts.
-- **A `next dev` from this morning may be listening on port 3000** against `hh_platform` with push on (wrapper `cmd /c next dev`, PID 71316). It is harmless now that `hh_platform` is migrated, but run test servers on port 3100. Stop it only by exact PID.
-- The seed now deletes only the synthetic `tenant-NN` tenants, so customer zero survives a reseed.
+- **Schema changes go through migrations only**; if a change both drops and adds, split it (CLAUDE.md 25).
+- **After changing plugins or admin components, regenerate the import map** (CLAUDE.md 24); CI fails otherwise.
+- **Hotel concepts go in `packs/hotel`** (CLAUDE.md 23). Releases only through `src/releases/publish.ts`; nothing unconfirmed reaches a guest.
+- **Seed password** in user env var `HH_NEON_SEED_PASSWORD`. Never downgrade Payload.
+- Photos are hot-linked from www.hotel-herse-dor.com until the media pipeline exists; if the old site changes, images break.
+- Never run `next dev` against `hh_platform` or `hh_check` for long: dev mode pushes schema. Use `next start` on port 3100 for local checks.
 
 ### Next actions, in order
 
 | # | Owner | Action | Why now | Done when |
 | --- | --- | --- | --- | --- |
-| 1 | OWN | Review customer zero's 31 unconfirmed facts in `/admin` → Facts (check-in 15:30, address, email, amenities, room names; three `0x-1600-1200` numbers look like Wi-Fi instructions and should be rejected), then publish from the API or ask the agent | Only confirmed facts appear on the site | Facts reviewed; release r3 live |
-| 2 | OWN | Provide the AI model API key | Generation of the draft site from confirmed facts (week 2 item) | Key in a user env var and a GitHub secret |
-| 3 | OWN | Send the Tencent email (now also asking why custom domains are disabled) | Gate 1, 12 October | Written answer |
-| 4 | ENG | Studio publish button: call `POST /api/sites/:id/publish` from the admin (Payload custom component) and show releases per site | Hoteliers cannot call an API | Publish and rollback from `/admin` |
-| 5 | ENG | Hotel pack v0 in `packs/hotel`: Room, Offer, Amenity, Policy as a pack (docs/07), with schema.org `Hotel` output in the renderer | Biggest SEO gap found on customer zero | `Hotel` JSON-LD validated on `/s/hotel-herse-dor` |
-| 6 | ENG | RLS enforcing mode (restricted login role, per-request `SET LOCAL`) | Week 4 decision | Owner-role connections limited to migrations and allowlisted jobs |
-| 7 | DEFERRED | Custom-domain test on `site.ouilockers.fr` — blocked, domains disabled on the Makers project (finding 22) | Gate 1 evidence | Timings in docs/04 |
+| 1 | OWN | Look at the demo site and say what to change (text, photos, order of sections, colours) | Customer zero is the reference site for every hotel after it | A list of changes, or "good" |
+| 2 | ENG | Admin editing comfort: a "Publish" button and a "View site" link in the admin, and live preview of drafts | Today publishing needs the API or a script | Publish and preview from `/admin` |
+| 3 | ENG | Media pipeline v0: upload photos into the platform (object storage) instead of hot-linking | Week 5 item; removes the dependency on the old site | Customer zero's photos served from our storage |
+| 4 | OWN | Send the Tencent email (also asks why custom domains are disabled) | Gate 1, 12 October | Written answer |
+| 5 | ENG | Templates: a second visual theme from `sites.theme` tokens, accessibility and Core Web Vitals checks in CI | Week 4 item | Two themes, checks blocking |
+| 6 | OWN | AI model key | Generating a first site for a new hotel from its facts | Key stored |
+| 7 | DEFERRED | Custom-domain test; RLS enforcing mode | Blocked on Tencent; week 4 decision | — |
 
 ### Waiting on the owner
 
 | Action | Blocks |
 | --- | --- |
-| Send the Tencent email: [`docs/outreach/tencent-makers-platforms-email.md`](docs/outreach/tencent-makers-platforms-email.md) | Gate 1 (week 3). With no written answer by 9 October, we fall back to Cloudflare EU |
+| Feedback on the demo site | Next iteration of customer zero and the default template |
+| Send the Tencent email: [`docs/outreach/tencent-makers-platforms-email.md`](docs/outreach/tencent-makers-platforms-email.md) | Gate 1 |
 | Revoke the Tencent CAM key beginning `IKIDTYWK` | Security hygiene |
-| AI model API key | Draft-site generation |
-| Review customer zero's unconfirmed facts | A fuller practical-information panel |
+| AI model key | Generation |
 | Share the repository with the team; shortlist 15 hotels | Anyone else working on it; design partners by week 3 |
 
 ### Secrets map (names only; values are never written to the repo or to chat)
@@ -110,10 +109,30 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Makers gate opens on day 1 with Tencent | Email drafted, not sent | Every day unsent is a day off the three-week gate |
 | Schema push during development | Push restricted to localhost after it deleted the RLS policies | Migrations from now on for every shared database, earlier than planned |
 | Release pipeline v0 in week 4 | Content releases built in week 0 (23 Sep), Gate 2 content targets met on Neon | Week 4 keeps the domain bind and the ISR-or-static decision; code deploys stay at ~3 min and are proposed out of the 60 s target |
-| Booking-engine embed in weeks 10–12 (XT) | Adapter and same-domain booking step built now against the clockPMS BE mock | Integration with the real engine is a swap behind `bookingAdapterFor` once the xedge team signs the contract |
+| Booking-engine embed in weeks 10–12 (XT) | Owner decision 24 Sep: no booking logic on the site for now; the 23 Sep adapter and mock are parked | The site's "Book" button is a link; the XT embed item waits until the owner asks for it |
+| Hotel pack in week 5 | Pack v0 built in week 0 (rooms collection, rooms block, schema.org Hotel) as a workspace package, with no hotel concept in the core | Week 5 extends it (offers, amenities as a type, policies) rather than creating it |
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-24 · session 8 · `339a46b` → this commit
+
+**Changed**
+- Admin fixed: the stale import map left the admin blank (finding 26); CI now fails on a stale map.
+- Product focus changed by the owner: a hotel marketing website, no booking logic. `/book` routes and the booking settings removed; adapter and mock parked in `src/booking/`.
+- Hotel pack `packs/hotel` (`@hh/pack-hotel`): room types, rooms block, snapshot contribution, schema.org Hotel. Loaded through `src/packs.ts`; the audit covers pack files.
+- Generic page blocks (text and image, features, gallery, quote, call to action, contact details, map), menu fields on pages, tagline/logo/"Book" link on sites.
+- Public site rewritten: locale paths (`/s/<site>/en/...`), hreflang, canonical, Open Graph, sitemap and robots per site, responsive design with a mobile menu.
+- Customer zero's full site (6 pages, FR/EN, 2 room types) as onboarding content, applied and published; demo facts confirmed from the hotel's own site.
+- Migrations `hotel_site_content` + `drop_booking_mock_settings`, rehearsed on 50 tenants + customer zero (0 of 51 changed). `tenant-checksums` now names the tables that changed.
+- The morning's `next dev` (pushing schema into `hh_platform`) stopped; `hh_platform` rebuilt from migrations.
+
+**Learned**
+- Findings 26–27 in docs/05: stale import map = blank admin; `migrate:create` prompts (and hangs) when a change both drops and adds.
+- A pack block named like a collection (`rooms`) collides in GraphQL; blocks from packs set their own `interfaceName`.
+
+**Left undone**
+- Publish button and preview in the admin, media upload, second theme, AI generation, domain test.
 
 ### 2026-09-23 · session 7 · `6b7a0ba` → this commit
 

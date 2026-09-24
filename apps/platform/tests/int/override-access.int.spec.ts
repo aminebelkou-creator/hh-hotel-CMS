@@ -1,5 +1,5 @@
 /**
- * Audit: every `overrideAccess: true` in src/ must be justified in the allowlist.
+ * Audit: every `overrideAccess: true` in src/ and in the vertical packs must be justified in the allowlist.
  * A platform-level bypass that is not enumerated is a potential cross-tenant path.
  */
 import { describe, it, expect } from 'vitest'
@@ -7,11 +7,12 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import allowlist from '@/access/override-access.allowlist.json'
 
-const ROOT = join(process.cwd(), 'src')
+const ROOTS = [join(process.cwd(), 'src'), join(process.cwd(), '..', '..', 'packs')]
 
 const walk = (dir: string, out: string[] = []): string[] => {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name)
+    if (name === 'node_modules') continue
     if (statSync(p).isDirectory()) walk(p, out)
     else if (/\.(ts|tsx)$/.test(name)) out.push(p)
   }
@@ -22,7 +23,7 @@ describe('overrideAccess audit', () => {
   it('every overrideAccess: true in src/ is allowlisted with a reason', () => {
     const allowed = new Set(allowlist.allowed.map((a) => a.file.replace(/\\/g, '/')))
     const offenders: string[] = []
-    for (const file of walk(ROOT)) {
+    for (const file of ROOTS.flatMap((r) => walk(r))) {
       const text = readFileSync(file, 'utf8')
       if (/overrideAccess:\s*true/.test(text)) {
         const rel = relative(process.cwd(), file).replace(/\\/g, '/')

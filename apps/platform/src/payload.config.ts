@@ -10,7 +10,7 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Tenants } from './collections/Tenants'
 import { Sites } from './collections/Sites'
-import { Pages } from './collections/Pages'
+import { makePages } from './collections/Pages'
 import { Media } from './collections/Media'
 import { Domains } from './collections/Domains'
 import { Releases } from './collections/Releases'
@@ -18,6 +18,7 @@ import { Facts } from './collections/Facts'
 import { isSuperAdmin, superAdminFieldOnly } from './access'
 import { touchPageSeo } from './jobs/touchPageSeo'
 import { publishSiteTask } from './jobs/publishSite'
+import { packBlocks, packCollections, packTenantCollections } from './packs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -27,7 +28,7 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
   },
-  collections: [Users, Tenants, Sites, Pages, Media, Domains, Releases, Facts],
+  collections: [Users, Tenants, Sites, makePages(packBlocks), Media, Domains, Releases, Facts, ...packCollections],
   localization: {
     locales: ['en', 'fr'],
     defaultLocale: 'en',
@@ -61,6 +62,7 @@ export default buildConfig({
         domains: {},
         releases: {},
         facts: {},
+        ...Object.fromEntries(packTenantCollections.map((slug) => [slug, {}])),
       },
       userHasAccessToAllTenants: (user) => isSuperAdmin(user),
       tenantsArrayField: {
@@ -87,6 +89,10 @@ export default buildConfig({
         media: {
           enabled: { find: true, create: false, update: false, delete: false },
           description: 'Media library with rights metadata',
+        },
+        rooms: {
+          enabled: { find: true, create: true, update: true, delete: false },
+          description: 'Hotel room types shown on the website (hotel pack): names, descriptions, occupancy, photos',
         },
         // Agents may read and propose facts; only a person confirms them (no update).
         facts: {

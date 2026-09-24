@@ -7,6 +7,8 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // Vertical packs are workspace packages shipped as TypeScript source.
+  transpilePackages: ['@hh/pack-hotel'],
   images: {
     localPatterns: [
       {

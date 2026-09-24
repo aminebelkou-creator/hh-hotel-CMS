@@ -58,6 +58,10 @@ jobs:
             cat src/migrations/*ci_drift_check*.ts
             exit 1
           fi
+      - name: Admin import map is current (a stale map renders the admin as a blank page)
+        run: |
+          pnpm payload generate:importmap
+          git diff --exit-code -- 'src/app/(payload)/admin/importMap.js' || { echo "::error::Run 'pnpm payload generate:importmap' and commit src/app/(payload)/admin/importMap.js"; exit 1; }
       - name: Seed 10 tenants
         run: pnpm seed
       - name: Typecheck

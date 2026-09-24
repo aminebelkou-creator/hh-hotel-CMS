@@ -2,7 +2,7 @@
 
 Living checklist for the 90-day plan (28 September to 25 December 2026). Tick items in the commit that completes them, with a link to the evidence. Owner codes: **ENG** engineering, **BIZ** sales and partnerships, **OWN** project owner, **XT** another xedge team.
 
-Last updated: 23 September 2026, end of session 7 (fact base, release pipeline v0, booking mock). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
+Last updated: 24 September 2026, end of session 8 (admin fix, hotel pack, customer zero marketing site; booking parked). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
 
 ## At a glance
 
@@ -11,8 +11,8 @@ Last updated: 23 September 2026, end of session 7 (fact base, release pipeline v
 | Owner actions before week 1 | 4 | 3 | Send the Tencent email, revoke the CAM key, share the repo |
 | Week 1 | 9 | 4 | Engineering done early; BIZ and XT items not started |
 | Week 2 | 8 | 6 | All six proof items and the fact confirmation flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a fresh key and a test domain), hotel pack types, fact flow and BIZ items open |
-| Weeks 3–13 | 1 | 45 | Content release pipeline v0 done early (week 4 item); the four gates open; Gate 1 on 12 October |
-| **Total** | **22** | **58** | |
+| Weeks 3–13 | 2 | 44 | Content release pipeline v0 done early (week 4 item); the four gates open; Gate 1 on 12 October |
+| **Total** | **23** | **57** | |
 
 ## Before week 1 — owner actions
 
@@ -71,14 +71,14 @@ Last updated: 23 September 2026, end of session 7 (fact base, release pipeline v
 - [ ] **ENG** Release pipeline: domain bind — blocked, custom domains disabled on the Makers project (finding 22)
 - [ ] **ENG** Canonical content model live; RLS decision recorded
 - [ ] **ENG** Two template packages, accessibility- and Core Web Vitals-gated in CI
-- [ ] **ENG** Customer 1 ingest and fact confirmation, by hand — tooling proven on customer zero (`src/ingest/import-facts.ts`)
+- [ ] **ENG** Customer 1 ingest and fact confirmation, by hand — done for customer zero (24 Sep): ingest, facts, and a full FR/EN marketing site built by hand from `src/onboarding/`
 - [ ] **XT** **Cross-team contracts signed**: erasure, chatbot boundary, booking embed
 - [ ] **BIZ** Tiers priced
 
 ## Week 5 (26 Oct)
 
 - [ ] **ENG** Media pipeline: object storage plus on-the-fly derivatives; domain and certificate flow
-- [ ] **ENG** Hotel pack implemented as a pack, with no core change
+- [x] **ENG** Hotel pack implemented as a pack, with no core change — v0 done early (24 Sep): `packs/hotel` with room types, rooms block, schema.org Hotel; offers, amenity types and policies still to add
 - [ ] **ENG** Generation pipeline v0 end to end, run by engineers
 - [ ] **BIZ** Customer 1 draft site reviewed with the hotel
 - [ ] **ENG** Accessibility statement generator; AI disclosure component
@@ -112,7 +112,7 @@ Last updated: 23 September 2026, end of session 7 (fact base, release pipeline v
 ## Weeks 10–12 (30 Nov to 14 Dec)
 
 - [ ] **ENG** Template canary: upgrade one tenant, then all
-- [ ] **XT** Booking-engine embed on the hotel's domain via the signed contract — adapter and same-domain booking step built early against the **clockPMS BE** mock ([contract](contracts/booking-engine-embed.md#interim-the-clockpms-be-mock))
+- [ ] **XT** Booking-engine embed on the hotel's domain via the signed contract — on hold by owner decision (24 Sep: marketing site, no booking logic); the early adapter and mock are parked
 - [ ] **ENG** Agent drafts local-guide pages for customers 1–3
 - [ ] **ENG** Per-tenant health view, internal
 - [ ] **XT** Chatbot widget rendered per the boundary, with disclosure and consent gating
@@ -146,5 +146,5 @@ Last updated: 23 September 2026, end of session 7 (fact base, release pipeline v
 | Ingest to live on own domain | Under one working day for customer 5 | — |
 | Full-site generation | Under 5 minutes | — |
 | Publish to live / rollback | Under 60 s / under 10 s | Content release: 14–27 ms / 16–18 ms (local); code deploy 171 s from CI |
-| Isolation suite | Green on every commit and every Payload upgrade | 82/82 locally and on Neon against the live app, incl. facts, releases, booking; green in CI on every push |
+| Isolation suite | Green on every commit and every Payload upgrade | All suites green locally at 10 and 50 tenants and in CI on every push (incl. public site over HTTP) |
 | Service checks resolved without a human | Over half by week 12 | — |

@@ -215,3 +215,11 @@ Finding 23: **content releases do not need a rebuild or a Makers deploy.** The r
 Finding 24: **a lease lock on the site row plus a per-site request sequence neutralises finding 17 ("the last to finish goes live").** The lock serialises publishes across processes and instances; the sequence lets a publish that arrives late stop as `superseded` instead of overwriting newer content. With three concurrent requests, only the newest went live, exactly once.
 
 Finding 25: **a required localized field must be present in each locale before a page validates in that locale.** Creating the customer-zero home page in French and then publishing it in English failed until the hero heading was set in English too. Onboarding writes every required localized field in every enabled locale.
+
+## Admin blank page, and a change of product focus — 24 September 2026
+
+Finding 26: **the admin rendered an empty white page, locally and on Makers, with no error in the browser.** The server logged `getFromImportMap: PayloadComponent not found in importMap` for the multi-tenant plugin's `TenantSelectionProvider`, which wraps every admin view; without it nothing below renders. The import map (`src/app/(payload)/admin/importMap.js`) had never been regenerated after the plugins were added. Fix: `pnpm payload generate:importmap`. CI now regenerates it and fails if the committed file differs.
+
+Finding 27: **`payload migrate:create` hangs in a non-interactive shell when a change both removes and adds schema objects**: drizzle asks whether each new enum or column is a rename of a removed one. Splitting the change into two migrations (additions, then removals) avoids the prompt and keeps each migration additive-first, as the release rules require.
+
+Decision (owner, 24 September): **the product for now is a hotel marketing website**, with no booking logic and no PMS work. The booking step built on 23 September is removed from the site and its adapter parked; the header's "Book" button is a link. Customer zero's facts no longer wait for the owner's review: engineering confirmed the ones the hotel's own website supports, marked "Demo" in the decision note.

@@ -76,6 +76,7 @@ export interface Config {
     domains: Domain;
     releases: Release;
     facts: Fact;
+    rooms: Room;
     'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -93,6 +94,7 @@ export interface Config {
     domains: DomainsSelect<false> | DomainsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
     facts: FactsSelect<false> | FactsSelect<true>;
+    rooms: RoomsSelect<false> | RoomsSelect<true>;
     'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -240,15 +242,19 @@ export interface Site {
     | null;
   status?: ('draft' | 'live' | 'suspended') | null;
   /**
-   * Booking engine mounted on the hotel domain at /book (contract: booking-engine-embed).
+   * Short line under the name, used in the header and search results
    */
-  booking?: {
-    engine?: ('none' | 'clockpms-be-mock') | null;
-    /**
-     * Property identifier in the booking engine
-     */
-    propertyCode?: string | null;
-    currency?: string | null;
+  tagline?: string | null;
+  /**
+   * Logo image URL (https). Remote until the media pipeline exists
+   */
+  logoUrl?: string | null;
+  /**
+   * The "Book" button in the header. A page slug (e.g. contact), a URL, tel: or mailto:. No booking logic runs on the platform
+   */
+  cta?: {
+    label?: string | null;
+    href?: string | null;
   };
   /**
    * Set by the release pipeline. Rollback moves this pointer.
@@ -325,14 +331,36 @@ export interface Page {
   id: number;
   tenant?: (number | null) | Tenant;
   title: string;
+  /**
+   * "home" is the start page
+   */
   slug: string;
   site: number | Site;
+  /**
+   * Menu label (defaults to the title)
+   */
+  navLabel?: string | null;
+  navOrder?: number | null;
+  showInNav?: boolean | null;
   blocks?:
     | (
         | {
             heading: string;
             subheading?: string | null;
             image?: (number | null) | Media;
+            /**
+             * Image URL (https)
+             */
+            imageUrl?: string | null;
+            /**
+             * Alternative text for screen readers
+             */
+            imageAlt?: string | null;
+            ctaLabel?: string | null;
+            /**
+             * A page slug (e.g. contact), a full URL, tel: or mailto:
+             */
+            ctaHref?: string | null;
             /**
              * Who last shaped this content. Regeneration never overwrites human edits.
              */
@@ -377,6 +405,127 @@ export interface Page {
             blockName?: string | null;
             blockType: 'richText';
           }
+        | {
+            eyebrow?: string | null;
+            heading?: string | null;
+            /**
+             * Blank lines separate paragraphs
+             */
+            body?: string | null;
+            /**
+             * Image URL (https)
+             */
+            imageUrl?: string | null;
+            /**
+             * Alternative text for screen readers
+             */
+            imageAlt?: string | null;
+            imagePosition?: ('left' | 'right') | null;
+            linkLabel?: string | null;
+            /**
+             * A page slug (e.g. contact), a full URL, tel: or mailto:
+             */
+            linkHref?: string | null;
+            /**
+             * Who last shaped this content. Regeneration never overwrites human edits.
+             */
+            provenance?: {
+              origin?: ('generated' | 'human' | 'locked') | null;
+              /**
+               * Fact-base reference for generated content
+               */
+              sourceFact?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'textImage';
+          }
+        | {
+            heading?: string | null;
+            intro?: string | null;
+            items?:
+              | {
+                  title: string;
+                  text?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Who last shaped this content. Regeneration never overwrites human edits.
+             */
+            provenance?: {
+              origin?: ('generated' | 'human' | 'locked') | null;
+              /**
+               * Fact-base reference for generated content
+               */
+              sourceFact?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'features';
+          }
+        | {
+            heading?: string | null;
+            images?:
+              | {
+                  url: string;
+                  alt?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'gallery';
+          }
+        | {
+            text: string;
+            author?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'quote';
+          }
+        | {
+            heading?: string | null;
+            text?: string | null;
+            buttonLabel?: string | null;
+            /**
+             * A page slug (e.g. contact), a full URL, tel: or mailto:
+             */
+            buttonHref?: string | null;
+            /**
+             * Image URL (https)
+             */
+            imageUrl?: string | null;
+            /**
+             * Alternative text for screen readers
+             */
+            imageAlt?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            heading?: string | null;
+            /**
+             * Phones, email, address and times come from confirmed facts
+             */
+            intro?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'contact';
+          }
+        | {
+            heading?: string | null;
+            text?: string | null;
+            /**
+             * Position comes from the confirmed facts geo.lat and geo.lon
+             */
+            zoom?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'map';
+          }
+        | RoomsBlock
       )[]
     | null;
   seo?: {
@@ -436,6 +585,19 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RoomsBlock".
+ */
+export interface RoomsBlock {
+  heading?: string | null;
+  intro?: string | null;
+  limit?: number | null;
+  layout?: ('cards' | 'detailed') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'rooms';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -507,6 +669,50 @@ export interface Fact {
   createdAt: string;
 }
 /**
+ * Room types shown on the hotel website. Changes go live with the next publish.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rooms".
+ */
+export interface Room {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
+  slug: string;
+  /**
+   * e.g. Superior, Comfort
+   */
+  category?: string | null;
+  order?: number | null;
+  /**
+   * One or two sentences for the room card
+   */
+  summary?: string | null;
+  description?: string | null;
+  sizeSqm?: number | null;
+  maxOccupancy?: number | null;
+  /**
+   * e.g. Double bed or two singles
+   */
+  bed?: string | null;
+  view?: string | null;
+  features?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  images?:
+    | {
+        url: string;
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * API keys control which collections, resources, tools, and prompts MCP clients can access
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -555,6 +761,20 @@ export interface PayloadMcpApiKey {
      * Allow clients to find media.
      */
     find?: boolean | null;
+  };
+  rooms?: {
+    /**
+     * Allow clients to find rooms.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create rooms.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update rooms.
+     */
+    update?: boolean | null;
   };
   facts?: {
     /**
@@ -723,6 +943,10 @@ export interface PayloadLockedDocument {
         value: number | Fact;
       } | null)
     | ({
+        relationTo: 'rooms';
+        value: number | Room;
+      } | null)
+    | ({
         relationTo: 'payload-mcp-api-keys';
         value: number | PayloadMcpApiKey;
       } | null);
@@ -833,12 +1057,13 @@ export interface SitesSelect<T extends boolean = true> {
   defaultLocale?: T;
   theme?: T;
   status?: T;
-  booking?:
+  tagline?: T;
+  logoUrl?: T;
+  cta?:
     | T
     | {
-        engine?: T;
-        propertyCode?: T;
-        currency?: T;
+        label?: T;
+        href?: T;
       };
   currentRelease?: T;
   publish?:
@@ -860,6 +1085,9 @@ export interface PagesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   site?: T;
+  navLabel?: T;
+  navOrder?: T;
+  showInNav?: T;
   blocks?:
     | T
     | {
@@ -869,6 +1097,10 @@ export interface PagesSelect<T extends boolean = true> {
               heading?: T;
               subheading?: T;
               image?: T;
+              imageUrl?: T;
+              imageAlt?: T;
+              ctaLabel?: T;
+              ctaHref?: T;
               provenance?:
                 | T
                 | {
@@ -891,6 +1123,99 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        textImage?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              body?: T;
+              imageUrl?: T;
+              imageAlt?: T;
+              imagePosition?: T;
+              linkLabel?: T;
+              linkHref?: T;
+              provenance?:
+                | T
+                | {
+                    origin?: T;
+                    sourceFact?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        features?:
+          | T
+          | {
+              heading?: T;
+              intro?: T;
+              items?:
+                | T
+                | {
+                    title?: T;
+                    text?: T;
+                    id?: T;
+                  };
+              provenance?:
+                | T
+                | {
+                    origin?: T;
+                    sourceFact?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        gallery?:
+          | T
+          | {
+              heading?: T;
+              images?:
+                | T
+                | {
+                    url?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        quote?:
+          | T
+          | {
+              text?: T;
+              author?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              heading?: T;
+              text?: T;
+              buttonLabel?: T;
+              buttonHref?: T;
+              imageUrl?: T;
+              imageAlt?: T;
+              id?: T;
+              blockName?: T;
+            };
+        contact?:
+          | T
+          | {
+              heading?: T;
+              intro?: T;
+              id?: T;
+              blockName?: T;
+            };
+        map?:
+          | T
+          | {
+              heading?: T;
+              text?: T;
+              zoom?: T;
+              id?: T;
+              blockName?: T;
+            };
+        rooms?: T | RoomsBlockSelect<T>;
       };
   seo?:
     | T
@@ -901,6 +1226,18 @@ export interface PagesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RoomsBlock_select".
+ */
+export interface RoomsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  intro?: T;
+  limit?: T;
+  layout?: T;
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1016,6 +1353,38 @@ export interface FactsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rooms_select".
+ */
+export interface RoomsSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  slug?: T;
+  category?: T;
+  order?: T;
+  summary?: T;
+  description?: T;
+  sizeSqm?: T;
+  maxOccupancy?: T;
+  bed?: T;
+  view?: T;
+  features?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  images?:
+    | T
+    | {
+        url?: T;
+        alt?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-mcp-api-keys_select".
  */
 export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
@@ -1039,6 +1408,13 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
     | T
     | {
         find?: T;
+      };
+  rooms?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
       };
   facts?:
     | T

@@ -1,14 +1,20 @@
 {
   "$comment": "Customer zero. Onboarding settings and the hotel owner's decisions on ingested facts. Public business information only.",
-  "tenant": { "slug": "hotel-herse-dor", "name": "Hôtel de la Herse d'Or", "plan": "concierge" },
+  "tenant": {
+    "slug": "hotel-herse-dor",
+    "name": "Hôtel de la Herse d'Or",
+    "plan": "concierge"
+  },
   "site": {
     "slug": "hotel-herse-dor",
     "name": "Hôtel de la Herse d'Or",
     "brandName": "Hôtel de la Herse d'Or",
     "timezone": "Europe/Paris",
-    "enabledLocales": ["fr", "en"],
-    "defaultLocale": "fr",
-    "booking": { "engine": "clockpms-be-mock", "propertyCode": "HHDOR", "currency": "EUR" }
+    "enabledLocales": [
+      "fr",
+      "en"
+    ],
+    "defaultLocale": "fr"
   },
   "ingestHost": "www.hotel-herse-dor.com",
   "decisions": [
@@ -35,6 +41,144 @@
       "value": "+33187447790",
       "status": "confirmed",
       "note": "Hotel owner, 23 Sep 2026: 01 87 44 77 90 is still a current number."
+    },
+    {
+      "key": "policy.checkin",
+      "value": "15:30",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "address",
+      "value": "20, rue Saint-Antoine, 75004 Paris",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "contact.email",
+      "value": "info@hotel-herse-dor.com",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "contact.phone",
+      "value": "+33316001200",
+      "status": "rejected",
+      "note": "Demo, 24 Sep 2026: extraction noise (Wi-Fi instructions), not a hotel phone number."
+    },
+    {
+      "key": "contact.phone",
+      "value": "+33216001200",
+      "status": "rejected",
+      "note": "Demo, 24 Sep 2026: extraction noise (Wi-Fi instructions), not a hotel phone number."
+    },
+    {
+      "key": "contact.phone",
+      "value": "+33116001200",
+      "status": "rejected",
+      "note": "Demo, 24 Sep 2026: extraction noise (Wi-Fi instructions), not a hotel phone number."
+    },
+    {
+      "key": "business.type",
+      "value": "Organization",
+      "status": "rejected",
+      "note": "Demo: generic schema type, replaced by Hotel on the new site."
+    },
+    {
+      "key": "site.generator",
+      "value": "WordPress 7.1.2",
+      "status": "rejected",
+      "note": "Demo: describes the old website, not the hotel."
+    },
+    {
+      "key": "hotel.stars",
+      "value": "3",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "hotel.rooms",
+      "value": "29",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "geo.lat",
+      "value": "48.8537",
+      "status": "confirmed",
+      "note": "Demo: approximate position of 20 rue Saint-Antoine, to be checked by the owner."
+    },
+    {
+      "key": "geo.lon",
+      "value": "2.3672",
+      "status": "confirmed",
+      "note": "Demo: approximate position of 20 rue Saint-Antoine, to be checked by the owner."
+    },
+    {
+      "key": "amenity",
+      "value": "wifi",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "amenity",
+      "value": "breakfast",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "amenity",
+      "value": "elevator",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "amenity",
+      "value": "pets",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "amenity",
+      "value": "24h-reception",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "amenity",
+      "value": "non-smoking",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "amenity",
+      "value": "accessible",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "amenity",
+      "value": "air-conditioning",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "amenity",
+      "value": "parking",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "profile.link",
+      "value": "https://www.instagram.com/hersedorparis.hotel/",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
+    },
+    {
+      "key": "profile.link",
+      "value": "https://www.facebook.com/Hotelhersedorparis",
+      "status": "confirmed",
+      "note": "Demo, 24 Sep 2026: confirmed by engineering from the hotel's own website; the owner asked that facts not wait for his review."
     }
   ]
 }

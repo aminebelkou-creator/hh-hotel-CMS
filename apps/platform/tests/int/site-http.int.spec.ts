@@ -1,5 +1,5 @@
 /**
- * Public site, booking step and publish endpoints, against a running server (PLATFORM_URL)
+ * Public site (pages, locales, structured data, sitemap) and publish endpoints, against a running server (PLATFORM_URL)
  * that shares this test's database. Skipped when the server is unreachable.
  * Uses seeded tenants 5 and 6.
  */
@@ -32,7 +32,7 @@ const load = async (n: number): Promise<T> => {
   return { tenantId: Number(tenant.id), siteId: Number(site.id), slug: site.slug, token: j.token }
 }
 const reset = async (t: T) => {
-  await poolOf(payload).query(`update sites set current_release_id = null, booking_engine = 'none', booking_property_code = null where id = $1`, [t.siteId])
+  await poolOf(payload).query(`update sites set current_release_id = null where id = $1`, [t.siteId])
   await payload.delete({ collection: 'releases', where: { site: { equals: t.siteId } }, overrideAccess: true })
 }
 const post = (t: T | null, p: string) =>
@@ -69,7 +69,6 @@ describe('publish endpoints over HTTP', () => {
 
   it('an owner publishes their site and the public page serves that release', async (ctx) => {
     if (!reachable) ctx.skip()
-    await poolOf(payload).query(`update sites set booking_engine = 'clockpms-be-mock', booking_property_code = 'T05' where id = $1`, [A.siteId])
     const res = await post(A, `/sites/${A.siteId}/publish`)
     const body = (await res.json()) as { outcome: string; releaseId: number; durationMs: number }
     expect(res.status, JSON.stringify(body)).toBe(200)
@@ -100,36 +99,42 @@ describe('publish endpoints over HTTP', () => {
   })
 })
 
-describe('booking step on the hotel domain (clockPMS BE mock)', () => {
-  const d = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10)
-
-  it('availability JSON comes from the engine, with a freshness stamp', async (ctx) => {
+describe('public hotel site', () => {
+  it('serves every page in every enabled locale, with hreflang alternates', async (ctx) => {
     if (!reachable) ctx.skip()
-    const r = await fetch(`${BASE}/s/${A.slug}/book/availability?checkIn=${d(20)}&checkOut=${d(22)}&adults=2`)
-    expect(r.status).toBe(200)
-    expect(r.headers.get('cache-control')).toContain('no-store')
-    const j = (await r.json()) as { engine: string; nights: number; offers: unknown[]; freshAt: string }
-    expect(j.engine).toBe('clockpms-be-mock')
-    expect(j.nights).toBe(2)
-    expect(j.offers.length).toBeGreaterThan(0)
-    expect(Date.parse(j.freshAt)).toBeGreaterThan(Date.now() - 60_000)
+    const home = await (await fetch(`${BASE}/s/${A.slug}`)).text()
+    expect(home).toMatch(new RegExp(`<link rel="alternate" hreflang="fr" href="[^"]*/s/${A.slug}/fr"`, 'i'))
+    const fr = await fetch(`${BASE}/s/${A.slug}/fr/rooms`)
+    expect(fr.status).toBe(200)
+    expect(await fr.text()).toContain('lang="fr"')
+    // The default locale has no prefix; naming it explicitly is not a page.
+    expect((await fetch(`${BASE}/s/${A.slug}/en/rooms`)).status).toBe(404)
   })
 
-  it('bad searches get a 400 naming the field; sites without an engine get 404', async (ctx) => {
+  it('home carries schema.org Hotel structured data from the hotel pack', async (ctx) => {
     if (!reachable) ctx.skip()
-    const bad = await fetch(`${BASE}/s/${A.slug}/book/availability?checkIn=${d(5)}&checkOut=${d(5)}`)
-    expect(bad.status).toBe(400)
-    expect(((await bad.json()) as { field: string }).field).toBe('dates')
-    expect((await fetch(`${BASE}/s/${B.slug}/book/availability?checkIn=${d(5)}&checkOut=${d(6)}`)).status).toBe(404)
+    const html = await (await fetch(`${BASE}/s/${A.slug}`)).text()
+    const m = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)
+    expect(m).not.toBeNull()
+    const data = JSON.parse(m![1]) as { '@type': string; containsPlace?: { name: string }[] }
+    expect(data['@type']).toBe('Hotel')
+    expect(data.containsPlace?.map((r) => r.name)).toContain('Standard room of tenant 5')
   })
 
-  it('the booking page renders offers and is kept out of search results', async (ctx) => {
+  it('publishes a sitemap and robots.txt per site', async (ctx) => {
     if (!reachable) ctx.skip()
-    const r = await fetch(`${BASE}/s/${A.slug}/book?checkIn=${d(20)}&checkOut=${d(22)}&adults=2`)
-    expect(r.status).toBe(200)
-    const html = await r.text()
-    expect(html).toContain('clockPMS BE')
-    expect(html).toMatch(/Classic Double|Superior Double/)
-    expect(html).toMatch(/<meta[^>]*name="robots"[^>]*noindex/)
+    const sm = await fetch(`${BASE}/s/${A.slug}/sitemap.xml`)
+    expect(sm.status).toBe(200)
+    const xml = await sm.text()
+    expect(xml).toContain('<urlset')
+    expect(xml).toContain(`/s/${A.slug}/fr/contact`)
+    expect(xml).toContain('hreflang="en"')
+    const robots = await (await fetch(`${BASE}/s/${A.slug}/robots.txt`)).text()
+    expect(robots).toContain(`/s/${A.slug}/sitemap.xml`)
+  })
+
+  it('no booking step is served: the platform has no booking logic', async (ctx) => {
+    if (!reachable) ctx.skip()
+    expect((await fetch(`${BASE}/s/${A.slug}/book`)).status).toBe(404)
   })
 })

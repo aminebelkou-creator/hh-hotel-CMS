@@ -1,5 +1,5 @@
 import React from 'react'
-import { liveReleaseFor } from '@/releases/render-data'
+import { liveReleaseFor } from '@/site/load'
 import './site.css'
 
 /**

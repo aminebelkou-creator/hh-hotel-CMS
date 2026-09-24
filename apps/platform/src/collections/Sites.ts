@@ -49,21 +49,20 @@ export const Sites: CollectionConfig = {
       options: ['draft', 'live', 'suspended'],
     },
     {
-      name: 'booking',
+      name: 'tagline',
+      type: 'text',
+      localized: true,
+      admin: { description: 'Short line under the name, used in the header and search results' },
+    },
+    { name: 'logoUrl', type: 'text', admin: { description: 'Logo image URL (https). Remote until the media pipeline exists' } },
+    {
+      name: 'cta',
       type: 'group',
-      admin: { description: 'Booking engine mounted on the hotel domain at /book (contract: booking-engine-embed).' },
+      label: 'Header call to action',
+      admin: { description: 'The "Book" button in the header. A page slug (e.g. contact), a URL, tel: or mailto:. No booking logic runs on the platform' },
       fields: [
-        {
-          name: 'engine',
-          type: 'select',
-          defaultValue: 'none',
-          options: [
-            { label: 'None', value: 'none' },
-            { label: 'clockPMS BE (mock)', value: 'clockpms-be-mock' },
-          ],
-        },
-        { name: 'propertyCode', type: 'text', admin: { description: 'Property identifier in the booking engine' } },
-        { name: 'currency', type: 'text', defaultValue: 'EUR' },
+        { name: 'label', type: 'text', localized: true },
+        { name: 'href', type: 'text' },
       ],
     },
     {

@@ -27,6 +27,7 @@ const TABLES: [string, string][] = [
   ['domains', 'tenant_id'],
   ['releases', 'tenant_id'],
   ['facts', 'tenant_id'],
+  ['rooms', 'tenant_id'],
 ]
 
 const payload = await getPayload({ config })
@@ -69,14 +70,20 @@ const before = JSON.parse(readFileSync(file, 'utf8')) as typeof sums
 const tenants = new Set([...Object.keys(before), ...Object.keys(sums)])
 const unexpected: string[] = []
 const changed: string[] = []
+const tablesChanged: Record<string, number> = {}
 for (const t of tenants) {
   const same = JSON.stringify(before[t] ?? {}) === JSON.stringify(sums[t] ?? {})
-  if (!same) changed.push(t)
+  if (!same) {
+    changed.push(t)
+    const tables = [...new Set([...Object.keys(before[t] ?? {}), ...Object.keys(sums[t] ?? {})])]
+    for (const tb of tables) if ((before[t] ?? {})[tb] !== (sums[t] ?? {})[tb]) tablesChanged[tb] = (tablesChanged[tb] ?? 0) + 1
+  }
   if (!same && !expectedChanged.has(t)) unexpected.push(t)
   if (same && expectedChanged.has(t)) unexpected.push(`${t} (expected a change, found none)`)
 }
 payload.logger.info(
   `verified ${tenants.size} tenants: ${changed.length} changed, ${unexpected.length} unexpected` +
-    (unexpected.length ? ` -> ${unexpected.join(', ')}` : ''),
+    (unexpected.length ? ` -> ${unexpected.join(', ')}` : '') +
+    (Object.keys(tablesChanged).length ? `; tables changed: ${JSON.stringify(tablesChanged)}` : ''),
 )
 process.exit(unexpected.length ? 1 : 0)

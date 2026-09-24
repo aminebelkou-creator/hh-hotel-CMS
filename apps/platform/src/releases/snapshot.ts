@@ -1,44 +1,45 @@
 import type { Payload } from 'payload'
+import { packs } from '../packs'
 
 /**
  * A release snapshot holds everything the renderer needs for one site, so serving a release
- * never reads live drafts: site settings, published pages (all locales), and confirmed facts.
+ * never reads live drafts: site settings, published pages (all locales), confirmed facts, and
+ * what each vertical pack contributes (for hotels: the room types).
  * Unconfirmed and rejected facts never enter a release (spec rule 9).
  */
 export type Localized<T> = T | Record<string, T | null | undefined>
 
-export type SnapshotBlock = {
-  blockType: string
-  id?: string | null
-  heading?: Localized<string>
-  subheading?: Localized<string>
-  content?: Localized<unknown>
-  provenance?: { origin?: string | null; sourceFact?: string | null } | null
-}
+export type SnapshotBlock = { blockType: string; id?: string | null } & Record<string, unknown>
 
 export type SnapshotPage = {
   id: number
   slug: string
   title: Localized<string>
+  navLabel?: Localized<string> | null
+  navOrder: number
+  showInNav: boolean
   blocks: SnapshotBlock[]
   seo?: { title?: Localized<string>; description?: Localized<string> } | null
 }
 
 export type SiteSnapshot = {
-  schema: 1
+  schema: 2
   site: {
     id: number
     slug: string
     name: string
     brandName: string | null
+    tagline: Localized<string> | null
+    logoUrl: string | null
     timezone: string | null
     enabledLocales: string[]
     defaultLocale: string
     theme: unknown
-    booking: { engine: string; propertyCode: string | null; currency: string }
+    cta: { label: Localized<string> | null; href: string | null }
   }
   pages: SnapshotPage[]
   facts: { key: string; value: string }[]
+  packs: Record<string, unknown>
 }
 
 export async function buildSnapshot(payload: Payload, tenantId: number, siteId: number): Promise<SiteSnapshot> {
@@ -46,6 +47,7 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
   const sites = await payload.find({
     collection: 'sites',
     where: { and: [{ id: { equals: siteId } }, { tenant: { equals: tenantId } }] },
+    locale: 'all',
     depth: 0,
     limit: 1,
     overrideAccess: true,
@@ -79,33 +81,45 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
     overrideAccess: true,
   })
 
+  const packData: Record<string, unknown> = {}
+  for (const p of packs) packData[p.name] = await p.snapshot(payload, tenantId)
+
+  const s = site as unknown as Record<string, unknown>
+  const cta = (s.cta ?? {}) as { label?: Localized<string>; href?: string }
+  // Localized fields come back as { en, fr } objects with locale 'all'; plain fields as values.
+  const plain = <T,>(v: unknown): T => v as T
   return {
-    schema: 1,
+    schema: 2,
     site: {
       id: Number(site.id),
       slug: site.slug,
-      name: site.name,
-      brandName: site.brandName ?? null,
+      name: plain<string>(site.name),
+      brandName: plain<string | null>(site.brandName ?? null),
+      tagline: (s.tagline as Localized<string>) ?? null,
+      logoUrl: (s.logoUrl as string) ?? null,
       timezone: site.timezone ?? null,
       enabledLocales: (site.enabledLocales as string[] | null) ?? ['en'],
       defaultLocale: site.defaultLocale ?? 'en',
       theme: site.theme ?? null,
-      booking: {
-        engine: site.booking?.engine ?? 'none',
-        propertyCode: site.booking?.propertyCode ?? null,
-        currency: site.booking?.currency ?? 'EUR',
-      },
+      cta: { label: cta.label ?? null, href: cta.href ?? null },
     },
-    pages: pages.docs.map((p) => ({
-      id: Number(p.id),
-      slug: p.slug,
-      title: p.title as Localized<string>,
-      blocks: ((p.blocks ?? []) as SnapshotBlock[]).map((b) => ({ ...b })),
-      seo: (p.seo as SnapshotPage['seo']) ?? null,
-    })),
+    pages: pages.docs.map((p) => {
+      const d = p as unknown as Record<string, unknown>
+      return {
+        id: Number(p.id),
+        slug: p.slug,
+        title: p.title as Localized<string>,
+        navLabel: (d.navLabel as Localized<string>) ?? null,
+        navOrder: Number(d.navOrder ?? 0),
+        showInNav: d.showInNav !== false,
+        blocks: ((p.blocks ?? []) as unknown as SnapshotBlock[]).map((b) => ({ ...b })),
+        seo: (p.seo as SnapshotPage['seo']) ?? null,
+      }
+    }),
     facts: facts.docs
       .map((f) => ({ key: f.key, value: f.value }))
       .sort((a, b) => a.key.localeCompare(b.key) || a.value.localeCompare(b.value)),
+    packs: packData,
   }
 }
 
@@ -116,6 +130,7 @@ export function pick<T>(v: Localized<T> | undefined | null, locale: string, fall
   const rec = v as Record<string, T | null | undefined>
   const keys = Object.keys(rec)
   // A rich-text value is itself an object ({ root: ... }); only treat locale-keyed objects as localized.
+  if (!keys.length) return undefined // a localized field with no value in any locale
   if (!keys.every((k) => /^[a-z]{2}(-[A-Z]{2})?$/.test(k))) return v as T
   return (rec[locale] ?? rec[fallback] ?? keys.map((k) => rec[k]).find((x) => x !== null && x !== undefined)) ?? undefined
 }

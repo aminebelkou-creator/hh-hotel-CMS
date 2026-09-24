@@ -32,6 +32,14 @@
     {
       "file": "src/releases/time-release.ts",
       "reason": "Engineer-run timing script (Gate 2 evidence); looks up one site by slug and hands its tenant to the pipeline. Never reachable from a request."
+    },
+    {
+      "file": "src/onboarding/apply.ts",
+      "reason": "Engineer-run onboarding script that writes a hotel's site content; never reachable from a request. Every write names the tenant from the content file."
+    },
+    {
+      "file": "../../packs/hotel/src/snapshot.ts",
+      "reason": "Hotel pack's release-snapshot contribution, called only by the release pipeline with an explicit tenantId; the query filters on it."
     }
   ]
 }

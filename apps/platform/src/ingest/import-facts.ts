@@ -29,7 +29,6 @@ type Onboarding = {
     timezone?: string
     enabledLocales: ('en' | 'fr' | 'de' | 'es' | 'it')[]
     defaultLocale: 'en' | 'fr' | 'de' | 'es' | 'it'
-    booking?: { engine: 'none' | 'clockpms-be-mock'; propertyCode?: string; currency?: string }
   }
   ingestHost: string
   decisions: Decision[]
@@ -59,7 +58,6 @@ async function ensureTenantAndSite(payload: Payload, o: Onboarding) {
     timezone: o.site.timezone ?? 'Europe/Paris',
     enabledLocales: o.site.enabledLocales,
     defaultLocale: o.site.defaultLocale,
-    booking: { engine: o.site.booking?.engine ?? 'none', propertyCode: o.site.booking?.propertyCode, currency: o.site.booking?.currency ?? 'EUR' },
     tenant: tenantId,
   }
   if (!site) {

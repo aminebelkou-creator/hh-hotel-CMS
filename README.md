@@ -6,9 +6,9 @@
 
 | | |
 | --- | --- |
-| **Status** | Pre-launch. Weeks 1–2 engineering done early and the first product slice (fact base, releases, renderer, booking mock) is live on the proof of concept; the 90-day plan runs 28 September to 25 December 2026 |
-| **Proof** | 82 tests green on every push (isolation, RLS, facts, releases, booking, HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
-| **Live proof of concept** | https://hh-platform-poc.edgeone.cool — customer zero at [/s/hotel-herse-dor](https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor) (booking via the clockPMS BE mock; no real rates) |
+| **Status** | Pre-launch. Weeks 1–2 engineering done early and customer zero's marketing website (6 pages, FR/EN, room types, schema.org Hotel) is live on the proof of concept; the 90-day plan runs 28 September to 25 December 2026 |
+| **Proof** | 82 tests green on every push (isolation, RLS, facts, releases, public site over HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
+| **Live proof of concept** | https://hh-platform-poc.edgeone.cool — customer zero at [/s/hotel-herse-dor](https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor) (demo: a marketing website in French and English; admin at `/admin`) |
 | **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen. Waiting on Tencent; custom domains are disabled on the Makers project |
 | **Owner** | Hotel Hersedor Paris / xedge |
 
@@ -86,7 +86,7 @@ flowchart LR
 
 The full illustrated design, with containers, schema-change flow and a repository map, is in [**docs/09-system-design.md**](docs/09-system-design.md). Solid lines exist today; dotted lines are designed but not built.
 
-**Context: who and what the platform talks to.** The platform masters content and releases only. Inventory, rates, bookings and guest data stay in the other xedge systems. Until the xedge booking engine is available, a mock called **clockPMS BE** stands in for it.
+**Context: who and what the platform talks to.** The platform masters content and releases only. Inventory, rates, bookings and guest data stay in the other xedge systems. The public site is a marketing website: its "Book" button is a plain link (usually to the contact page), and no booking logic runs on the platform.
 
 ```mermaid
 flowchart LR
@@ -95,12 +95,12 @@ flowchart LR
   A([Customer AI agents]) -->|MCP| P
   subgraph X [xedge]
     PMS[PMS]
-    BE[Booking engine<br/>mock: clockPMS BE]
+    BE[Booking engine]
     CRM[CRM + chatbot]
   end
   P[Hotelier Website Platform] -->|release| E[Edge / CDN<br/>EdgeOne Makers]
   PMS -. read-only projection .-> P
-  BE -->|rates, deep links| P
+  BE -. later: link or embed .-> E
   CRM -. widget boundary .-> E
   W[Hotel's current website] -->|ingest| P
 ```
@@ -133,17 +133,18 @@ flowchart LR
 
 ## 6. What is built today
 
-The proof-of-concept platform in `apps/platform` proved the risky parts first: tenant isolation, hosting and data residency. The first product slice now runs on top of it: a **fact base** with human confirmation, a **content release pipeline** with rollback, a **public renderer**, and a **booking step** backed by a mock of the xedge booking engine (**clockPMS BE**). Customer zero, Hôtel de la Herse d'Or, is the first real tenant.
+The proof-of-concept platform in `apps/platform` proved the risky parts first: tenant isolation, hosting and data residency. The first product slice now runs on top of it: a **fact base** with human confirmation, a **content release pipeline** with rollback, and a **hotel marketing website** rendered from the release, with the hotel's rooms coming from a separate **hotel pack**. Customer zero, Hôtel de la Herse d'Or, is the first real tenant.
 
 | Collection | Tenant-scoped | Purpose |
 | --- | --- | --- |
 | `users` | Membership list | Roles `super-admin` / `user`; roles can only be changed by a super-admin |
 | `tenants` | — | One per hotel: name, slug, plan |
-| `sites` | Yes | Brand name, time zone, locales, theme tokens, status, booking engine settings, current release pointer, publish lock |
-| `pages` | Yes | Drafts and versions; `hero` and `richText` blocks with a provenance group (generated, human or locked, plus the source fact); SEO group |
+| `sites` | Yes | Brand name, tagline, logo, locales, theme tokens, header "Book" link, status, current release pointer, publish lock |
+| `pages` | Yes | Drafts and versions; menu label and order; blocks: hero, text and image, features, gallery, quote, call to action, contact details, map, rich text, plus the hotel pack's rooms block; provenance on generated blocks; SEO group |
 | `media` | Yes | Focal point, image sizes, alt text, usage rights |
 | `domains` | Yes | Hostnames per site; only a super-admin can change them, and nobody can delete them |
 | `releases` | Yes | Immutable snapshots (published pages + confirmed facts) with a sha256 checksum. Created only by the pipeline; only status and verification change afterwards; never deleted |
+| `rooms` (hotel pack) | Yes | Room types: localized name, summary, description, occupancy, bed, view, features, photos |
 | `facts` | Yes | The fact base: key, value, source, method, confidence, evidence. Born unconfirmed; confirmation is stamped by the server. Agents may propose, never confirm |
 
 | Capability | State |
@@ -162,7 +163,8 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 | Fact base | Done. Ingest → normaliser → `facts` → confirm/reject in the admin. Customer zero imported: 45 sightings became 35 facts; the owner's 4 decisions applied |
 | Content releases v0 | Done. `POST /api/sites/:id/publish` and `/rollback`, `publishSite` job, per-site lease lock, superseding, verification with automatic rollback. Gate 2 targets (publish < 60 s, rollback < 10 s) met by a wide margin locally; see [docs/06](docs/06-release-pipeline-design.md) |
 | Public renderer v0 | Done. `/s/<site>/<page>` serves the current release only, stamped with `<meta name="x-release">`; practical information comes only from confirmed facts |
-| Booking step | Done with a mock. `/s/<site>/book` and `/s/<site>/book/availability` on the hotel's own domain, from the **clockPMS BE** mock behind the booking-engine adapter |
+| Hotel marketing website | Done for customer zero: home, rooms, services, neighbourhood, gallery, contact, in FR and EN; room cards and detail from the hotel pack; contact details and map from confirmed facts; schema.org `Hotel`, hreflang, sitemap and robots per site. **No booking logic**: the "Book" button is a link (the booking mock built on 23 Sep is parked in `src/booking/`) |
+| Admin | Fixed 24 Sep: the admin rendered a blank page because its component map was stale. CI now fails if the map is out of date |
 | Not started | Studio, AI generation (model key pending), hotel pack types, templates, media pipeline, domains automation, RLS enforcing mode |
 
 ## 7. Tech stack
@@ -188,15 +190,18 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 │   └── platform/              Next.js + Payload application
 │       ├── src/collections/   Users, Tenants, Sites, Pages, Media, Domains, Releases, Facts
 │       ├── src/access/        access helpers + overrideAccess allowlist
-│       ├── src/app/(sites)/   public renderer /s/<site> and booking step /s/<site>/book
-│       ├── src/booking/       booking-engine adapter + clockPMS BE mock
+│       ├── src/app/(sites)/   public site routes /s/<site>[/<locale>][/<page>], sitemap.xml, robots.txt
+│       ├── src/site/          block renderers, header and footer, locale routing
+│       ├── src/onboarding/    a hotel's first-site content (customer zero) and the apply script
+│       ├── src/packs.ts       loads vertical packs (hotel) into the app
+│       ├── src/booking/       parked: booking adapter and mock, not used by the site
 │       ├── src/db/            RLS policies, checksums, backup/restore, fingerprint tools
 │       ├── src/ingest/        crawler spike, normaliser, fact import + owner decisions
 │       ├── src/jobs/          background jobs (tenant carried in the input)
 │       ├── src/migrations/    Payload migrations (the only way shared schemas change)
 │       ├── src/releases/      publish, rollback, snapshot, checksum, renderer lookup
 │       ├── src/seed/          seed, password rotation
-│       ├── tests/int/         isolation, audit, REST/GraphQL, RLS, facts, releases, booking
+│       ├── tests/int/         isolation, audit, REST/GraphQL, RLS, facts, releases, public site
 │       └── edgeone.json       Makers build and Frankfurt region
 ├── docs/
 │   ├── 01-solution-definition.md   the spec (Hotelier Website Platform)
@@ -211,7 +216,7 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 │   ├── contracts/                  cross-team contracts v0.1
 │   └── outreach/                   vendor correspondence drafts
 ├── packages/                  shared core packages — not started
-├── packs/                     vertical packs (hotel first) — not started
+├── packs/hotel/               hotel pack (@hh/pack-hotel): room types, rooms block, schema.org Hotel
 ├── templates/                 versioned template packages — not started
 ├── scripts/                   setup.ps1 / setup.sh
 └── .claude/skills/            EdgeOne Makers skills for agents
@@ -260,9 +265,9 @@ Against a local database, Payload's schema push keeps tables in step with the co
 | Bulk, imports, jobs | `tests/int/isolation-extended.int.spec.ts` | Bulk update/delete by `where`, row-by-row imports and background jobs stay in-tenant |
 | Fact base | `tests/int/facts.int.spec.ts` | Facts are tenant-scoped; born unconfirmed; decision stamps cannot be forged |
 | Releases | `tests/int/releases.int.spec.ts` | Immutability, superseding, lock, concurrent publishes, verification rollback, manual rollback, job tenancy, Gate 2 timings |
-| Booking mock | `tests/int/booking.int.spec.ts` | Determinism, pricing, capacity, sold-out nights, validation, same-domain URLs |
+| Booking mock (parked) | `tests/int/booking.int.spec.ts` | Keeps the parked adapter compiling and correct |
 | Normaliser | `tests/int/normalise.int.spec.ts` | The real extraction glitches from customer zero |
-| Public site over HTTP | `tests/int/site-http.int.spec.ts` | Publish/rollback endpoints refuse other tenants; served page carries the release stamp; booking step; needs `PLATFORM_URL` |
+| Public site over HTTP | `tests/int/site-http.int.spec.ts` | Publish/rollback endpoints refuse other tenants; served page carries the release stamp; locales and hreflang; schema.org Hotel; sitemap and robots; no booking route; needs `PLATFORM_URL` |
 
 ```bash
 pnpm test:isolation                                              # isolation + audit

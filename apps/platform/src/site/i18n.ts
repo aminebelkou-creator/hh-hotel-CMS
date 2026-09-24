@@ -1,0 +1,41 @@
+const LABELS = {
+  fr: {
+    menu: 'Menu',
+    home: 'Accueil',
+    book: 'Réserver',
+    practical: 'Informations pratiques',
+    checkIn: 'Arrivée à partir de',
+    checkOut: 'Départ avant',
+    phone: 'Téléphone',
+    email: 'E-mail',
+    address: 'Adresse',
+    contact: 'Contact',
+    openMap: 'Ouvrir le plan',
+    followUs: 'Suivez-nous',
+    language: 'Langue',
+    skip: 'Aller au contenu',
+    release: 'Version',
+    notFound: 'Page introuvable',
+  },
+  en: {
+    menu: 'Menu',
+    home: 'Home',
+    book: 'Book',
+    practical: 'Practical information',
+    checkIn: 'Check-in from',
+    checkOut: 'Check-out by',
+    phone: 'Phone',
+    email: 'Email',
+    address: 'Address',
+    contact: 'Contact',
+    openMap: 'Open the map',
+    followUs: 'Follow us',
+    language: 'Language',
+    skip: 'Skip to content',
+    release: 'Release',
+    notFound: 'Page not found',
+  },
+} as const
+export type Labels = Record<keyof (typeof LABELS)['en'], string>
+export const labelsFor = (locale: string): Labels => (locale === 'fr' ? LABELS.fr : LABELS.en)
+export const LOCALE_NAMES: Record<string, string> = { fr: 'Français', en: 'English', de: 'Deutsch', es: 'Español', it: 'Italiano' }

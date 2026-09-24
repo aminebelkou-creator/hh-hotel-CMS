@@ -10,6 +10,9 @@ importers:
 
   apps/platform:
     dependencies:
+      '@hh/pack-hotel':
+        specifier: workspace:*
+        version: link:../../packs/hotel
       '@payloadcms/db-postgres':
         specifier: 3.90.1
         version: 3.90.1(payload@3.90.1(graphql@16.14.2)(typescript@5.7.3))
@@ -98,6 +101,18 @@ importers:
       vitest:
         specifier: 4.0.18
         version: 4.0.18(@types/node@22.19.9)(happy-dom@20.14.5)(jsdom@28.0.0)(sass@1.77.4)(tsx@4.22.4)
+
+  packs/hotel:
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.14
+        version: 19.2.14
+      payload:
+        specifier: 3.90.1
+        version: 3.90.1(graphql@16.14.2)(typescript@5.7.3)
+      react:
+        specifier: 19.2.6
+        version: 19.2.6
 
 packages:
 

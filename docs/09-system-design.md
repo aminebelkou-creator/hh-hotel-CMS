@@ -11,12 +11,12 @@ flowchart LR
   A([Customer AI agents]) -->|MCP| P
   subgraph X [xedge]
     PMS[PMS]
-    BE[Booking engine<br/>mock: clockPMS BE]
+    BE[Booking engine]
     CRM[CRM + chatbot]
   end
   P[Hotelier Website Platform] -->|release| E[Edge / CDN<br/>EdgeOne Makers]
   PMS -. read-only projection .-> P
-  BE -->|rates, deep links| P
+  BE -. later: link or embed .-> E
   CRM -. widget boundary .-> E
   W[Hotel's current website] -->|ingest| P
 ```
@@ -133,10 +133,13 @@ Rules learned the hard way: push is off for shared databases (it deleted the RLS
 | Migrations | `apps/platform/src/migrations/` |
 | Ingest | `apps/platform/src/ingest/` |
 | Host adapter (EdgeOne) | `apps/platform/src/host/` |
-| Booking-engine adapter (mock clockPMS BE) | `apps/platform/src/booking/` |
+| Hotel pack: room types, rooms block, schema.org Hotel | `packs/hotel/` (workspace package `@hh/pack-hotel`) |
+| Pack wiring (the only place the app loads packs) | `apps/platform/src/packs.ts` |
+| Onboarding content for a hotel's first site | `apps/platform/src/onboarding/` |
+| Booking-engine adapter and mock (parked, not used by the site) | `apps/platform/src/booking/` |
 | Release pipeline: publish, rollback, snapshot, checksum | `apps/platform/src/releases/` |
-| Public renderer and booking step | `apps/platform/src/app/(sites)/s/[site]/` |
+| Public site: routes, sitemap, robots | `apps/platform/src/app/(sites)/s/[site]/` |
+| Public site: block renderers, header/footer, locale routing | `apps/platform/src/site/` |
 | Fact base: normaliser, import, owner decisions | `apps/platform/src/ingest/`, `src/collections/Facts.ts` |
-| Hotel pack (types, blocks, schema.org) | `packs/hotel/`, planned |
 | Rehearsal and deploy scripts | `scripts/` |
 | CI and deploy | `.github/workflows/` |
