@@ -198,6 +198,8 @@ Finding 21: **the token saved on 22 September (a copy of the CLI's browser-login
 
 Finding 22: **adding a custom domain is disabled in the Makers console for this project** (reported by the owner, 23 September). Likely causes, to confirm with Tencent: the free plan, the direct-upload project type, or the project's area. Together with finding 20 (no `teo` API access to Makers domains), customers' own domains are the least-proven part of the Makers option. The domain test on `site.ouilockers.fr` is deferred until Tencent answers.
 
+Update, 24 September: **cause found.** The project's acceleration region is "Global" (which includes mainland China), and that region needs an ICP filing and a verified identity before a custom domain can be added. Projects in "Global (Chinese mainland excluded)" can add custom domains; the owner confirmed this on the account's other projects. The CLI picks the region when it creates a project (`edgeone makers deploy -a global|overseas`, default `global`), and our first deploy used the default. Fix: run the platform in an `overseas` project. Documentation: https://pages.edgeone.ai/document/domain-overview, https://pages.edgeone.ai/document/custom-domain.
+
 ## Content releases v0 on production infrastructure — 23 September 2026
 
 Code: `apps/platform/src/releases/`. Design and rules: [`06-release-pipeline-design.md`](06-release-pipeline-design.md#what-v0-implements-23-september).
