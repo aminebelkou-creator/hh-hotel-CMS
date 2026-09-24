@@ -38,6 +38,14 @@
       "reason": "Engineer-run onboarding script that writes a hotel's site content; never reachable from a request. Every write names the tenant from the content file."
     },
     {
+      "file": "src/onboarding/owner.ts",
+      "reason": "Engineer-run script that creates a hotel's owner account (owner role, that one tenant); never reachable from a request. Refuses super-admins and users of other tenants."
+    },
+    {
+      "file": "src/onboarding/import-images.ts",
+      "reason": "Engineer-run onboarding script that copies a hotel's photos into media; never reachable from a request. Every read and write names the tenant from the content file."
+    },
+    {
       "file": "../../packs/hotel/src/snapshot.ts",
       "reason": "Hotel pack's release-snapshot contribution, called only by the release pipeline with an explicit tenantId; the query filters on it."
     }

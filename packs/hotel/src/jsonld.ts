@@ -2,6 +2,9 @@ import { pick, type Fact, type HotelSnapshot } from './types'
 
 type SiteInfo = { name: string; url: string; locale: string; defaultLocale: string; image?: string | null; description?: string | null }
 
+/** schema.org wants absolute URLs; platform photos are site-relative (/media/...). */
+const abs = (u: string | null | undefined, base: string) => (u ? new URL(u, base).toString() : undefined)
+
 const first = (facts: Fact[], key: string) => facts.find((f) => f.key === key)?.value
 const all = (facts: Fact[], key: string) => facts.filter((f) => f.key === key).map((f) => f.value)
 
@@ -28,7 +31,7 @@ export function hotelJsonLd(site: SiteInfo, facts: Fact[], hotel: HotelSnapshot 
     name: site.name,
     url: site.url,
     description: site.description || undefined,
-    image: site.image || undefined,
+    image: abs(site.image, site.url),
     telephone: all(facts, 'contact.phone')[0],
     email: first(facts, 'contact.email'),
     address: postalAddress(first(facts, 'address')),
@@ -49,7 +52,7 @@ export function hotelJsonLd(site: SiteInfo, facts: Fact[], hotel: HotelSnapshot 
           description: pick(r.summary, l, d) || undefined,
           occupancy: r.maxOccupancy ? { '@type': 'QuantitativeValue', maxValue: r.maxOccupancy } : undefined,
           floorSize: r.sizeSqm ? { '@type': 'QuantitativeValue', value: r.sizeSqm, unitCode: 'MTK' } : undefined,
-          image: r.images[0]?.url,
+          image: abs(r.images[0]?.url, site.url),
         }))
       : undefined,
   }

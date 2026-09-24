@@ -16,7 +16,27 @@ export type SnapshotRoom = {
   images: { url: string; alt: Localized<string> | null }[]
 }
 
-export type HotelSnapshot = { rooms: SnapshotRoom[] }
+export type SnapshotOffer = {
+  id: number
+  slug: string
+  title: Localized<string>
+  highlight: Localized<string> | null
+  summary: Localized<string> | null
+  conditions: Localized<string> | null
+  validFrom: string | null
+  validTo: string | null
+  imageUrl: string | null
+  imageAlt: Localized<string> | null
+  ctaLabel: Localized<string> | null
+  ctaHref: string | null
+}
+
+export type HotelSnapshot = { rooms: SnapshotRoom[]; offers?: SnapshotOffer[] }
+
+/** Offers shown on a given day: inside their dates (inclusive), whole days in UTC. */
+export function currentOffers(offers: SnapshotOffer[] | undefined, today = new Date().toISOString().slice(0, 10)) {
+  return (offers ?? []).filter((o) => (!o.validFrom || o.validFrom.slice(0, 10) <= today) && (!o.validTo || o.validTo.slice(0, 10) >= today))
+}
 
 export type Fact = { key: string; value: string }
 

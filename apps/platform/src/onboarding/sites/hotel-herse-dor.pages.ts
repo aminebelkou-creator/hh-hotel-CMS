@@ -1,5 +1,6 @@
 import type { PageInput } from '../types'
 import { IMG } from './hotel-herse-dor.images'
+import { accessibility, legalNotice, privacy } from './hotel-herse-dor.legal'
 
 const home: PageInput = {
   slug: 'home',
@@ -106,6 +107,11 @@ const rooms: PageInput = {
       layout: 'detailed',
     },
     {
+      blockType: 'offers',
+      heading: { fr: 'Nos offres', en: 'Our offers' },
+      limit: 3,
+    },
+    {
       blockType: 'cta',
       heading: { fr: 'Une question sur votre chambre ?', en: 'A question about your room?' },
       text: { fr: 'Notre équipe vous répond à toute heure.', en: 'Our team answers at any time of day or night.' },
@@ -167,6 +173,18 @@ const services: PageInput = {
         { title: { fr: 'Réservation de taxis', en: 'Taxi booking' }, text: { fr: 'Aéroports et autres trajets.', en: 'Airports and other journeys.' } },
         { title: { fr: 'Parking public à proximité', en: 'Public car park nearby' }, text: { fr: 'Couvert et gardé, 45 rue du Faubourg Saint-Antoine.', en: 'Covered and guarded, 45 rue du Faubourg Saint-Antoine.' } },
         { title: { fr: 'Hôtel non-fumeur', en: 'Non-smoking hotel' } },
+      ],
+    },
+    {
+      blockType: 'policies',
+      heading: { fr: 'Bon à savoir', en: 'Good to know' },
+      showTimes: true,
+      items: [
+        { title: { fr: 'Petit-déjeuner', en: 'Breakfast' }, text: { fr: 'Buffet de 7h à 10h30 ; en chambre sur réservation la veille avant 18h.', en: 'Buffet from 7:00 to 10:30; in your room if ordered the day before by 18:00.' } },
+        { title: { fr: 'Animaux', en: 'Pets' }, text: { fr: 'Chiens et chats acceptés, avec supplément.', en: 'Dogs and cats welcome, for a supplement.' } },
+        { title: { fr: 'Bagages', en: 'Luggage' }, text: { fr: 'Consigne gratuite avant l’arrivée et après le départ.', en: 'Free storage before check-in and after check-out.' } },
+        { title: { fr: 'Tabac', en: 'Smoking' }, text: { fr: 'Hôtel entièrement non-fumeur.', en: 'The whole hotel is non-smoking.' } },
+        { title: { fr: 'Réception', en: 'Reception' }, text: { fr: 'Ouverte 24h/24, équipe multilingue.', en: 'Open 24 hours, multilingual team.' } },
       ],
     },
   ],
@@ -252,7 +270,18 @@ const contact: PageInput = {
       },
     },
     { blockType: 'map', zoom: 16 },
+    {
+      blockType: 'faq',
+      heading: { fr: 'Questions fréquentes', en: 'Frequently asked questions' },
+      items: [
+        { question: { fr: 'À quelle heure puis-je arriver et partir ?', en: 'What time can I check in and out?' }, answer: { fr: 'Les chambres sont disponibles à partir de 15h30 et doivent être libérées avant 11h. La réception est ouverte 24h/24 et garde vos bagages gratuitement.', en: 'Rooms are ready from 15:30 and must be vacated by 11:00. Reception is open 24 hours and keeps your luggage free of charge.' } },
+        { question: { fr: 'Le petit-déjeuner est-il inclus ?', en: 'Is breakfast included?' }, answer: { fr: 'Le buffet est servi de 7h à 10h30. Demandez à la réception s’il est inclus dans votre tarif.', en: 'The buffet is served from 7:00 to 10:30. Ask reception whether it is included in your rate.' } },
+        { question: { fr: 'L’hôtel est-il accessible ?', en: 'Is the hotel accessible?' }, answer: { fr: 'Oui, l’ascenseur est accessible aux personnes à mobilité réduite. Précisez-nous vos besoins avant l’arrivée.', en: 'Yes, the lift is accessible to guests with reduced mobility. Let us know your needs before you arrive.' } },
+        { question: { fr: 'Où se garer ?', en: 'Where can I park?' }, answer: { fr: 'Un parking public couvert et gardé se trouve 45 rue du Faubourg Saint-Antoine, à quelques minutes à pied.', en: 'A covered, guarded public car park is at 45 rue du Faubourg Saint-Antoine, a few minutes’ walk away.' } },
+        { question: { fr: 'Comment venir ?', en: 'How do I get here?' }, answer: { fr: 'Métro Bastille (lignes 1, 5 et 8) ou Saint-Paul (ligne 1), à quelques pas de l’hôtel. Nous pouvons réserver un taxi pour les aéroports.', en: 'Bastille metro (lines 1, 5 and 8) or Saint-Paul (line 1), a short walk away. We can book a taxi to the airports.' } },
+      ],
+    },
   ],
 }
 
-export const pages: PageInput[] = [home, rooms, services, area, gallery, contact]
+export const pages: PageInput[] = [home, rooms, services, area, gallery, contact, legalNotice, privacy, accessibility]

@@ -98,6 +98,31 @@ export const coreBlocks: Block[] = [
     ],
   },
   {
+    slug: 'text',
+    labels: { singular: 'Text', plural: 'Text' },
+    fields: [
+      { name: 'heading', type: 'text', localized: true },
+      { name: 'body', type: 'textarea', required: true, localized: true, admin: { description: 'Blank lines separate paragraphs; a line starting with "## " is a subheading' } },
+      provenance,
+    ],
+  },
+  {
+    slug: 'faq',
+    labels: { singular: 'Questions and answers', plural: 'Questions and answers' },
+    fields: [
+      { name: 'heading', type: 'text', localized: true },
+      {
+        name: 'items',
+        type: 'array',
+        fields: [
+          { name: 'question', type: 'text', required: true, localized: true },
+          { name: 'answer', type: 'textarea', required: true, localized: true },
+        ],
+      },
+      provenance,
+    ],
+  },
+  {
     slug: 'contact',
     labels: { singular: 'Contact details', plural: 'Contact details' },
     admin: { disableBlockName: true },
@@ -116,16 +141,39 @@ export const coreBlocks: Block[] = [
   },
 ]
 
+/** Path segments the public site uses itself, plus locale codes (a page cannot be called "en"). */
+export const RESERVED_SLUGS = ['sitemap.xml', 'robots.txt', 'preview', 'api', 'admin', 'en', 'fr', 'de', 'es', 'it']
+
 /** Page: a composition of typed blocks, never a canvas. Drafts and versions on. */
 export const makePages = (extraBlocks: Block[] = []): CollectionConfig => ({
   slug: 'pages',
-  admin: { useAsTitle: 'title', defaultColumns: ['title', 'slug', 'site', 'navOrder', 'updatedAt'] },
+  admin: {
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'slug', 'site', 'navOrder', 'updatedAt'],
+    // Opens the draft rendered with the site's design (auth checked by the preview route).
+    preview: (doc, { locale }) => `/preview/pages/${doc?.id}?locale=${locale ?? ''}`,
+  },
   versions: { drafts: true, maxPerDoc: 25 },
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
   defaultSort: 'navOrder',
   fields: [
+    {
+      name: 'publishPanel',
+      type: 'ui',
+      admin: { position: 'sidebar', components: { Field: '/admin/PublishPanel#PublishPanel' } },
+    },
     { name: 'title', type: 'text', required: true, localized: true },
-    { name: 'slug', type: 'text', required: true, index: true, admin: { description: '"home" is the start page' } },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      index: true,
+      admin: { description: '"home" is the start page' },
+      validate: (v: unknown) =>
+        typeof v === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(v) && !RESERVED_SLUGS.includes(v)
+          ? true
+          : `Lower-case letters, digits and hyphens; not one of: ${RESERVED_SLUGS.join(', ')}`,
+    },
     { name: 'site', type: 'relationship', relationTo: 'sites', required: true },
     {
       type: 'row',
@@ -133,6 +181,7 @@ export const makePages = (extraBlocks: Block[] = []): CollectionConfig => ({
         { name: 'navLabel', type: 'text', localized: true, admin: { description: 'Menu label (defaults to the title)' } },
         { name: 'navOrder', type: 'number', defaultValue: 0 },
         { name: 'showInNav', type: 'checkbox', defaultValue: true },
+        { name: 'showInFooter', type: 'checkbox', defaultValue: false, admin: { description: 'Legal and practical pages' } },
       ],
     },
     { name: 'blocks', type: 'blocks', blocks: [...coreBlocks, ...extraBlocks] },

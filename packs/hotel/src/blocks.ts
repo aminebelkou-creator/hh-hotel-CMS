@@ -23,4 +23,37 @@ export const roomsBlock: Block = {
   ],
 }
 
-export const hotelBlocks: Block[] = [roomsBlock]
+/** Page block: current offers (active and within their dates when the page is served). */
+export const offersBlock: Block = {
+  slug: 'offers',
+  interfaceName: 'OffersBlock',
+  graphQL: { singularName: 'OffersBlock' },
+  labels: { singular: 'Offers', plural: 'Offers' },
+  fields: [
+    { name: 'heading', type: 'text', localized: true },
+    { name: 'intro', type: 'textarea', localized: true },
+    { name: 'limit', type: 'number', min: 1 },
+  ],
+}
+
+/** Page block: hotel policies. Check-in and check-out times come from confirmed facts. */
+export const policiesBlock: Block = {
+  slug: 'policies',
+  interfaceName: 'PoliciesBlock',
+  graphQL: { singularName: 'PoliciesBlock' },
+  labels: { singular: 'Hotel policies', plural: 'Hotel policies' },
+  fields: [
+    { name: 'heading', type: 'text', localized: true },
+    { name: 'showTimes', type: 'checkbox', defaultValue: true, admin: { description: 'Show check-in and check-out times from the fact base' } },
+    {
+      name: 'items',
+      type: 'array',
+      fields: [
+        { name: 'title', type: 'text', required: true, localized: true },
+        { name: 'text', type: 'textarea', required: true, localized: true },
+      ],
+    },
+  ],
+}
+
+export const hotelBlocks: Block[] = [roomsBlock, offersBlock, policiesBlock]

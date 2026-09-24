@@ -7,6 +7,7 @@ const shots = [
   ['services-en', '/s/hotel-herse-dor/en/services', 1280],
   ['quartier-fr', '/s/hotel-herse-dor/quartier', 1280],
   ['contact-fr', '/s/hotel-herse-dor/contact', 1280],
+  ['mentions-legales-fr', '/s/hotel-herse-dor/mentions-legales', 1280],
   ['home-mobile', '/s/hotel-herse-dor', 390],
 ]
 const browser = await chromium.launch({ channel: 'chrome' })
@@ -40,5 +41,22 @@ if (process.env.SEED_PASSWORD) {
 }
 await page.screenshot({ path: `${out}/admin.png` })
 report.push({ name: 'admin', loginInputs: inputs, url: page.url(), text: (await page.evaluate(() => document.body.innerText)).slice(0, 300) })
+// Phase 1: the site's publish panel and a page's draft preview, as the signed-in user.
+if (process.env.SEED_PASSWORD) {
+  const find = async (path) => (await (await page.request.get(base + path)).json()).docs?.[0]
+  const site = await find('/api/sites?where[slug][equals]=hotel-herse-dor&depth=0&limit=1')
+  if (site) {
+    await page.goto(`${base}/admin/collections/sites/${site.id}`, { waitUntil: 'networkidle' })
+    await page.waitForTimeout(2500)
+    await page.screenshot({ path: `${out}/admin-publish.png` })
+    report.push({ name: 'admin-publish', panel: await page.getByText('Publish site').count() })
+    const contact = await find(`/api/pages?where[site][equals]=${site.id}&where[slug][equals]=contact&depth=0&limit=1&draft=true`)
+    if (contact) {
+      await page.goto(`${base}/preview/pages/${contact.id}?locale=fr`, { waitUntil: 'networkidle' })
+      await page.screenshot({ path: `${out}/preview-contact.png` })
+      report.push({ name: 'preview-contact', banner: await page.getByText('Aperçu du brouillon').count() })
+    }
+  }
+}
 console.log(JSON.stringify(report, null, 1))
 await browser.close()

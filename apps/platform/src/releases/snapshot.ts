@@ -18,6 +18,7 @@ export type SnapshotPage = {
   navLabel?: Localized<string> | null
   navOrder: number
   showInNav: boolean
+  showInFooter?: boolean
   blocks: SnapshotBlock[]
   seo?: { title?: Localized<string>; description?: Localized<string> } | null
 }
@@ -103,19 +104,7 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
       theme: site.theme ?? null,
       cta: { label: cta.label ?? null, href: cta.href ?? null },
     },
-    pages: pages.docs.map((p) => {
-      const d = p as unknown as Record<string, unknown>
-      return {
-        id: Number(p.id),
-        slug: p.slug,
-        title: p.title as Localized<string>,
-        navLabel: (d.navLabel as Localized<string>) ?? null,
-        navOrder: Number(d.navOrder ?? 0),
-        showInNav: d.showInNav !== false,
-        blocks: ((p.blocks ?? []) as unknown as SnapshotBlock[]).map((b) => ({ ...b })),
-        seo: (p.seo as SnapshotPage['seo']) ?? null,
-      }
-    }),
+    pages: pages.docs.map(toSnapshotPage),
     facts: facts.docs
       .map((f) => ({ key: f.key, value: f.value }))
       .sort((a, b) => a.key.localeCompare(b.key) || a.value.localeCompare(b.value)),
@@ -133,4 +122,20 @@ export function pick<T>(v: Localized<T> | undefined | null, locale: string, fall
   if (!keys.length) return undefined // a localized field with no value in any locale
   if (!keys.every((k) => /^[a-z]{2}(-[A-Z]{2})?$/.test(k))) return v as T
   return (rec[locale] ?? rec[fallback] ?? keys.map((k) => rec[k]).find((x) => x !== null && x !== undefined)) ?? undefined
+}
+
+/** A page document (read with locale 'all') as the renderer sees it. */
+export function toSnapshotPage(p: unknown): SnapshotPage {
+  const d = p as Record<string, unknown>
+  return {
+    id: Number(d.id),
+    slug: String(d.slug),
+    title: d.title as Localized<string>,
+    navLabel: (d.navLabel as Localized<string>) ?? null,
+    navOrder: Number(d.navOrder ?? 0),
+    showInNav: d.showInNav !== false,
+    showInFooter: d.showInFooter === true,
+    blocks: ((d.blocks ?? []) as SnapshotBlock[]).map((b) => ({ ...b })),
+    seo: (d.seo as SnapshotPage['seo']) ?? null,
+  }
 }

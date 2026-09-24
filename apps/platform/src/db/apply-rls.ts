@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
-const TABLES = ['sites', 'pages', '_pages_v', 'media', 'domains', 'releases', 'facts', 'rooms']
+const TABLES = ['sites', 'pages', '_pages_v', 'media', 'domains', 'releases', 'facts', 'rooms', 'offers']
 const payload = await getPayload({ config })
 const pool = (payload.db as unknown as { pool: { query: (sql: string) => Promise<unknown> } }).pool
 

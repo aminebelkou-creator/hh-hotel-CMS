@@ -1,7 +1,7 @@
 import React from 'react'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
-import { RoomsBlock } from '@hh/pack-hotel/render'
+import { OffersBlock, PoliciesBlock, RoomsBlock } from '@hh/pack-hotel/render'
 import type { HotelSnapshot } from '@hh/pack-hotel'
 import { pick, type Localized, type SiteSnapshot, type SnapshotBlock } from '@/releases/snapshot'
 import { linkHref, pageHref } from './routing'
@@ -124,6 +124,68 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                 </div>
               </section>
             )
+          }
+          case 'text': {
+            const parts = paragraphs(p<string>(b.body))
+            return (
+              <section key={key} className="hh-section">
+                <div className="hh-wrap hh-prose">
+                  {p<string>(b.heading) && <h2 className="hh-section-title">{p<string>(b.heading)}</h2>}
+                  {parts.map((para, k) =>
+                    para.startsWith('## ') ? (
+                      <h3 key={k}>{para.slice(3)}</h3>
+                    ) : (
+                      <p key={k}>
+                        {para.split('\n').map((line, j, arr) => (
+                          <React.Fragment key={j}>
+                            {line}
+                            {j < arr.length - 1 && <br />}
+                          </React.Fragment>
+                        ))}
+                      </p>
+                    ),
+                  )}
+                </div>
+              </section>
+            )
+          }
+          case 'faq': {
+            const items = ((b.items as { question: unknown; answer: unknown }[]) ?? []).map((it) => ({ q: p<string>(it.question) ?? '', a: p<string>(it.answer) ?? '' }))
+            if (!items.length) return null
+            const ld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((it) => ({ '@type': 'Question', name: it.q, acceptedAnswer: { '@type': 'Answer', text: it.a } })) }
+            return (
+              <section key={key} className="hh-section">
+                <div className="hh-wrap hh-prose">
+                  {p<string>(b.heading) && <h2 className="hh-section-title">{p<string>(b.heading)}</h2>}
+                  <div className="hh-faq">
+                    {items.map((it, k) => (
+                      <details key={k}>
+                        <summary>{it.q}</summary>
+                        {paragraphs(it.a).map((para, j) => (
+                          <p key={j}>{para}</p>
+                        ))}
+                      </details>
+                    ))}
+                  </div>
+                </div>
+                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, '\\u003c') }} />
+              </section>
+            )
+          }
+          case 'offers':
+            return (
+              <OffersBlock
+                key={key}
+                block={b as never}
+                hotel={snapshot.packs.hotel as HotelSnapshot | undefined}
+                locale={locale}
+                defaultLocale={d}
+                resolveHref={(h) => linkHref(snapshot, locale, h)}
+              />
+            )
+          case 'policies': {
+            const info = practicalInfo(snapshot)
+            return <PoliciesBlock key={key} block={b as never} locale={locale} defaultLocale={d} checkIn={info.checkIn} checkOut={info.checkOut} />
           }
           case 'quote':
             return (

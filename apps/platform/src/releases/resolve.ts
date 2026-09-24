@@ -73,6 +73,7 @@ export function upgradeSnapshot(raw: unknown): SiteSnapshot {
       navLabel: p.navLabel ?? null,
       navOrder: Number(p.navOrder ?? 0),
       showInNav: p.showInNav !== false,
+      showInFooter: p.showInFooter === true,
       blocks: p.blocks ?? [],
     })),
     facts: s.facts ?? [],

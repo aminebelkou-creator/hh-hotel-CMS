@@ -23,6 +23,7 @@
         "@hh/pack-hotel": "workspace:*",
         "@payloadcms/db-postgres": "3.90.1",
         "@payloadcms/next": "3.90.1",
+        "@payloadcms/plugin-cloud-storage": "3.90.1",
         "@payloadcms/plugin-mcp": "3.90.1",
         "@payloadcms/plugin-multi-tenant": "3.90.1",
         "@payloadcms/richtext-lexical": "3.90.1",

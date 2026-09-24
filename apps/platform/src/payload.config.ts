@@ -2,6 +2,8 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
+import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
+import { postgresStorage } from './media/postgres-storage'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -52,6 +54,10 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
+    // Photos stored in Postgres (media_blobs) and served publicly at /media/<file>.
+    cloudStoragePlugin({
+      collections: { media: { adapter: postgresStorage, disableLocalStorage: true, disablePayloadAccessControl: true } },
+    }),
     // Tenant boundary enforced in the data-access layer, never by calling code.
     multiTenantPlugin({
       tenantsSlug: 'tenants',

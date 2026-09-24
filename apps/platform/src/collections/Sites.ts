@@ -9,6 +9,11 @@ export const Sites: CollectionConfig = {
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
   endpoints: [publishEndpoint, rollbackEndpoint],
   fields: [
+    {
+      name: 'publishPanel',
+      type: 'ui',
+      admin: { position: 'sidebar', components: { Field: '/admin/PublishPanel#PublishPanel' } },
+    },
     { name: 'name', type: 'text', required: true },
     {
       name: 'slug',

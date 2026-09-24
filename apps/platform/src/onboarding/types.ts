@@ -12,8 +12,12 @@ export type BlockInput =
   | { blockType: 'contact'; heading?: L; intro?: L }
   | { blockType: 'map'; heading?: L; text?: L; zoom?: number }
   | { blockType: 'rooms'; heading?: L; intro?: L; limit?: number; layout?: 'cards' | 'detailed' }
+  | { blockType: 'text'; heading?: L; body: L }
+  | { blockType: 'faq'; heading?: L; items: { question: L; answer: L }[] }
+  | { blockType: 'offers'; heading?: L; intro?: L; limit?: number }
+  | { blockType: 'policies'; heading?: L; showTimes?: boolean; items: { title: L; text: L }[] }
 
-export type PageInput = { slug: string; title: L; navLabel?: L; navOrder: number; showInNav?: boolean; seo?: { title?: L; description?: L }; blocks: BlockInput[] }
+export type PageInput = { slug: string; title: L; navLabel?: L; navOrder: number; showInNav?: boolean; showInFooter?: boolean; seo?: { title?: L; description?: L }; blocks: BlockInput[] }
 
 export type RoomInput = {
   slug: string
@@ -30,6 +34,19 @@ export type RoomInput = {
   images: Img[]
 }
 
+export type OfferInput = {
+  slug: string
+  order: number
+  title: L
+  highlight?: L
+  summary: L
+  conditions?: L
+  validFrom?: string
+  validTo?: string
+  image?: Img
+  cta?: { label: L; href: string }
+}
+
 export type SiteContent = {
   tenant: { slug: string; name: string }
   site: {
@@ -43,5 +60,6 @@ export type SiteContent = {
     cta: { label: L; href: string }
   }
   rooms: RoomInput[]
+  offers?: OfferInput[]
   pages: PageInput[]
 }

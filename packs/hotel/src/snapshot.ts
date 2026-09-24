@@ -1,5 +1,5 @@
 import type { Payload } from 'payload'
-import type { HotelSnapshot, SnapshotRoom } from './types'
+import type { HotelSnapshot, SnapshotOffer, SnapshotRoom } from './types'
 
 /**
  * Adds the tenant's room types to a release snapshot. Called by the platform's release
@@ -29,5 +29,28 @@ export async function hotelSnapshot(payload: Payload, tenantId: number): Promise
     features: ((r.features as { label: SnapshotRoom['features'][number]['label'] }[]) ?? []).map((f) => ({ label: f.label })),
     images: ((r.images as { url: string; alt: SnapshotRoom['images'][number]['alt'] }[]) ?? []).map((i) => ({ url: i.url, alt: i.alt ?? null })),
   }))
-  return { rooms }
+  const offerDocs = await payload.find({
+    collection: 'offers' as never,
+    where: { and: [{ tenant: { equals: tenantId } }, { active: { equals: true } }] },
+    locale: 'all',
+    depth: 0,
+    pagination: false,
+    sort: 'order',
+    overrideAccess: true,
+  })
+  const offers: SnapshotOffer[] = (offerDocs.docs as unknown as Record<string, unknown>[]).map((o) => ({
+    id: Number(o.id),
+    slug: String(o.slug),
+    title: o.title as SnapshotOffer['title'],
+    highlight: (o.highlight as SnapshotOffer['highlight']) ?? null,
+    summary: (o.summary as SnapshotOffer['summary']) ?? null,
+    conditions: (o.conditions as SnapshotOffer['conditions']) ?? null,
+    validFrom: (o.validFrom as string) ?? null,
+    validTo: (o.validTo as string) ?? null,
+    imageUrl: (o.imageUrl as string) ?? null,
+    imageAlt: (o.imageAlt as SnapshotOffer['imageAlt']) ?? null,
+    ctaLabel: (o.ctaLabel as SnapshotOffer['ctaLabel']) ?? null,
+    ctaHref: (o.ctaHref as string) ?? null,
+  }))
+  return { rooms, offers }
 }

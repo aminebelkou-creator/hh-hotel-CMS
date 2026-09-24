@@ -28,6 +28,7 @@ const TABLES: [string, string][] = [
   ['releases', 'tenant_id'],
   ['facts', 'tenant_id'],
   ['rooms', 'tenant_id'],
+  ['offers', 'tenant_id'],
 ]
 
 const payload = await getPayload({ config })

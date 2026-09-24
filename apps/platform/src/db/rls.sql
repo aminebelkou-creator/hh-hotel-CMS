@@ -31,7 +31,8 @@ begin
       ('domains', 'tenant_id'),
       ('releases', 'tenant_id'),
       ('facts', 'tenant_id'),
-      ('rooms', 'tenant_id')
+      ('rooms', 'tenant_id'),
+      ('offers', 'tenant_id')
     ) as v(tbl, col)
   loop
     execute format('alter table %I enable row level security', t.tbl);

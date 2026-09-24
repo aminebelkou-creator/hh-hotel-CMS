@@ -123,6 +123,18 @@ export function SiteFooter({ snapshot, locale, t, release }: Omit<Props, 'curren
           </div>
         )}
       </div>
+      {snapshot.pages.some((pg) => pg.showInFooter) && (
+        <nav className="hh-wrap hh-footer-legal" aria-label={t.legal}>
+          {[...snapshot.pages]
+            .filter((pg) => pg.showInFooter)
+            .sort((a, b) => a.navOrder - b.navOrder)
+            .map((pg) => (
+              <a key={pg.slug} href={pageHref(snapshot, locale, pg.slug)}>
+                {p(pg.navLabel) || p(pg.title)}
+              </a>
+            ))}
+        </nav>
+      )}
       <div className="hh-wrap hh-footer-meta">
         {t.release} {release.version} · {release.checksum.slice(0, 10)} · Hotelier Website Platform (xedge)
       </div>

@@ -70,5 +70,20 @@ export const hotelHerseDor: SiteContent = {
       images: [IMG.comfort, IMG.comfortTwin, IMG.double, IMG.comfortSingle],
     },
   ],
+  offers: [
+    {
+      slug: 'reservez-en-direct',
+      order: 1,
+      title: { fr: 'Réservez en direct', en: 'Book direct' },
+      highlight: { fr: 'Meilleures conditions', en: 'Best conditions' },
+      summary: {
+        fr: 'En réservant directement auprès de l’hôtel, vous bénéficiez des meilleures conditions et d’un interlocuteur unique pour tout votre séjour.',
+        en: 'Book directly with the hotel for the best conditions and a single point of contact for your whole stay.',
+      },
+      conditions: { fr: 'Par téléphone ou par e-mail auprès de la réception.', en: 'By phone or email with reception.' },
+      image: IMG.view,
+      cta: { label: { fr: 'Nous contacter', en: 'Contact us' }, href: 'contact' },
+    },
+  ],
   pages,
 }

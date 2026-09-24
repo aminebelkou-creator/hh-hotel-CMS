@@ -77,6 +77,7 @@ export interface Config {
     releases: Release;
     facts: Fact;
     rooms: Room;
+    offers: Offer;
     'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -95,6 +96,7 @@ export interface Config {
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
     facts: FactsSelect<false> | FactsSelect<true>;
     rooms: RoomsSelect<false> | RoomsSelect<true>;
+    offers: OffersSelect<false> | OffersSelect<true>;
     'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -342,6 +344,10 @@ export interface Page {
   navLabel?: string | null;
   navOrder?: number | null;
   showInNav?: boolean | null;
+  /**
+   * Legal and practical pages
+   */
+  showInFooter?: boolean | null;
   blocks?:
     | (
         | {
@@ -507,6 +513,49 @@ export interface Page {
         | {
             heading?: string | null;
             /**
+             * Blank lines separate paragraphs; a line starting with "## " is a subheading
+             */
+            body: string;
+            /**
+             * Who last shaped this content. Regeneration never overwrites human edits.
+             */
+            provenance?: {
+              origin?: ('generated' | 'human' | 'locked') | null;
+              /**
+               * Fact-base reference for generated content
+               */
+              sourceFact?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            heading?: string | null;
+            items?:
+              | {
+                  question: string;
+                  answer: string;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Who last shaped this content. Regeneration never overwrites human edits.
+             */
+            provenance?: {
+              origin?: ('generated' | 'human' | 'locked') | null;
+              /**
+               * Fact-base reference for generated content
+               */
+              sourceFact?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            heading?: string | null;
+            /**
              * Phones, email, address and times come from confirmed facts
              */
             intro?: string | null;
@@ -526,6 +575,8 @@ export interface Page {
             blockType: 'map';
           }
         | RoomsBlock
+        | OffersBlock
+        | PoliciesBlock
       )[]
     | null;
   seo?: {
@@ -543,11 +594,19 @@ export interface Page {
 export interface Media {
   id: number;
   tenant?: (number | null) | Tenant;
+  /**
+   * What the photo shows, for screen readers and search engines
+   */
   alt: string;
   /**
    * Photos imported from OTA listings may be licensed to the OTA or photographer.
    */
   rights?: ('owned' | 'licensed' | 'unknown') | null;
+  /**
+   * Where an imported photo came from
+   */
+  sourceUrl?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -598,6 +657,39 @@ export interface RoomsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'rooms';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "OffersBlock".
+ */
+export interface OffersBlock {
+  heading?: string | null;
+  intro?: string | null;
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'offers';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PoliciesBlock".
+ */
+export interface PoliciesBlock {
+  heading?: string | null;
+  /**
+   * Show check-in and check-out times from the fact base
+   */
+  showTimes?: boolean | null;
+  items?:
+    | {
+        title: string;
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'policies';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -709,6 +801,40 @@ export interface Room {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Packages and promotions shown on the website between their dates. Changes go live with the next publish.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offers".
+ */
+export interface Offer {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  slug: string;
+  active?: boolean | null;
+  order?: number | null;
+  /**
+   * Short badge, e.g. "-10 %" or "Breakfast included"
+   */
+  highlight?: string | null;
+  summary: string;
+  /**
+   * Small print shown under the offer
+   */
+  conditions?: string | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  ctaLabel?: string | null;
+  /**
+   * A page slug (e.g. contact), a URL, tel: or mailto:
+   */
+  ctaHref?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -947,6 +1073,10 @@ export interface PayloadLockedDocument {
         value: number | Room;
       } | null)
     | ({
+        relationTo: 'offers';
+        value: number | Offer;
+      } | null)
+    | ({
         relationTo: 'payload-mcp-api-keys';
         value: number | PayloadMcpApiKey;
       } | null);
@@ -1088,6 +1218,7 @@ export interface PagesSelect<T extends boolean = true> {
   navLabel?: T;
   navOrder?: T;
   showInNav?: T;
+  showInFooter?: T;
   blocks?:
     | T
     | {
@@ -1198,6 +1329,40 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        text?:
+          | T
+          | {
+              heading?: T;
+              body?: T;
+              provenance?:
+                | T
+                | {
+                    origin?: T;
+                    sourceFact?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              heading?: T;
+              items?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              provenance?:
+                | T
+                | {
+                    origin?: T;
+                    sourceFact?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
         contact?:
           | T
           | {
@@ -1216,6 +1381,8 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
         rooms?: T | RoomsBlockSelect<T>;
+        offers?: T | OffersBlockSelect<T>;
+        policies?: T | PoliciesBlockSelect<T>;
       };
   seo?:
     | T
@@ -1241,12 +1408,42 @@ export interface RoomsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "OffersBlock_select".
+ */
+export interface OffersBlockSelect<T extends boolean = true> {
+  heading?: T;
+  intro?: T;
+  limit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PoliciesBlock_select".
+ */
+export interface PoliciesBlockSelect<T extends boolean = true> {
+  heading?: T;
+  showTimes?: T;
+  items?:
+    | T
+    | {
+        title?: T;
+        text?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
   tenant?: T;
   alt?: T;
   rights?: T;
+  sourceUrl?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1380,6 +1577,28 @@ export interface RoomsSelect<T extends boolean = true> {
         alt?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offers_select".
+ */
+export interface OffersSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  slug?: T;
+  active?: T;
+  order?: T;
+  highlight?: T;
+  summary?: T;
+  conditions?: T;
+  validFrom?: T;
+  validTo?: T;
+  imageUrl?: T;
+  imageAlt?: T;
+  ctaLabel?: T;
+  ctaHref?: T;
   updatedAt?: T;
   createdAt?: T;
 }

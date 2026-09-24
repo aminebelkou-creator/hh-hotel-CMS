@@ -13,8 +13,9 @@ import 'dotenv/config'
 import { getPayload, type Payload } from 'payload'
 import config from '@payload-config'
 import { nextPublishSeq, publishSite } from '../releases/publish'
-import type { BlockInput, L, PageInput, RoomInput, SiteContent } from './types'
+import type { BlockInput, L, OfferInput, PageInput, RoomInput, SiteContent } from './types'
 import { hotelHerseDor } from './sites/hotel-herse-dor'
+import { mediaMap } from './import-images'
 
 const SITES: Record<string, SiteContent> = { 'hotel-herse-dor': hotelHerseDor }
 
@@ -42,6 +43,14 @@ export function blockData(b: BlockInput, l: Loc): Record<string, unknown> {
       return { blockType: 'map', heading: v(b.heading, l), text: v(b.text, l), zoom: b.zoom ?? 16 }
     case 'rooms':
       return { blockType: 'rooms', heading: v(b.heading, l), intro: v(b.intro, l), limit: b.limit, layout: b.layout ?? 'cards' }
+    case 'text':
+      return { blockType: 'text', heading: v(b.heading, l), body: v(b.body, l), provenance: prov }
+    case 'faq':
+      return { blockType: 'faq', heading: v(b.heading, l), items: b.items.map((i) => ({ question: v(i.question, l), answer: v(i.answer, l) })), provenance: prov }
+    case 'offers':
+      return { blockType: 'offers', heading: v(b.heading, l), intro: v(b.intro, l), limit: b.limit }
+    case 'policies':
+      return { blockType: 'policies', heading: v(b.heading, l), showTimes: b.showTimes ?? true, items: b.items.map((i) => ({ title: v(i.title, l), text: v(i.text, l) })) }
   }
 }
 
@@ -74,6 +83,7 @@ const pageData = (p: PageInput, l: Loc, siteId: number, tenantId: number) => ({
   navLabel: v(p.navLabel, l),
   navOrder: p.navOrder,
   showInNav: p.showInNav ?? true,
+  showInFooter: p.showInFooter ?? false,
   _status: 'published' as const,
   blocks: p.blocks.map((b) => blockData(b, l)),
   seo: { title: v(p.seo?.title, l), description: v(p.seo?.description, l) },
@@ -95,10 +105,27 @@ const roomData = (r: RoomInput, l: Loc, tenantId: number) => ({
   images: r.images.map((i) => ({ url: i.url, alt: v(i.alt, l) })),
 })
 
+const offerData = (o: OfferInput, l: Loc, tenantId: number) => ({
+  tenant: tenantId,
+  slug: o.slug,
+  order: o.order,
+  active: true,
+  title: v(o.title, l),
+  highlight: v(o.highlight, l),
+  summary: v(o.summary, l),
+  conditions: v(o.conditions, l),
+  validFrom: o.validFrom,
+  validTo: o.validTo,
+  imageUrl: o.image?.url,
+  imageAlt: v(o.image?.alt, l),
+  ctaLabel: v(o.cta?.label, l),
+  ctaHref: o.cta?.href,
+})
+
 /** Writes a document in the first locale (replacing its structure), then fills the others. */
 async function upsertLocalized(
   payload: Payload,
-  collection: 'pages' | 'rooms',
+  collection: 'pages' | 'rooms' | 'offers',
   existingId: number | undefined,
   locales: Loc[],
   build: (l: Loc) => Record<string, unknown>,
@@ -115,6 +142,17 @@ async function upsertLocalized(
   return Number(doc.id)
 }
 
+/** Replaces remote photo URLs by the platform's copies when they were imported (import-images.ts). */
+function localizeImages<T>(value: T, map: Map<string, { full: string; card: string }>, card = false): T {
+  if (Array.isArray(value)) return value.map((v) => localizeImages(v, map, card)) as T
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, (k === 'url' || k === 'imageUrl') && typeof v === 'string' && map.has(v) ? map.get(v)![card ? 'card' : 'full'] : localizeImages(v, map, card)]),
+    ) as T
+  }
+  return value
+}
+
 export async function applySite(payload: Payload, content: SiteContent) {
   const tenant = (await payload.find({ collection: 'tenants', where: { slug: { equals: content.tenant.slug } }, limit: 1, overrideAccess: true })).docs[0]
   if (!tenant) throw new Error(`Tenant ${content.tenant.slug} not found: run src/ingest/import-facts.ts first`)
@@ -122,6 +160,7 @@ export async function applySite(payload: Payload, content: SiteContent) {
   const site = (await payload.find({ collection: 'sites', where: { and: [{ slug: { equals: content.site.slug } }, { tenant: { equals: tenantId } }] }, limit: 1, overrideAccess: true })).docs[0]
   if (!site) throw new Error(`Site ${content.site.slug} not found in tenant ${content.tenant.slug}`)
   const siteId = Number(site.id)
+  const photos = await mediaMap(payload, tenantId)
   const locales = [content.site.defaultLocale, ...content.site.enabledLocales.filter((l) => l !== content.site.defaultLocale)] as Loc[]
 
   for (const l of locales) {
@@ -144,14 +183,19 @@ export async function applySite(payload: Payload, content: SiteContent) {
 
   for (const r of content.rooms) {
     const existing = (await payload.find({ collection: 'rooms' as 'pages', where: { and: [{ tenant: { equals: tenantId } }, { slug: { equals: r.slug } }] }, limit: 1, overrideAccess: true })).docs[0]
-    await upsertLocalized(payload, 'rooms', existing ? Number(existing.id) : undefined, locales, (l) => roomData(r, l, tenantId))
+    await upsertLocalized(payload, 'rooms', existing ? Number(existing.id) : undefined, locales, (l) => localizeImages(roomData(r, l, tenantId), photos))
+  }
+
+  for (const o of content.offers ?? []) {
+    const existing = (await payload.find({ collection: 'offers' as 'pages', where: { and: [{ tenant: { equals: tenantId } }, { slug: { equals: o.slug } }] }, limit: 1, overrideAccess: true })).docs[0]
+    await upsertLocalized(payload, 'offers', existing ? Number(existing.id) : undefined, locales, (l) => localizeImages(offerData(o, l, tenantId), photos))
   }
 
   for (const p of content.pages) {
     const existing = (await payload.find({ collection: 'pages', where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { slug: { equals: p.slug } }] }, limit: 1, overrideAccess: true, draft: true })).docs[0]
-    await upsertLocalized(payload, 'pages', existing ? Number(existing.id) : undefined, locales, (l) => pageData(p, l, siteId, tenantId))
+    await upsertLocalized(payload, 'pages', existing ? Number(existing.id) : undefined, locales, (l) => localizeImages(pageData(p, l, siteId, tenantId), photos))
   }
-  return { tenantId, siteId, rooms: content.rooms.length, pages: content.pages.length }
+  return { tenantId, siteId, rooms: content.rooms.length, pages: content.pages.length, photos: photos.size }
 }
 
 const isMain = process.argv[1] && /onboarding[\\/]apply\.ts$/.test(process.argv[1])
@@ -163,7 +207,7 @@ if (isMain) {
     const payload = await getPayload({ config })
     const t0 = Date.now()
     const r = await applySite(payload, content)
-    console.log(`applied ${slug}: ${r.pages} pages, ${r.rooms} rooms in ${Date.now() - t0} ms`)
+    console.log(`applied ${slug}: ${r.pages} pages, ${r.rooms} rooms, ${r.photos} platform photos in ${Date.now() - t0} ms`)
     if (process.argv.includes('--publish')) {
       const seq = await nextPublishSeq(payload, r.tenantId, r.siteId)
       console.log(`publish: ${JSON.stringify(await publishSite(payload, { tenantId: r.tenantId, siteId: r.siteId, seq, by: 'onboarding' }))}`)

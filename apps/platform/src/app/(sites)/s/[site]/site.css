@@ -130,3 +130,23 @@ p { margin: 0 0 1em; }
 .hh-footer-name { font-family: var(--hh-serif); font-size: 1.5rem; color: #fff; }
 .hh-footer-title { text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; color: #b8ad9f; }
 .hh-footer-meta { margin-top: 40px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .12); font-size: .75rem; color: #9d9285; }
+
+/* Text, FAQ, offers, policies, footer legal links */
+.hh-prose h3 { font-size: 1.35rem; margin-top: 1.4em; }
+.hh-faq details { border-bottom: 1px solid var(--hh-line); padding: 16px 0; }
+.hh-faq summary { cursor: pointer; font-weight: 600; font-size: 1.05rem; list-style-position: outside; }
+.hh-faq details p { margin: 12px 0 0; color: var(--hh-muted); }
+.hh-offer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-top: 32px; }
+.hh-offer-card { background: var(--hh-card); border: 1px solid var(--hh-line); border-radius: var(--hh-radius); overflow: hidden; }
+.hh-offer-media { position: relative; }
+.hh-offer-media img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+.hh-offer-body { padding: 22px 24px 26px; }
+.hh-offer-body h3 { font-size: 1.5rem; margin-bottom: .3em; }
+.hh-badge { position: absolute; left: 14px; top: 14px; background: var(--hh-accent); color: var(--hh-accent-ink); font: 600 .8rem var(--hh-sans); padding: 6px 10px; border-radius: 999px; }
+.hh-badge--inline { position: static; display: inline-block; margin-bottom: 10px; }
+.hh-small { font-size: .85rem; color: var(--hh-muted); }
+.hh-policies { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 28px 0 0; }
+.hh-policies > div { background: var(--hh-card); border: 1px solid var(--hh-line); border-radius: var(--hh-radius); padding: 18px 22px; }
+.hh-policies dt { font-family: var(--hh-serif); font-size: 1.25rem; font-weight: 600; margin-bottom: 4px; }
+.hh-policies dd { margin: 0; color: var(--hh-muted); }
+.hh-footer-legal { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 32px; font-size: .85rem; }

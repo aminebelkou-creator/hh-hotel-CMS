@@ -16,6 +16,7 @@ const LABELS = {
     skip: 'Aller au contenu',
     release: 'Version',
     notFound: 'Page introuvable',
+    legal: 'Informations légales',
   },
   en: {
     menu: 'Menu',
@@ -34,6 +35,7 @@ const LABELS = {
     skip: 'Skip to content',
     release: 'Release',
     notFound: 'Page not found',
+    legal: 'Legal information',
   },
 } as const
 export type Labels = Record<keyof (typeof LABELS)['en'], string>
