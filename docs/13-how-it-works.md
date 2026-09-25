@@ -41,7 +41,7 @@ flowchart LR
 | **Token** | A named design value (`--hh-accent`, `--hh-paper`…). Templates use only tokens, never fixed colours | [`11-design-contract.md`](11-design-contract.md) |
 | **Media** | Photos. Uploaded once, resized to WebP, stored in the database, served at `/media/…` | `collections/Media.ts`, `src/media/` |
 | **Owner / super-admin** | A hotel's owner account sees only its tenant; super-admins (our team) see all | `collections/Users.ts`, `src/access/` |
-| **Domain** | A hostname for a site. Hotels keep their DNS and add a CNAME to us | `collections/Domains.ts` (serving by domain: Phase 2) |
+| **Domain** | A hostname for a site. The hotel adds it in the admin and a CNAME at its DNS provider; our team marks it verified; the site then answers at `/` on that domain and `/admin` stays on ours | `collections/Domains.ts`, `src/proxy.ts`, `app/(sites)/h/` |
 | **RLS** | Row-level security: the database itself refuses cross-tenant rows | `src/db/rls.sql` |
 | **Migration** | A versioned change to the database structure, applied in order everywhere | `src/migrations/` |
 | **Onboarding content** | A hotel's site written as code, applied in every language and published by a script (used for customer zero) | `src/onboarding/` |

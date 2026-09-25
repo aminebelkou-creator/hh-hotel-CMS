@@ -719,9 +719,15 @@ export interface PoliciesBlock {
 export interface Domain {
   id: number;
   tenant?: (number | null) | Tenant;
+  /**
+   * The hotel adds a CNAME for this name at its DNS provider, pointing at the platform
+   */
   hostname: string;
   site: number | Site;
   primary?: boolean | null;
+  /**
+   * Set by the platform team once the DNS points here. Only verified or active domains are served
+   */
   status?: ('pending' | 'verified' | 'active' | 'error') | null;
   certificate?: ('none' | 'requested' | 'issued' | 'expiring' | 'error') | null;
   /**

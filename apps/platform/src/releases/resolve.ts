@@ -2,7 +2,8 @@ import type { Payload } from 'payload'
 import type { SiteSnapshot } from './snapshot'
 
 export type LiveRelease = {
-  site: { id: number; slug: string; status: string | null }
+  /** primaryHost: the hotel's own verified primary domain, if any; canonical URLs point there. */
+  site: { id: number; slug: string; status: string | null; primaryHost: string | null }
   release: { id: number; version: string; checksum: string; status: string | null; snapshot: SiteSnapshot; storedSnapshot: unknown }
 }
 
@@ -21,19 +22,59 @@ export async function loadLiveRelease(payload: Payload, siteSlug: string): Promi
     limit: 1,
     overrideAccess: true,
   })
-  const site = sites.docs[0]
+  return liveReleaseOf(payload, sites.docs[0])
+}
+
+/** Only domains our team has verified are served: a tenant can add a hostname, not claim it. */
+const SERVED = ['verified', 'active']
+
+/**
+ * The site served on a hotel's own domain: the verified domains row for that hostname. If
+ * only the www/apex twin exists, the caller redirects there (`redirectTo`).
+ */
+export async function loadLiveReleaseByHost(
+  payload: Payload,
+  host: string,
+): Promise<{ live: LiveRelease | null; redirectTo: string | null }> {
+  const h = host.toLowerCase().replace(/:\d+$/, '')
+  const twin = h.startsWith('www.') ? h.slice(4) : `www.${h}`
+  const domains = await payload.find({
+    collection: 'domains',
+    where: { and: [{ hostname: { in: [h, twin] } }, { status: { in: SERVED } }] },
+    depth: 0,
+    limit: 2,
+    overrideAccess: true,
+  })
+  const exact = domains.docs.find((d) => d.hostname.toLowerCase() === h)
+  const other = domains.docs.find((d) => d.hostname.toLowerCase() === twin)
+  if (!exact) return { live: null, redirectTo: other ? twin : null }
+  const siteId = typeof exact.site === 'object' ? exact.site.id : exact.site
+  const site = await payload.findByID({ collection: 'sites', id: siteId, depth: 0, overrideAccess: true }).catch(() => null)
+  return { live: await liveReleaseOf(payload, site), redirectTo: null }
+}
+
+type SiteDoc = { id: number | string; slug: string; status?: string | null; currentRelease?: unknown; tenant?: unknown }
+
+async function liveReleaseOf(payload: Payload, site: SiteDoc | null | undefined): Promise<LiveRelease | null> {
   if (!site || site.status === 'suspended' || !site.currentRelease) return null
-  const releaseId = typeof site.currentRelease === 'object' ? site.currentRelease.id : site.currentRelease
+  const releaseId = (typeof site.currentRelease === 'object' && site.currentRelease ? (site.currentRelease as { id: number }).id : site.currentRelease) as number
   const rel = await payload
     .findByID({ collection: 'releases', id: releaseId, depth: 0, overrideAccess: true })
     .catch(() => null)
   if (!rel || !rel.snapshot) return null
   // Defence in depth: the release must belong to the same tenant as the site.
   const relTenant = typeof rel.tenant === 'object' && rel.tenant ? rel.tenant.id : rel.tenant
-  const siteTenant = typeof site.tenant === 'object' && site.tenant ? site.tenant.id : site.tenant
+  const siteTenant = typeof site.tenant === 'object' && site.tenant ? (site.tenant as { id: number }).id : site.tenant
   if (relTenant !== siteTenant) return null
+  const primary = await payload.find({
+    collection: 'domains',
+    where: { and: [{ site: { equals: site.id } }, { primary: { equals: true } }, { status: { in: SERVED } }] },
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+  })
   return {
-    site: { id: Number(site.id), slug: site.slug, status: site.status ?? null },
+    site: { id: Number(site.id), slug: site.slug, status: site.status ?? null, primaryHost: primary.docs[0]?.hostname?.toLowerCase() ?? null },
     release: {
       id: Number(rel.id),
       version: rel.version,

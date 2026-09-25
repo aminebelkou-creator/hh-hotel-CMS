@@ -40,6 +40,8 @@ export type SiteSnapshot = {
     template: string
     brand: Record<string, string | null> | null
     cta: { label: Localized<string> | null; href: string | null }
+    /** Render-time only, never stored: '' when served on the hotel's own domain, else /s/<slug>. */
+    basePath?: string
   }
   pages: SnapshotPage[]
   facts: { key: string; value: string }[]

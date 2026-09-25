@@ -3,7 +3,7 @@ import type { SiteSnapshot } from '@/releases/snapshot'
 /**
  * Public URL scheme (preview host): /s/<site>[/<locale>][/<page>]
  * The default locale has no prefix; other enabled locales do. "home" is the root.
- * On the hotel's own domain, /s/<site> becomes / (domain mapping, later).
+ * On the hotel's own domain the prefix is empty (site.basePath, set by the loader).
  */
 export function resolvePath(snapshot: SiteSnapshot, parts: string[] = []) {
   const { enabledLocales, defaultLocale } = snapshot.site
@@ -18,12 +18,17 @@ export function resolvePath(snapshot: SiteSnapshot, parts: string[] = []) {
   return { locale, slug: rest.join('/') || 'home' }
 }
 
-export const siteBase = (snapshot: SiteSnapshot) => `/s/${snapshot.site.slug}`
+export const siteBase = (snapshot: SiteSnapshot) => snapshot.site.basePath ?? `/s/${snapshot.site.slug}`
 
 export function pageHref(snapshot: SiteSnapshot, locale: string, slug: string) {
+  return pageHrefWithBase(snapshot, siteBase(snapshot), locale, slug)
+}
+
+/** The same path under an explicit base ('' for a hotel's own domain). */
+export function pageHrefWithBase(snapshot: SiteSnapshot, base: string, locale: string, slug: string) {
   const prefix = locale === snapshot.site.defaultLocale ? '' : `/${locale}`
   const tail = slug === 'home' ? '' : `/${slug}`
-  return `${siteBase(snapshot)}${prefix}${tail}` || '/'
+  return `${base}${prefix}${tail}` || '/'
 }
 
 /** A link field: absolute URL, tel:, mailto:, #anchor or a page slug of this site. */

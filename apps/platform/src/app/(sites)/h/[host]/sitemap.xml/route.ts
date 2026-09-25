@@ -1,12 +1,11 @@
-import { liveReleaseFor } from '@/site/load'
+import { liveReleaseForHost } from '@/site/load'
 import { originFrom, sitemapXml } from '@/site/render'
 
 export const dynamic = 'force-dynamic'
 
-/** Sitemap of the live release: every page in every enabled locale, with hreflang alternates. */
-export async function GET(req: Request, ctx: { params: Promise<{ site: string }> }) {
-  const { site } = await ctx.params
-  const live = await liveReleaseFor(site)
+export async function GET(req: Request, ctx: { params: Promise<{ host: string }> }) {
+  const { host } = await ctx.params
+  const { live } = await liveReleaseForHost(decodeURIComponent(host))
   if (!live) return new Response('Not found', { status: 404 })
   return new Response(sitemapXml(live, originFrom((n) => req.headers.get(n))), { headers: { 'content-type': 'application/xml; charset=utf-8' } })
 }

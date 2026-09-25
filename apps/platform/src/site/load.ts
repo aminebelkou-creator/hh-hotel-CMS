@@ -1,14 +1,22 @@
 import { cache } from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { loadLiveRelease } from '@/releases/resolve'
+import { loadLiveRelease, loadLiveReleaseByHost } from '@/releases/resolve'
 import { formatPhone } from '@/ingest/normalise'
 import type { SiteSnapshot } from '@/releases/snapshot'
 
-/** One lookup per request, shared by generateMetadata and the page. */
+/** One lookup per request, shared by generateMetadata and the page (platform host, /s/<site>). */
 export const liveReleaseFor = cache(async (siteSlug: string) => {
   const payload = await getPayload({ config })
   return loadLiveRelease(payload, siteSlug)
+})
+
+/** Same, for a hotel's own domain: links are rooted at / and the release remembers it. */
+export const liveReleaseForHost = cache(async (host: string) => {
+  const payload = await getPayload({ config })
+  const r = await loadLiveReleaseByHost(payload, host)
+  if (r.live) r.live.release.snapshot.site.basePath = ''
+  return r
 })
 
 /** Practical information comes only from confirmed facts in the release. */
