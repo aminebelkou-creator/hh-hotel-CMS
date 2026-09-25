@@ -78,7 +78,8 @@ Engineering items of Phase 2 in [`docs/10-roadmap-phases.md`](docs/10-roadmap-ph
 | 3 | ENG | Once the test domain exists: mark it `verified`, set `PLATFORM_HOSTS` on Makers, check redirects www/apex, canonical, sitemap live; then republish customer zero | Gate 1 evidence |
 | 4 | ENG | Dependabot: #1, #3, #4 (Next 16.3.5, React 19.3), #6 merged 25 Sep; #2 rebasing; #5 (dev tools) waits for a hand-made TypeScript decision; #7/#8 majors ignored | Dependencies current |
 | 5 | ENG | Phase 3 preparation without the AI key: ingest v1 crawl scaffold, fact review screen design, generation prompts as skills | Ready to switch on with the key |
-| 6 | OWN | AI model key; shortlist of hotels; a designer later | Phase 3 |
+| 6 | OWN | Guest agent: read [`docs/15-guest-agent-design.md`](docs/15-guest-agent-design.md) (draft v0.1, parallel session 25 Sep) and take the four A0 decisions in its §20 (who builds it, Chatwoot as inbox, default model provider, chat before consent → lawyer); add the Makers Agents questions to the Tencent email | A0 done, A1 can start |
+| 7 | OWN | AI model key; shortlist of hotels; a designer later | Phase 3 |
 
 ### Waiting on the owner
 
@@ -148,6 +149,7 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 - **Security basics** (`c6a8c06`): security headers on every response, login lockout, Dependabot, CodeQL.
 - **Quality gates** (this commit): `tests/quality/gates.mjs` runs in CI after the HTTP suites on seeded site-10 in every template: axe WCAG 2.0–2.2 A/AA, JSON-LD, h1/lang/canonical/viewport, page-weight budget over the wire; seeded pages now carry every core block. `pnpm test:gates`. Lighthouse not run: the budget covers its weight signal; scores stay an owner check on PageSpeed.
 - Docs: checklist, roadmap rows, design contract §gates, how-it-works glossary (redirect, form, SEO fields, gates), README status and proof, findings 28–33 in `docs/05`.
+- [`docs/15-guest-agent-design.md`](docs/15-guest-agent-design.md) (written by a parallel session, reviewed and committed here): guest agent design v0.1 — one Mastra service for all hotels, knowledge from release snapshots through an industry-neutral `knowledge-feed` contract, Chatwoot CE for channels and staff inbox, integrations as MCP servers with approval on writes, delivery steps A0–A4 beside the roadmap. Review found it consistent with CLAUDE.md rules 1/3/4/9/10 and gotchas 17/19, the snapshot shape (`facts`, `packs`), the contracts and docs/09/12; one citation fixed (the no-booking decision is the owner's of 24 Sep, not a CLAUDE.md gotcha).
 
 **Measured**
 - Local hh_check: 117 tests green with the 3100 server; gates 9/9 pages, 0 axe violations, JS 136 KB, fonts 73–125 KB, 218–271 KB per page without photos.
