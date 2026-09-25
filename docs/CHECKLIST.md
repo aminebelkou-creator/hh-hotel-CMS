@@ -13,8 +13,8 @@ Last updated: 25 September 2026, session 14 (Phases 3–5 engineering deployed; 
 | Week 2 | 8 | 6 | Proof items and the fact flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a test domain), hotel pack types on paper, generation measured with the AI key, and BIZ items open |
 | Weeks 3–13 | 2 | 44 | The weekly list still counts by calendar; most engineering rows are built already (see the phase view) — they are ticked when their gate evidence exists (domain, Tencent, real hotels) |
 | Phase 1–5 (new list) | 25 | 11 | Engineering of Phases 1–4 and the Phase 5 mechanisms built by 25 Sep; open items are owner/BIZ (key, lawyer, audit, designer, hotels), RLS enforcing, the visual studio |
-| Fix later | 4 | 5 | Small product gaps noticed in use, in a table at the end; started 25 Sep: legal set, offers on home, contact in header, Book button on phones done the same day |
-| **Total** | **52** | **73** | |
+| Fix later | 4 | 7 | Small product gaps noticed in use, in a table at the end; started 25 Sep: legal set, offers on home, contact in header, Book button on phones done the same day |
+| **Total** | **52** | **75** | |
 
 ## Phase view (added 24 September)
 
@@ -207,6 +207,8 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 | ~~Easy-to-find contact information~~ **Done 25 Sep** | The first confirmed phone is a `tel:` link in the header (desktop) and in a sticky **Call · Book** bar at the bottom of the screen on phones (`.hh-sticky-bar`, every template; Lumière styles it navy) | — | 25 Sep |
 | Irresistible calls to action | One `cta` block per page at most; wording is the hotel's | Generator writes a CTA block on every page (home, rooms, services, neighbourhood) with a benefit line ("best rate, direct contact"); templates give it more presence | 25 Sep |
 | Animated hero: static photo, video, or a slideshow | The hero is one static photo (Lumière adds the stars and booking bar); the licensed originals use video or sliding photos | A `media` option on the hero: `image` (today), `video` (self-hosted MP4/WebM ≤ 3 MB, muted, loops, poster = the photo, plays only when `prefers-reduced-motion` allows, with a pause button — WCAG 2.2.2) or `slideshow` (2–5 photos, CSS crossfade every 6 s, no JS beyond a few lines, paused on reduced motion). Lightweight: the page-weight gate stays; the video never counts on phones (poster only below 768 px) | 25 Sep |
+| Gallery: a proper photo experience | The gallery block is a static grid; tapping a photo does nothing; every photo loads at the same size | **Lightbox gallery**: tap opens the photo full-screen with swipe / arrow keys, caption from the alt text, close on Esc or tap; built on the native `<dialog>` (accessible, focus-trapped) with a few lines of JS, no library; the grid stays CSS. **Lighter images everywhere**: `srcset` from the existing 400 / 960 / 1920 WebP variants so phones download the 400 px file, `fetchpriority="high"` on the hero only, reserved aspect ratios (no layout shift); reduced motion respected; the page-weight gate stays | 25 Sep |
+| Publish verification right after a code deploy | The post-publish check fetched the public page while the edge was still warming up after a deploy, got a 404 and refused r9 (correctly); r10 a minute later was fine | Retry the verification once after 5 s before failing the publish | 25 Sep |
 | ~~A "Book now" button impossible to miss~~ **Done 25 Sep** | On phones the Book button is now always on screen in the sticky bar (plus the hero booking bar on Lumière); on desktop it stays in the header | — | 25 Sep |
 
 ## Metrics tracked from day one
