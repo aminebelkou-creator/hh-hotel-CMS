@@ -13,15 +13,27 @@ export function proxy(req: NextRequest) {
   if (isPlatformHost(host)) {
     // The internal host route is reachable only through a rewrite, never by URL.
     if (/^\/h(\/|$)/.test(pathname)) return new NextResponse('Not found', { status: 404 })
-    return NextResponse.next()
+    const res = NextResponse.next()
+    if (/^\/s\//.test(pathname)) res.headers.set('cache-control', PUBLIC_CACHE)
+    return res
   }
   if (PLATFORM_ONLY.test(pathname)) return new NextResponse('Not found', { status: 404 })
   if (!HOSTNAME_RE.test(host.replace(/:\d+$/, ''))) return new NextResponse('Not found', { status: 404 })
   const url = req.nextUrl.clone()
   url.pathname = `/h/${host}${pathname === '/' ? '' : pathname}`
   url.search = search
-  return NextResponse.rewrite(url)
+  const res = NextResponse.rewrite(url)
+  res.headers.set('cache-control', PUBLIC_CACHE)
+  return res
 }
+
+/**
+ * Published pages are public and change only on publish: the edge may keep them 10 s and
+ * serve a stale copy for a minute while it refreshes. So a publish or rollback reaches
+ * visitors within about 10 s (instantly at the origin), and repeat views never wait for the
+ * origin. Browsers always revalidate (max-age=0).
+ */
+export const PUBLIC_CACHE = 'public, max-age=0, s-maxage=10, stale-while-revalidate=60'
 
 export const config = {
   // Everything except Next's own assets and the public photo route, which are host-neutral.

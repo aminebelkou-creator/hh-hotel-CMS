@@ -83,7 +83,8 @@ export const defaultVerifier: Verifier = async (payload, rel) => {
   if (checksumOf(live.release.storedSnapshot) !== rel.checksum) throw new Error('Stored snapshot does not match its checksum')
   const base = process.env.RELEASE_VERIFY_BASE_URL
   if (base) {
-    const res = await fetch(`${base.replace(/\/$/, '')}/s/${rel.siteSlug}`, { cache: 'no-store' })
+    // The query string makes this a fresh cache key at the edge, so we verify the origin, not a cached copy.
+    const res = await fetch(`${base.replace(/\/$/, '')}/s/${rel.siteSlug}?verify=${rel.id}`, { cache: 'no-store' })
     const html = await res.text()
     const served =
       html.match(/<meta[^>]*name="x-release"[^>]*content="([^"]+)"/)?.[1] ??

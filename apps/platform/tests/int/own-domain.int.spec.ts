@@ -112,6 +112,10 @@ describe('a hotel on its own domain', () => {
     expect((await fetch(`${BASE}/api/sites/${siteId}/publish`, { method: 'POST', headers: { authorization: `JWT ${token}` } })).status).toBe(200)
     const home = await get('/', HOST)
     expect(home.status).toBe(200)
+    // Public pages may be kept at the edge for 10 s (stale for a minute while refreshing).
+    expect(home.headers['cache-control']).toContain('s-maxage=10')
+    expect(home.headers['cache-control']).not.toContain('no-store')
+    expect(home.headers['set-cookie']).toBeUndefined()
     expect(home.body).toContain('data-template=')
     expect(home.body).not.toContain(`/s/${siteSlug}`)
     expect(home.body).toContain(`<link rel="canonical" href="https://${HOST}"/>`)
@@ -136,6 +140,9 @@ describe('a hotel on its own domain', () => {
     if (!reachable) ctx.skip()
     const r = await get(`/s/${siteSlug}`, platformHost())
     expect(r.status).toBe(200)
+    expect(r.headers['cache-control']).toContain('s-maxage=10')
+    // The admin and API are never cacheable.
+    expect((await get('/admin', platformHost())).headers['cache-control'] ?? '').not.toContain('s-maxage')
     expect(r.body).toContain(`<link rel="canonical" href="https://${HOST}"/>`)
   })
 

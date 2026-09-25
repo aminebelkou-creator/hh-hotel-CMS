@@ -15,7 +15,7 @@ export const liveReleaseFor = cache(async (siteSlug: string) => {
 export const liveReleaseForHost = cache(async (host: string) => {
   const payload = await getPayload({ config })
   const r = await loadLiveReleaseByHost(payload, host)
-  if (r.live) r.live.release.snapshot.site.basePath = ''
+  if (r.live) r.live.release.snapshot.site.basePath = '' // the snapshot is a per-request copy
   return r
 })
 

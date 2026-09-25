@@ -25,6 +25,15 @@ export async function loadLiveRelease(payload: Payload, siteSlug: string): Promi
   return liveReleaseOf(payload, sites.docs[0])
 }
 
+/**
+ * Releases are immutable, so a loaded snapshot is kept in memory for the life of the process
+ * (bounded); the site's pointer is still read on every request, so publish and rollback are
+ * instant at the origin. The primary domain changes rarely and is kept for 30 s.
+ */
+const RELEASES = new Map<number, { snapshot: SiteSnapshot; stored: unknown; version: string; checksum: string; status: string | null; tenant: unknown }>()
+const RELEASE_CACHE_MAX = 300
+const PRIMARY = new Map<number, { host: string | null; until: number }>()
+
 /** Only domains our team has verified are served: a tenant can add a hostname, not claim it. */
 const SERVED = ['verified', 'active']
 
@@ -57,31 +66,49 @@ type SiteDoc = { id: number | string; slug: string; status?: string | null; curr
 
 async function liveReleaseOf(payload: Payload, site: SiteDoc | null | undefined): Promise<LiveRelease | null> {
   if (!site || site.status === 'suspended' || !site.currentRelease) return null
-  const releaseId = (typeof site.currentRelease === 'object' && site.currentRelease ? (site.currentRelease as { id: number }).id : site.currentRelease) as number
-  const rel = await payload
-    .findByID({ collection: 'releases', id: releaseId, depth: 0, overrideAccess: true })
-    .catch(() => null)
-  if (!rel || !rel.snapshot) return null
-  // Defence in depth: the release must belong to the same tenant as the site.
-  const relTenant = typeof rel.tenant === 'object' && rel.tenant ? rel.tenant.id : rel.tenant
-  const siteTenant = typeof site.tenant === 'object' && site.tenant ? (site.tenant as { id: number }).id : site.tenant
-  if (relTenant !== siteTenant) return null
-  const primary = await payload.find({
-    collection: 'domains',
-    where: { and: [{ site: { equals: site.id } }, { primary: { equals: true } }, { status: { in: SERVED } }] },
-    depth: 0,
-    limit: 1,
-    overrideAccess: true,
-  })
-  return {
-    site: { id: Number(site.id), slug: site.slug, status: site.status ?? null, primaryHost: primary.docs[0]?.hostname?.toLowerCase() ?? null },
-    release: {
-      id: Number(rel.id),
+  const releaseId = Number(typeof site.currentRelease === 'object' && site.currentRelease ? (site.currentRelease as { id: number }).id : site.currentRelease)
+  let cached = RELEASES.get(releaseId)
+  if (!cached) {
+    const rel = await payload.findByID({ collection: 'releases', id: releaseId, depth: 0, overrideAccess: true }).catch(() => null)
+    if (!rel || !rel.snapshot) return null
+    cached = {
+      snapshot: upgradeSnapshot(rel.snapshot),
+      stored: rel.snapshot,
       version: rel.version,
       checksum: rel.checksum ?? '',
       status: rel.status ?? null,
-      snapshot: upgradeSnapshot(rel.snapshot),
-      storedSnapshot: rel.snapshot,
+      tenant: typeof rel.tenant === 'object' && rel.tenant ? rel.tenant.id : rel.tenant,
+    }
+    if (RELEASES.size >= RELEASE_CACHE_MAX) RELEASES.delete(RELEASES.keys().next().value as number)
+    RELEASES.set(releaseId, cached)
+  }
+  // Defence in depth: the release must belong to the same tenant as the site.
+  const siteTenant = typeof site.tenant === 'object' && site.tenant ? (site.tenant as { id: number }).id : site.tenant
+  if (cached.tenant !== siteTenant) return null
+
+  const siteId = Number(site.id)
+  let primary = PRIMARY.get(siteId)
+  if (!primary || primary.until < Date.now()) {
+    const found = await payload.find({
+      collection: 'domains',
+      where: { and: [{ site: { equals: site.id } }, { primary: { equals: true } }, { status: { in: SERVED } }] },
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+    })
+    primary = { host: found.docs[0]?.hostname?.toLowerCase() ?? null, until: Date.now() + 30_000 }
+    PRIMARY.set(siteId, primary)
+  }
+  return {
+    site: { id: siteId, slug: site.slug, status: site.status ?? null, primaryHost: primary.host },
+    release: {
+      id: releaseId,
+      version: cached.version,
+      checksum: cached.checksum,
+      status: cached.status,
+      // A fresh copy per request: the renderer sets basePath on it (render-time only).
+      snapshot: { ...cached.snapshot, site: { ...cached.snapshot.site } },
+      storedSnapshot: cached.stored,
     },
   }
 }
