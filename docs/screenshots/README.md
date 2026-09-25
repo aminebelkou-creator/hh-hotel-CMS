@@ -21,6 +21,8 @@ Taken on the **public platform** (https://hh-platform.edgeone.dev, release r8, c
 | Blog on the home page (r13: the latest three posts) | [desktop](2026-09-25/blog-home-desktop.jpg), [phone](2026-09-25/blog-home-mobile.jpg) |
 | Blog page *Le carnet du Marais* | [desktop](2026-09-25/blog-list-desktop.jpg), [phone](2026-09-25/blog-list-mobile.jpg) |
 | A post (Le Marais à pied) | [desktop](2026-09-25/blog-post-desktop.jpg), [phone](2026-09-25/blog-post-mobile.jpg) |
+| Guest reviews on the home page (r14: three real Google reviews) | [desktop](2026-09-25/reviews-desktop.jpg), [phone](2026-09-25/reviews-mobile.jpg), [English page](2026-09-25/reviews-desktop-en.jpg) |
+| Hero with the booking bar, full width on phones (r14) | [desktop](2026-09-25/hero-desktop.jpg), [phone](2026-09-25/hero-mobile.jpg) |
 | Services (EN) | [site-services-en.jpg](2026-09-25/site-services-en.jpg) |
 | Neighbourhood (FR) | [site-neighbourhood-fr.jpg](2026-09-25/site-neighbourhood-fr.jpg) |
 | Contact (FR) | [site-contact-fr.jpg](2026-09-25/site-contact-fr.jpg) |

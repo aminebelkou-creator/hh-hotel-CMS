@@ -163,6 +163,7 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 - `reviews` collection (core, `src/collections/Reviews.ts`): the guest's exact text and language (never translated or reworded), author as first name + initial, source (google/booking/tripadvisor/expedia/direct/other) and link, score + scale, month, draft/published, order. Tenant table + RLS row, migration `guest_reviews`; snapshot `reviews`.
 - `reviews` block (`src/site/Reviews.tsx`): cards with stars (5 scale) or "9.2/10", a spoken label, `lang` per quote, source and month; hidden while empty. No schema.org Review/AggregateRating on purpose (self-serving reviews). Base + Lumière styles (navy cards).
 - Customer zero: `hotel-herse-dor.reviews.ts`, three real Google reviews from the owner's screenshots (Auriane M., Cagan Y., Matthew S., 5/5, May–July 2026), block on home after the features; `apply.ts --only=reviews`.
+- Measured: CI green (`1ce7cef`), deploy green; Neon `apply.ts --only=reviews` (3 reviews, home block inserted in place), customer zero republished as **r14**. Live: 3 review cards on FR and EN home, booking bar 342 px wide at 390 px (was ~250) and 1170 px on desktop. Screenshots `docs/screenshots/2026-09-25/reviews-*.jpg`, `hero-*.jpg`.
 - Lumière hero: the booking bar's wrapper was a flex item with auto margins and shrank to its content (a narrow bar on phones, owner's screenshot); now full width, pushed to the bottom of the hero as the template intends.
 
 **Changed (batch 4: the blog)**
