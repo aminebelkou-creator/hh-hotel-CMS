@@ -1,4 +1,6 @@
-# Guest agent: design — v0.1 draft
+# Guest agent: strategy study — not in the plan
+
+> **Status (25 Sep 2026): a study, not a plan.** The owner explored the strategy of a guest agent; the CRM team owns the chatbot under [`contracts/chatbot-widget-boundary.md`](contracts/chatbot-widget-boundary.md) and will decide whether anything here fits. Nothing in this document is scheduled, budgeted or in the roadmap; the platform's only possible contribution, an industry-neutral knowledge feed from releases (§6.2), is built only if the CRM team asks for it.
 
 25 September 2026. A proposal, not a decision: it needs the owner's approval and the CRM team's agreement (they own the chatbot's brain under [`contracts/chatbot-widget-boundary.md`](contracts/chatbot-widget-boundary.md)). It records the research done on 23–25 September into open-source options and turns the recommendation into a buildable design that respects the rules in [`../CLAUDE.md`](../CLAUDE.md).
 
