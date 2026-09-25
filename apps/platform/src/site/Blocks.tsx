@@ -300,10 +300,14 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                     </p>
                   ))}
                   {img && (
-                    <a className="hh-map" href={open} rel="noopener">
-                      <img src={img} alt={`${t.address}: ${info.address ?? ''}`.trim()} width={1200} height={640} loading="lazy" decoding="async" />
-                      <span className="hh-map-credit">© OpenStreetMap contributors</span>
-                    </a>
+                    <div className="hh-map">
+                      <a href={open} rel="noopener">
+                        <img src={img} alt={`${t.address}: ${info.address ?? ''}`.trim()} width={1200} height={640} loading="lazy" decoding="async" />
+                      </a>
+                      <a className="hh-map-credit" href="https://www.openstreetmap.org/copyright" rel="noopener">
+                        © OpenStreetMap contributors
+                      </a>
+                    </div>
                   )}
                   <p>
                     <a className="hh-link-arrow" href={open} rel="noopener">

@@ -145,6 +145,7 @@ describe('public hotel site', () => {
       expect(h).not.toContain('openstreetmap.org/export/embed')
       expect(h).toContain('openstreetmap.org/?mlat=')
       expect(h).toMatch(/src="\/media\/maps\/osm-[0-9.-]+-z16\.webp"/)
+      expect(h).toContain('href="https://www.openstreetmap.org/copyright"') // OSM attribution requirement
     }
   })
 
