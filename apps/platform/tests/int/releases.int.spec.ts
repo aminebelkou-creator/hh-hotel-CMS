@@ -7,7 +7,8 @@ import { getPayload, type Payload } from 'payload'
 import config from '@/payload.config'
 import { describe, it, beforeAll, afterAll, expect } from 'vitest'
 import { SEED_PASSWORD, tenantEmail, tenantSlug } from '@/seed/constants'
-import { nextPublishSeq, publishSite, rollbackSite, type PublishOutcome } from '@/releases/publish'
+import { nextPublishSeq, publishSite, rollbackSite, verifyPublicPage, type PublishOutcome } from '@/releases/publish'
+import { createServer } from 'node:http'
 import { loadLiveRelease, upgradeSnapshot } from '@/releases/resolve'
 import { checksumOf } from '@/releases/canonical'
 import { poolOf } from '@/releases/db'
@@ -235,5 +236,42 @@ describe('publish job', () => {
     await payload.jobs.runByID({ id: job.id }).catch(() => null)
     expect(await releaseCount(A)).toBe(n)
     expect(await pointer(A)).toBe(before)
+  })
+})
+
+describe('public page verification after a deploy', () => {
+  // A stand-in edge: 404 twice while "warming up", then the page with the release stamp.
+  const serve = (script: (n: number) => { status: number; release?: string }) =>
+    new Promise<{ url: string; hits: () => number; close: () => void }>((resolve) => {
+      let n = 0
+      const server = createServer((_req, res) => {
+        const r = script(++n)
+        res.writeHead(r.status, { 'content-type': 'text/html' })
+        res.end(r.release ? `<html><head><meta name="x-release" content="${r.release}"/></head></html>` : 'not found')
+      })
+      server.listen(0, '127.0.0.1', () => {
+        const port = (server.address() as { port: number }).port
+        resolve({ url: `http://127.0.0.1:${port}/s/x`, hits: () => n, close: () => server.close() })
+      })
+    })
+
+  it('retries while the edge warms up, then passes', async () => {
+    const edge = await serve((n) => (n < 3 ? { status: 404 } : { status: 200, release: '42' }))
+    try {
+      expect(await verifyPublicPage(edge.url, 42, [10, 10, 10])).toBe(3)
+      expect(edge.hits()).toBe(3)
+    } finally {
+      edge.close()
+    }
+  })
+
+  it('still fails when the page keeps serving another release', async () => {
+    const edge = await serve(() => ({ status: 200, release: '41' }))
+    try {
+      await expect(verifyPublicPage(edge.url, 42, [10, 10])).rejects.toThrow(/x-release 41 \(HTTP 200\) after 3 attempts/)
+      expect(edge.hits()).toBe(3)
+    } finally {
+      edge.close()
+    }
   })
 })

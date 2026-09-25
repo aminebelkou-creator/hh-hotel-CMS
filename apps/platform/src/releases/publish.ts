@@ -82,16 +82,33 @@ export const defaultVerifier: Verifier = async (payload, rel) => {
   if (!live || live.release.id !== rel.id) throw new Error(`Renderer resolves release ${live?.release.id ?? 'none'}, expected ${rel.id}`)
   if (checksumOf(live.release.storedSnapshot) !== rel.checksum) throw new Error('Stored snapshot does not match its checksum')
   const base = process.env.RELEASE_VERIFY_BASE_URL
-  if (base) {
-    // The query string makes this a fresh cache key at the edge, so we verify the origin, not a cached copy.
-    const res = await fetch(`${base.replace(/\/$/, '')}/s/${rel.siteSlug}?verify=${rel.id}`, { cache: 'no-store' })
-    const html = await res.text()
-    const served =
-      html.match(/<meta[^>]*name="x-release"[^>]*content="([^"]+)"/)?.[1] ??
-      html.match(/<meta[^>]*content="([^"]+)"[^>]*name="x-release"/)?.[1] ??
-      null
-    if (!res.ok || served !== String(rel.id)) throw new Error(`Public page serves x-release ${served ?? 'none'} (HTTP ${res.status})`)
+  if (base) await verifyPublicPage(`${base.replace(/\/$/, '')}/s/${rel.siteSlug}`, rel.id)
+}
+
+/**
+ * Fetch the public page and check it serves this release. Right after a deploy the edge can
+ * answer 404 or an old copy for a few seconds while the new code warms up (r9, 25 Sep): try
+ * again a few times, with growing waits, before calling the publish failed.
+ */
+export async function verifyPublicPage(url: string, releaseId: number, waitsMs: number[] = [2000, 4000, 8000]) {
+  let last = ''
+  for (let attempt = 0; attempt <= waitsMs.length; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, waitsMs[attempt - 1]))
+    try {
+      // The query string makes this a fresh cache key at the edge, so we verify the origin, not a cached copy.
+      const res = await fetch(`${url}?verify=${releaseId}&attempt=${attempt + 1}`, { cache: 'no-store' })
+      const html = await res.text()
+      const served =
+        html.match(/<meta[^>]*name="x-release"[^>]*content="([^"]+)"/)?.[1] ??
+        html.match(/<meta[^>]*content="([^"]+)"[^>]*name="x-release"/)?.[1] ??
+        null
+      if (res.ok && served === String(releaseId)) return attempt + 1
+      last = `Public page serves x-release ${served ?? 'none'} (HTTP ${res.status})`
+    } catch (e) {
+      last = `Public page unreachable (${e instanceof Error ? e.message : String(e)})`
+    }
   }
+  throw new Error(`${last} after ${waitsMs.length + 1} attempts`)
 }
 
 export async function publishSite(payload: Payload, input: PublishInput, verify: Verifier = defaultVerifier): Promise<PublishOutcome> {

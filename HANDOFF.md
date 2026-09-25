@@ -159,6 +159,10 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 ### 2026-09-25 · session 15 · fix-later batch 1 (contact and Book on phones, legal set, offers on home) and batch 2 (gallery, lighter images)
 
+**Changed (batch 6: safe publishing)**
+- Website panel (`src/admin/PublishPanel.tsx`): on a site, unsaved settings are validated and saved before the publish (the r7 mistake: template chosen, not saved, old look published); "Unsaved changes" note while the form is modified; on a page with unsaved or draft changes it asks to publish the page first instead of publishing stale content. `tests/visual/publish-guard.mjs` drives it in a browser.
+- Verification (`src/releases/publish.ts`): `verifyPublicPage` retries 3 times (2, 4, 8 s) before failing and rolling back (the r9 404 while the edge warmed up after a deploy). Unit-tested against a stand-in edge.
+
 **Changed (batch 5: guest reviews, booking bar on phones)**
 - `reviews` collection (core, `src/collections/Reviews.ts`): the guest's exact text and language (never translated or reworded), author as first name + initial, source (google/booking/tripadvisor/expedia/direct/other) and link, score + scale, month, draft/published, order. Tenant table + RLS row, migration `guest_reviews`; snapshot `reviews`.
 - `reviews` block (`src/site/Reviews.tsx`): cards with stars (5 scale) or "9.2/10", a spoken label, `lang` per quote, source and month; hidden while empty. No schema.org Review/AggregateRating on purpose (self-serving reviews). Base + Lumière styles (navy cards).
