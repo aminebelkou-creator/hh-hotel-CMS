@@ -54,6 +54,7 @@ const seedBlocks = (slug: string, n: number): SeedBlocks => {
     { blockType: 'rooms', heading: 'Rooms', intro: 'From the standard room to the suite.', layout: 'cards', limit: 3, linkLabel: 'See all rooms', linkHref: 'rooms' },
     { blockType: 'gallery', heading: 'In pictures', images: [{ url: PHOTO, alt: 'The courtyard' }, { url: PHOTO, alt: 'A room' }] },
     { blockType: 'news', heading: 'Latest news', layout: 'latest', limit: 3, linkLabel: 'All news', linkHref: 'blog', provenance: seedProvenance },
+    { blockType: 'reviews', heading: 'What our guests say', limit: 6, provenance: seedProvenance },
     { blockType: 'quote', text: 'Perfect stay, we will be back.', author: 'A guest' },
     { blockType: 'cta', heading: 'Book direct', text: 'Best rate guaranteed.', buttonLabel: 'Contact us', buttonHref: 'contact' },
   ]
@@ -69,7 +70,7 @@ const run = async () => {
   const seededIds = seeded.docs.map((t) => t.id)
   if (seededIds.length) {
     await payload.update({ collection: 'sites', where: { tenant: { in: seededIds } }, data: { currentRelease: null }, overrideAccess: true })
-    for (const collection of ['issues', 'crawls', 'releases', 'facts', 'rooms', 'offers', 'posts', 'redirects', 'forms', 'domains', 'pages', 'sites', 'audit-log'] as const) {
+    for (const collection of ['issues', 'crawls', 'releases', 'facts', 'rooms', 'offers', 'posts', 'reviews', 'redirects', 'forms', 'domains', 'pages', 'sites', 'audit-log'] as const) {
       await payload.delete({ collection, where: { tenant: { in: seededIds } }, overrideAccess: true })
     }
   }
@@ -137,6 +138,15 @@ const run = async () => {
         data: { ...p, site: site.id, tenant: tenant.id, imageUrl: PHOTO, imageAlt: 'A seeded photo', provenance: seedProvenance },
         overrideAccess: true,
       })
+    }
+    // Reviews: two published (a 5-star Google one, a 9.2/10 Booking one in French) and a draft.
+    const reviews = [
+      { order: 1, text: 'Quiet room, lovely staff.\n\nWe will be back.', language: 'en', author: 'Anna K.', origin: 'Oslo', source: 'google', sourceUrl: 'https://example.test/review/1', rating: 5, ratingScale: 5, visitedAt: '2026-08-01', status: 'published' },
+      { order: 2, text: 'Très bien situé, petit-déjeuner copieux.', language: 'fr', author: 'Luc', source: 'booking', rating: 9.2, ratingScale: 10, visitedAt: '2026-07-01', status: 'published' },
+      { order: 3, text: 'Unpublished draft review', language: 'en', author: 'Draft', source: 'direct', status: 'draft' },
+    ] as const
+    for (const r of reviews) {
+      await payload.create({ collection: 'reviews', data: { ...r, site: site.id, tenant: tenant.id }, overrideAccess: true })
     }
     await payload.create({
       collection: 'rooms',

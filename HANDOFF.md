@@ -159,6 +159,12 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 ### 2026-09-25 · session 15 · fix-later batch 1 (contact and Book on phones, legal set, offers on home) and batch 2 (gallery, lighter images)
 
+**Changed (batch 5: guest reviews, booking bar on phones)**
+- `reviews` collection (core, `src/collections/Reviews.ts`): the guest's exact text and language (never translated or reworded), author as first name + initial, source (google/booking/tripadvisor/expedia/direct/other) and link, score + scale, month, draft/published, order. Tenant table + RLS row, migration `guest_reviews`; snapshot `reviews`.
+- `reviews` block (`src/site/Reviews.tsx`): cards with stars (5 scale) or "9.2/10", a spoken label, `lang` per quote, source and month; hidden while empty. No schema.org Review/AggregateRating on purpose (self-serving reviews). Base + Lumière styles (navy cards).
+- Customer zero: `hotel-herse-dor.reviews.ts`, three real Google reviews from the owner's screenshots (Auriane M., Cagan Y., Matthew S., 5/5, May–July 2026), block on home after the features; `apply.ts --only=reviews`.
+- Lumière hero: the booking bar's wrapper was a flex item with auto margins and shrank to its content (a narrow bar on phones, owner's screenshot); now full width, pushed to the bottom of the hero as the template intends.
+
 **Changed (batch 4: the blog)**
 - `posts` collection (core, `src/collections/Posts.ts`): per site, localized title/excerpt/body (plain text: blank line, `## `, `- `), draft/published, date, cover (upload or URL), provenance (an owner's edit turns a post `human`). Tenant table + RLS row, migration `blog_posts`.
 - `news` block (`src/site/News.tsx`): `latest` (cards, hidden while empty) or `list` (that page is the blog; posts at `/<blog>/<post>`). Post page: back link, h1, date, cover in the lightbox, text, three more posts; BlogPosting JSON-LD, canonical/hreflang, in the sitemap. Menu hides a blog page with no post. Styles in the base and Lumière; gates cover `/blog` and one post.

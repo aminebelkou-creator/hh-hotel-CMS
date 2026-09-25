@@ -1,7 +1,7 @@
 /**
  * Build (or rebuild) a hotel's site from its onboarding content, then optionally publish it.
  *
- *   pnpm exec tsx src/onboarding/apply.ts hotel-herse-dor [--publish] [--only=posts]
+ *   pnpm exec tsx src/onboarding/apply.ts hotel-herse-dor [--publish] [--only=posts|--only=reviews]
  *
  * --only=posts writes the blog alone: the posts, the blog page, and a news block on the home
  * page when it has none (inserted in place, every other block and the owner's edits kept).
@@ -56,6 +56,8 @@ export function blockData(b: BlockInput, l: Loc): Record<string, unknown> {
       return { blockType: 'faq', heading: v(b.heading, l), items: b.items.map((i) => ({ question: v(i.question, l), answer: v(i.answer, l) })), provenance: prov }
     case 'offers':
       return { blockType: 'offers', heading: v(b.heading, l), intro: v(b.intro, l), limit: b.limit }
+    case 'reviews':
+      return { blockType: 'reviews', heading: v(b.heading, l), intro: v(b.intro, l), limit: b.limit ?? 6, provenance: prov }
     case 'news':
       return { blockType: 'news', heading: v(b.heading, l), intro: v(b.intro, l), layout: b.layout ?? 'latest', limit: b.limit ?? 3, linkLabel: v(b.link?.label, l), linkHref: b.link?.href, provenance: prov }
     case 'policies':
@@ -187,11 +189,12 @@ async function applyPosts(payload: Payload, content: SiteContent, siteId: number
 }
 
 /**
- * Adds the home page's news block when it has none, right after the offers block (else before
- * the closing call to action), keeping every other block, its ids and the owner's edits.
+ * Adds one of the home page's blocks when the live page has none of that type, right after the
+ * first block of the `after` types found (else before the closing call to action), keeping every
+ * other block, its ids and the owner's edits.
  */
-async function ensureHomeNews(payload: Payload, content: SiteContent, siteId: number, tenantId: number, locales: Loc[]) {
-  const block = content.pages.find((p) => p.slug === 'home')?.blocks.find((b) => b.blockType === 'news')
+async function ensureHomeBlock(payload: Payload, content: SiteContent, siteId: number, tenantId: number, locales: Loc[], type: BlockInput['blockType'], afterTypes: string[]) {
+  const block = content.pages.find((p) => p.slug === 'home')?.blocks.find((b) => b.blockType === type)
   if (!block) return false
   const home = (await payload.find({ collection: 'pages', where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { slug: { equals: 'home' } }] }, limit: 1, overrideAccess: true, draft: true, depth: 0 })).docs[0]
   if (!home) return false
@@ -199,8 +202,8 @@ async function ensureHomeNews(payload: Payload, content: SiteContent, siteId: nu
   // No locale fallback: writing back a fallback value would copy one language into the other.
   const stored = (l: Loc) => payload.findByID({ collection: 'pages', id: home.id, locale: l, fallbackLocale: false, depth: 0, overrideAccess: true, draft: false }) as Promise<{ blocks?: Record<string, unknown>[] }>
   const blocks0 = (await stored(first)).blocks ?? []
-  if (blocks0.some((b) => b.blockType === 'news')) return false
-  const after = blocks0.findIndex((b) => b.blockType === 'offers')
+  if (blocks0.some((b) => b.blockType === type)) return false
+  const after = Math.max(-1, ...afterTypes.map((a) => blocks0.findIndex((b) => b.blockType === a)).filter((x) => x >= 0).slice(0, 1))
   const cta = blocks0.findIndex((b) => b.blockType === 'cta')
   const at = after >= 0 ? after + 1 : cta >= 0 ? cta : blocks0.length
   const insert = (list: Record<string, unknown>[], l: Loc) => [...list.slice(0, at), blockData(block, l), ...list.slice(at)]
@@ -215,6 +218,19 @@ async function ensureHomeNews(payload: Payload, content: SiteContent, siteId: nu
   return true
 }
 
+/**
+ * Guest reviews exactly as the hotel gave them (never written by us). Matched by author and the
+ * start of the text, so running again updates order/status without duplicating.
+ */
+async function applyReviews(payload: Payload, content: SiteContent, siteId: number, tenantId: number) {
+  for (const r of content.reviews ?? []) {
+    const found = (await payload.find({ collection: 'reviews', where: { and: [{ tenant: { equals: tenantId } }, { site: { equals: siteId } }, { author: { equals: r.author } }] }, limit: 50, overrideAccess: true })).docs.find((d) => String(d.text).slice(0, 60) === r.text.slice(0, 60))
+    const data = { tenant: tenantId, site: siteId, status: 'published', order: r.order, text: r.text, language: r.language, author: r.author, origin: r.origin, source: r.source, sourceUrl: r.sourceUrl, rating: r.rating, ratingScale: r.ratingScale ?? (r.rating ? 5 : undefined), visitedAt: r.visitedAt }
+    if (found) await payload.update({ collection: 'reviews', id: found.id, data: data as never, overrideAccess: true })
+    else await payload.create({ collection: 'reviews', data: data as never, overrideAccess: true })
+  }
+}
+
 /** The blog alone: posts, the blog page, the home page's news block. */
 export async function applyBlog(payload: Payload, content: SiteContent) {
   const { tenantId, siteId, locales, photos } = await siteOf(payload, content)
@@ -224,8 +240,16 @@ export async function applyBlog(payload: Payload, content: SiteContent) {
     const existing = (await payload.find({ collection: 'pages', where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { slug: { equals: p.slug } }] }, limit: 1, overrideAccess: true, draft: true })).docs[0]
     if (!existing) await upsertLocalized(payload, 'pages', undefined, locales, (l) => localizeImages(pageData(p, l, siteId, tenantId), photos))
   }
-  const home = await ensureHomeNews(payload, content, siteId, tenantId, locales)
+  const home = await ensureHomeBlock(payload, content, siteId, tenantId, locales, 'news', ['offers'])
   return { tenantId, siteId, posts: (content.posts ?? []).length, blogPages: blogPages.length, homeNewsAdded: home }
+}
+
+/** The reviews alone: the hotel's reviews and the home page's reviews block. */
+export async function applyReviewsOnly(payload: Payload, content: SiteContent) {
+  const { tenantId, siteId, locales } = await siteOf(payload, content)
+  await applyReviews(payload, content, siteId, tenantId)
+  const home = await ensureHomeBlock(payload, content, siteId, tenantId, locales, 'reviews', ['features', 'rooms'])
+  return { tenantId, siteId, reviews: (content.reviews ?? []).length, homeReviewsAdded: home }
 }
 
 async function siteOf(payload: Payload, content: SiteContent) {
@@ -277,6 +301,7 @@ export async function applySite(payload: Payload, content: SiteContent) {
   }
 
   await applyPosts(payload, content, siteId, tenantId, locales, photos)
+  await applyReviews(payload, content, siteId, tenantId)
 
   for (const p of content.pages) {
     const existing = (await payload.find({ collection: 'pages', where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { slug: { equals: p.slug } }] }, limit: 1, overrideAccess: true, draft: true })).docs[0]
@@ -293,7 +318,7 @@ if (isMain) {
     if (!content) throw new Error(`Usage: apply.ts <${Object.keys(SITES).join('|')}> [--publish]`)
     const payload = await getPayload({ config })
     const t0 = Date.now()
-    const r = process.argv.includes('--only=posts') ? await applyBlog(payload, content) : await applySite(payload, content)
+    const r = process.argv.includes('--only=posts') ? await applyBlog(payload, content) : process.argv.includes('--only=reviews') ? await applyReviewsOnly(payload, content) : await applySite(payload, content)
     console.log(`applied ${slug}: ${JSON.stringify(r)} in ${Date.now() - t0} ms`)
     if (process.argv.includes('--publish')) {
       const seq = await nextPublishSeq(payload, r.tenantId, r.siteId)

@@ -182,6 +182,19 @@ export const coreBlocks: Block[] = [
     ],
   },
   {
+    // Guest reviews (collection `reviews`): real words typed in by the hotel, never written by us.
+    slug: 'reviews',
+    interfaceName: 'ReviewsBlock',
+    graphQL: { singularName: 'ReviewsBlock' },
+    labels: { singular: 'Guest reviews', plural: 'Guest reviews' },
+    fields: [
+      { name: 'heading', type: 'text', localized: true },
+      { name: 'intro', type: 'textarea', localized: true },
+      { name: 'limit', type: 'number', defaultValue: 6, min: 1, max: 24 },
+      provenance,
+    ],
+  },
+  {
     slug: 'faq',
     labels: { singular: 'Questions and answers', plural: 'Questions and answers' },
     fields: [

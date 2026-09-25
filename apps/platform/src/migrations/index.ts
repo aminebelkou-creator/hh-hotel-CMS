@@ -17,6 +17,7 @@ import * as migration_20260925_061743_lumiere_blocks from './20260925_061743_lum
 import * as migration_20260925_062437_lumiere_template from './20260925_062437_lumiere_template';
 import * as migration_20260925_125537_butler_font from './20260925_125537_butler_font';
 import * as migration_20260925_193747_blog_posts from './20260925_193747_blog_posts';
+import * as migration_20260925_201351_guest_reviews from './20260925_201351_guest_reviews';
 
 export const migrations = [
   {
@@ -112,6 +113,11 @@ export const migrations = [
   {
     up: migration_20260925_193747_blog_posts.up,
     down: migration_20260925_193747_blog_posts.down,
-    name: '20260925_193747_blog_posts'
+    name: '20260925_193747_blog_posts',
+  },
+  {
+    up: migration_20260925_201351_guest_reviews.up,
+    down: migration_20260925_201351_guest_reviews.down,
+    name: '20260925_201351_guest_reviews'
   },
 ];

@@ -28,6 +28,7 @@ begin
       ('pages', 'tenant_id'),
       ('_pages_v', 'version_tenant_id'),
       ('posts', 'tenant_id'),
+      ('reviews', 'tenant_id'),
       ('media', 'tenant_id'),
       ('domains', 'tenant_id'),
       ('releases', 'tenant_id'),

@@ -258,6 +258,19 @@ body.hh-site { margin: 0; }
 .hh-post-body { padding-top: 32px; padding-bottom: 72px; }
 .hh-post-body h2 { font-size: 1.6rem; margin-top: 1.4em; }
 
+/* Guest reviews (real words, typed in by the hotel) */
+.hh-review-grid { list-style: none; padding: 0; margin: 36px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+.hh-review { margin: 0; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; background: var(--hh-card); border: 1px solid var(--hh-line); border-radius: var(--hh-radius); padding: 24px 26px; }
+.hh-review blockquote { margin: 0; flex: 1; font-family: var(--hh-serif); font-size: 1.12rem; line-height: 1.5; }
+.hh-review blockquote p { margin: 0 0 .6em; }
+.hh-review blockquote p:last-child { margin-bottom: 0; }
+.hh-review-rating { margin: 0; color: var(--hh-accent-text); font-size: 1.05rem; letter-spacing: 2px; }
+.hh-review-score span { font-weight: 700; letter-spacing: 0; }
+.hh-review figcaption { display: flex; flex-direction: column; gap: 2px; font-size: .9rem; }
+.hh-review-author { font-weight: 600; }
+.hh-review-meta { color: var(--hh-muted); }
+.hh-review-meta a { color: inherit; text-underline-offset: 3px; }
+
 [data-template='atelier'] { --hh-heading-weight: 700; --hh-heading-tracking: -.025em; font-size: 16px; }
 [data-template='atelier'] .hh-header { background: var(--hh-paper); backdrop-filter: none; }
 [data-template='atelier'] .hh-brand-name { font-size: 1.05rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
@@ -402,6 +415,9 @@ body.hh-site { margin: 0; }
 [data-template='lumiere'] .hh-booking-bar { position: relative; z-index: 1; margin-top: auto; padding: 35px 28px; border-radius: var(--lx-r); background: rgba(252, 252, 252, .1); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); display: grid; grid-template-columns: repeat(4, 1fr); gap: 35px; text-align: left; }
 [data-template='lumiere'] .hh-booking-field { position: relative; margin: 0; }
 [data-template='lumiere'] .hh-booking-bar { align-items: end; }
+/* Its wrapper is a flex item of the column hero: auto margins would shrink it to its content (a narrow bar on phones). */
+[data-template='lumiere'] .hh-hero > .hh-wrap { width: 100%; box-sizing: border-box; display: flex; flex-direction: column; flex: 1 0 auto; padding-top: 24px; }
+[data-template='lumiere'] .hh-hero > .hh-wrap > .hh-booking-bar { width: 100%; box-sizing: border-box; }
 [data-template='lumiere'] .hh-booking-field label { display: block; margin: 0 0 8px 2px; font-size: 14px; line-height: 1.2; color: #fcfcfc; }
 [data-template='lumiere'] .hh-booking-field input, [data-template='lumiere'] .hh-booking-field select { width: 100%; height: 56px; padding: 12px 15px 12px 20px; border: 1px solid #fcfcfc; border-radius: var(--lx-r-btn); background: transparent; color: #fcfcfc; font: inherit; font-size: 18px; color-scheme: dark; }
 [data-template='lumiere'] .hh-booking-field select option { color: #030303; }
@@ -530,6 +546,15 @@ body.hh-site { margin: 0; }
 [data-template='lumiere'] .hh-footer :focus-visible { outline-color: var(--hh-inverse-ink); }
 
 /* Breakpoints (the template's own: 1440 / 1280 / 991 / 767) */
+/* Guest reviews */
+[data-template='lumiere'] .hh-review-grid { gap: 30px; }
+[data-template='lumiere'] .hh-review { background: var(--hh-inverse); color: var(--hh-inverse-ink); border: 0; border-radius: var(--lx-r); padding: 40px; gap: 20px; }
+[data-template='lumiere'] .hh-review blockquote { font-family: var(--hh-sans); font-size: 20px; }
+[data-template='lumiere'] .hh-review-rating { color: var(--hh-accent); font-size: 22px; letter-spacing: 4px; }
+[data-template='lumiere'] .hh-review-author { font-family: var(--hh-serif); font-weight: 500; font-size: 20px; }
+[data-template='lumiere'] .hh-review-meta { color: var(--hh-inverse-ink); opacity: .85; font-size: 16px; }
+[data-template='lumiere'] .hh-review :focus-visible { outline-color: var(--hh-inverse-ink); }
+
 /* Blog */
 [data-template='lumiere'] .hh-news-grid { gap: 40px 30px; margin-top: 0; }
 [data-template='lumiere'] .hh-news-card { background: transparent; border: 0; border-radius: 0; overflow: visible; }

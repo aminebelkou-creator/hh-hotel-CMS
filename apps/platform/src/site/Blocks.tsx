@@ -12,6 +12,7 @@ import { Icon, isIconId } from './icons'
 import { Img as SharedImg, fullSizeOf, SIZES } from './Img'
 import { Lightbox } from './Lightbox'
 import { NewsBlock } from './News'
+import { ReviewsBlock } from './Reviews'
 
 type Ctx = { snapshot: SiteSnapshot; locale: string; t: Labels }
 
@@ -275,6 +276,8 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                 images={snapshot.images}
               />
             )
+          case 'reviews':
+            return <ReviewsBlock key={key} block={b} ctx={ctx} headingLevel={!hasHero && i === 0 ? 'h1' : 'h2'} />
           case 'news':
             return <NewsBlock key={key} block={b} ctx={ctx} headingLevel={!hasHero && i === 0 ? 'h1' : 'h2'} />
           case 'policies': {

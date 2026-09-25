@@ -37,6 +37,20 @@ export type SnapshotPost = {
   imageAlt: Localized<string> | null
 }
 
+/** A published guest review, word for word (collection `reviews`). */
+export type SnapshotReview = {
+  id: number
+  text: string
+  language: string
+  author: string
+  origin: string | null
+  source: string
+  sourceUrl: string | null
+  rating: number | null
+  ratingScale: number | null
+  visitedAt: string | null
+}
+
 export type SnapshotRedirect = { from: string; to: string; permanent: boolean }
 export type SnapshotImage = { w: number; h: number; srcset: string; full: string }
 export type SnapshotFormField = { blockType: string; name: string; label?: string | null; required?: boolean | null; width?: number | null; defaultValue?: unknown; options?: { label: string; value: string }[]; message?: unknown }
@@ -83,6 +97,8 @@ export type SiteSnapshot = {
   pages: SnapshotPage[]
   /** Published blog posts, newest first. */
   posts?: SnapshotPost[]
+  /** Published guest reviews, in the hotel's order. */
+  reviews?: SnapshotReview[]
   facts: { key: string; value: string }[]
   packs: Record<string, unknown>
 }
@@ -213,6 +229,27 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
     }
   })
 
+  const reviewDocs = await payload.find({
+    collection: 'reviews',
+    where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { status: { equals: 'published' } }] },
+    depth: 0,
+    pagination: false,
+    sort: 'order',
+    overrideAccess: true,
+  })
+  const reviews: SnapshotReview[] = (reviewDocs.docs as unknown as Record<string, unknown>[]).map((d) => ({
+    id: Number(d.id),
+    text: String(d.text ?? ''),
+    language: String(d.language ?? 'other'),
+    author: String(d.author ?? ''),
+    origin: (d.origin as string) || null,
+    source: String(d.source ?? 'other'),
+    sourceUrl: (d.sourceUrl as string) || null,
+    rating: typeof d.rating === 'number' ? d.rating : null,
+    ratingScale: typeof d.ratingScale === 'number' ? d.ratingScale : null,
+    visitedAt: (d.visitedAt as string) || null,
+  }))
+
   return {
     schema: 2,
     site: {
@@ -232,6 +269,7 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
     },
     pages: pages.docs.map((p) => toSnapshotPage(p, imageUrl)),
     posts,
+    reviews,
     mapImage,
     images: imageIndex,
     redirects,

@@ -2,6 +2,7 @@ import type { SiteContent } from '../types'
 import { IMG } from './hotel-herse-dor.images'
 import { pages } from './hotel-herse-dor.pages'
 import { posts } from './hotel-herse-dor.posts'
+import { reviews } from './hotel-herse-dor.reviews'
 
 /**
  * Customer zero: Hôtel de la Herse d'Or, 20 rue Saint-Antoine, Paris 4e.
@@ -87,5 +88,6 @@ export const hotelHerseDor: SiteContent = {
     },
   ],
   posts,
+  reviews,
   pages,
 }

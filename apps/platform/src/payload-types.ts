@@ -73,6 +73,7 @@ export interface Config {
     sites: Site;
     pages: Page;
     posts: Post;
+    reviews: Review;
     media: Media;
     domains: Domain;
     releases: Release;
@@ -99,6 +100,7 @@ export interface Config {
     sites: SitesSelect<false> | SitesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     domains: DomainsSelect<false> | DomainsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
@@ -639,6 +641,7 @@ export interface Page {
             blockType: 'text';
           }
         | NewsBlock
+        | ReviewsBlock
         | {
             heading?: string | null;
             items?:
@@ -871,6 +874,28 @@ export interface NewsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'news';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ReviewsBlock".
+ */
+export interface ReviewsBlock {
+  heading?: string | null;
+  intro?: string | null;
+  limit?: number | null;
+  /**
+   * Who last shaped this content. Regeneration never overwrites human edits.
+   */
+  provenance?: {
+    origin?: ('generated' | 'human' | 'locked') | null;
+    /**
+     * Fact-base reference for generated content
+     */
+    sourceFact?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'reviews';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1157,6 +1182,57 @@ export interface Post {
      */
     sourceFact?: string | null;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Real reviews only, copied word for word from the guest (Google, Booking, TripAdvisor, a letter…). Shown once Published and the site is published again.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews".
+ */
+export interface Review {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  /**
+   * Exactly as the guest wrote it, in their language. Shortening is fine with "…"; rewording is not.
+   */
+  text: string;
+  /**
+   * Language of the text
+   */
+  language: 'fr' | 'en' | 'de' | 'es' | 'it' | 'nl' | 'pt' | 'other';
+  /**
+   * As shown on the review, e.g. "Marie L." — never a full surname without consent
+   */
+  author: string;
+  /**
+   * Optional, e.g. "Lyon" or "Canada"
+   */
+  origin?: string | null;
+  source: 'google' | 'booking' | 'tripadvisor' | 'expedia' | 'direct' | 'other';
+  /**
+   * Link to the review, when public
+   */
+  sourceUrl?: string | null;
+  /**
+   * The score as given, e.g. 5 or 9.2 (optional)
+   */
+  rating?: number | null;
+  /**
+   * 5 for Google/TripAdvisor, 10 for Booking
+   */
+  ratingScale?: number | null;
+  /**
+   * Month of the review
+   */
+  visitedAt?: string | null;
+  site: number | Site;
+  status: 'draft' | 'published';
+  /**
+   * Lower first
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1715,6 +1791,10 @@ export interface PayloadLockedDocument {
         value: number | Post;
       } | null)
     | ({
+        relationTo: 'reviews';
+        value: number | Review;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -2061,6 +2141,7 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
         news?: T | NewsBlockSelect<T>;
+        reviews?: T | ReviewsBlockSelect<T>;
         faq?:
           | T
           | {
@@ -2189,6 +2270,23 @@ export interface NewsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ReviewsBlock_select".
+ */
+export interface ReviewsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  intro?: T;
+  limit?: T;
+  provenance?:
+    | T
+    | {
+        origin?: T;
+        sourceFact?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FormBlock_select".
  */
 export interface FormBlockSelect<T extends boolean = true> {
@@ -2280,6 +2378,27 @@ export interface PostsSelect<T extends boolean = true> {
         origin?: T;
         sourceFact?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  tenant?: T;
+  text?: T;
+  language?: T;
+  author?: T;
+  origin?: T;
+  source?: T;
+  sourceUrl?: T;
+  rating?: T;
+  ratingScale?: T;
+  visitedAt?: T;
+  site?: T;
+  status?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }

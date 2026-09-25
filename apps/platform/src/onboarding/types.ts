@@ -17,6 +17,7 @@ export type BlockInput =
   | { blockType: 'text'; heading?: L; body: L }
   | { blockType: 'faq'; heading?: L; items: { question: L; answer: L }[] }
   | { blockType: 'offers'; heading?: L; intro?: L; limit?: number }
+  | { blockType: 'reviews'; heading?: L; intro?: L; limit?: number }
   | { blockType: 'news'; heading?: L; intro?: L; layout?: 'latest' | 'list'; limit?: number; link?: { label: L; href: string } }
   | { blockType: 'policies'; heading?: L; showTimes?: boolean; items: { title: L; text: L }[] }
 
@@ -60,6 +61,21 @@ export type PostInput = {
   image?: Img
 }
 
+/** A real guest review, word for word, as the hotel gave it to us (never written by us). */
+export type ReviewInput = {
+  key: string
+  order: number
+  text: string
+  language: 'fr' | 'en' | 'de' | 'es' | 'it' | 'nl' | 'pt' | 'other'
+  author: string
+  origin?: string
+  source: 'google' | 'booking' | 'tripadvisor' | 'expedia' | 'direct' | 'other'
+  sourceUrl?: string
+  rating?: number
+  ratingScale?: number
+  visitedAt?: string
+}
+
 export type SiteContent = {
   tenant: { slug: string; name: string }
   site: {
@@ -75,5 +91,6 @@ export type SiteContent = {
   rooms: RoomInput[]
   offers?: OfferInput[]
   posts?: PostInput[]
+  reviews?: ReviewInput[]
   pages: PageInput[]
 }

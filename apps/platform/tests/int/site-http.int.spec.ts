@@ -206,6 +206,24 @@ describe('public hotel site', () => {
     expect(rooms).not.toContain('hh-booking-bar') // only where the hotel switched it on
   })
 
+  it('shows guest reviews word for word, in their own language, with source and score; drafts never', async (ctx) => {
+    if (!reachable) ctx.skip()
+    const home = await (await fetch(`${BASE}/s/${A.slug}`)).text()
+    const section = home.slice(home.indexOf('<section class="hh-section hh-reviews">'))
+    expect(section).toContain('<h2 class="hh-section-title">What our guests say</h2>')
+    expect(section).toContain('<blockquote lang="en"><p>Quiet room, lovely staff.</p><p>We will be back.</p></blockquote>')
+    expect(section).toContain('<blockquote lang="fr"><p>Très bien situé, petit-déjeuner copieux.</p></blockquote>')
+    expect(section).toContain('<p class="hh-review-rating" role="img" aria-label="Rated 5 out of 5"><span aria-hidden="true">★★★★★</span></p>')
+    expect(section).toContain('aria-label="Rated 9.2 out of 10"')
+    expect(section).toMatch(/<span class="hh-review-author">Anna K.<!-- -->, Oslo<\/span>/)
+    expect(section).toContain('<a href="https://example.test/review/1" rel="noopener nofollow">Google review</a>')
+    expect(section).toContain('Booking.com review')
+    expect(section.indexOf('Anna K.')).toBeLessThan(section.indexOf('Luc'))
+    expect(home).not.toContain('Unpublished draft review')
+    // No self-serving review markup (search engines ignore or penalise it).
+    expect(home).not.toMatch(/"@type":"(Review|AggregateRating)"/)
+  })
+
   it('serves the blog: latest posts on home, the list page, each post with BlogPosting data, drafts never', async (ctx) => {
     if (!reachable) ctx.skip()
     const base = `${BASE}/s/${A.slug}`

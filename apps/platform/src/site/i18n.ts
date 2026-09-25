@@ -36,6 +36,10 @@ const LABELS = {
     allPosts: 'Tous les articles',
     backToBlog: 'Retour au blog',
     morePosts: 'À lire aussi',
+    reviewOn: 'Avis {source}',
+    readReview: 'Lire l’avis sur {source}',
+    ratedOutOf: 'Note : {n} sur {max}',
+    directReview: 'Message d’un client',
   },
   en: {
     menu: 'Menu',
@@ -74,6 +78,10 @@ const LABELS = {
     allPosts: 'All posts',
     backToBlog: 'Back to the blog',
     morePosts: 'More to read',
+    reviewOn: '{source} review',
+    readReview: 'Read the review on {source}',
+    ratedOutOf: 'Rated {n} out of {max}',
+    directReview: 'From a guest’s message',
   },
 } as const
 export type Labels = Record<keyof (typeof LABELS)['en'], string>

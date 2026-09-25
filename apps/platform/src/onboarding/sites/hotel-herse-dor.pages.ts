@@ -78,6 +78,8 @@ const home: PageInput = {
         { icon: 'paw', title: { fr: 'Animaux bienvenus', en: 'Pets welcome' }, text: { fr: 'Chiens et chats acceptés.', en: 'Dogs and cats accepted.' } },
       ],
     },
+    // Real guest reviews, typed in from what the hotel gives us (hidden while there is none).
+    { blockType: 'reviews', heading: { fr: 'Ils ont séjourné chez nous', en: 'Our guests say' }, limit: 6 },
     { blockType: 'mediaBand', image: IMG.view },
     // Shown only while an offer is active (dated offers, hotel pack).
     { blockType: 'offers', heading: { fr: 'Offres du moment', en: 'Special offers' }, limit: 3 },
