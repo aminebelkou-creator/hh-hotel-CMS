@@ -59,3 +59,5 @@ Photos on the site are the hotel's own, served from its current website until th
 ## phase-3-4/ — the admin after Phases 3 and 4 (25 September)
 
 Dashboard (hotel and fleet), fact review screen, the site's panels (import, write, translate, look), issues. See [phase-3-4/README.md](phase-3-4/README.md).
+
+`templates/lumiere-*.jpg` (25 September): customer zero on Lumière 2.0, the licensed Luxorefi adaptation (home, home on a phone, rooms, contact).

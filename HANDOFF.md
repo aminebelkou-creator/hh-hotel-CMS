@@ -19,7 +19,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Plan position | Day −3. The 90-day plan starts Monday 28 September; engineering started early on 22 September. **Phases 1–4 engineering built ahead of the plan** (Phase 3: ingest, review, generation, translation, brand proposal; Phase 4: nightly checks, issues with one-tap fixes, monthly report, dashboards, action log, uptime); Phase 5 mechanisms (canary template upgrades, full-scope backups) and compliance drafts in place. What is missing needs the owner: a domain, Tencent's answer, an email provider, the AI model key, a lawyer, real hotels |
 | Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
 | Customer zero | **Marketing website live, content approved by the owner (24 Sep)**: release r5 (25 Sep: static map, SEO fields, templates), served by the Makers project **`hh-platform` (area overseas)** at https://hh-platform.edgeone.dev/s/hotel-herse-dor (code `4f71b35` deployed 25 Sep with Phases 3–5; customer zero on Maison, stable channel). First live nightly run: platform checks 1 open issue (a missing search description on the gallery page, one-tap fix offered), axe 0 violations on the home page. The old project `hh-platform-poc` (area global, custom domains impossible without ICP) still serves the same database at https://hh-platform-poc.edgeone.cool until retired. 6 pages + 3 legal pages, FR/EN, room types, offer, house rules, FAQ, map, schema.org Hotel and FAQPage, sitemap. **Photos now on our own storage** (0 images from the old site). Owner account `proprietaire@hotel-herse-dor.demo` (password in user env var `HH_OWNER_PASSWORD`) |
-| Look | **Three templates** (Maison, Atelier, Soirée) and a brand per site, under the design contract (`docs/11`); customer zero stays on Maison |
+| Look | **Four templates**: Maison, Atelier, Soirée (built in-house) and **Lumière 2.0**, a faithful adaptation of the licensed Luxorefi template (owner's licence, handoff by the design session in `Documents\hh-template-handoffs\luxorefi-lab`), all under the design contract (`docs/11`). The Luxorefi look needed seven structural additions to the core (hero stars from facts + booking bar to the Book link, banners block, section head with link, room tag + facts with icons, feature icons, photo band, checklist): every template can use them. Customer zero stays on Maison, its home page now carries the new elements |
 | Admin | **Home = dashboard** (hotel: live version, domain, health, open issues with Apply/Dismiss/Check now, this month's numbers; our team: the fleet table). Sites carry four panels: Website (publish/undo), **Import the current website** (crawl → facts, Review facts screen, Draft pages, Translate), **Look** (propose/apply a template and accent), Publish. Collections added: Crawls, Issues, Action log. Phase 1–2 items unchanged |
 | Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
 | CI / deploy | Every push: migrations on a fresh Postgres, drift check, import-map check, seed, typecheck, suites, build, HTTP suites (now 9 files), quality gates on **both design channels**; CodeQL; Dependabot weekly. **Nightly** (`nightly.yml`, 03:17 UTC): platform checks + axe on every live site → issues. **Uptime** every 30 min. `deploy` workflow: migrate Neon + RLS + Makers `hh-platform` |
@@ -155,6 +155,21 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-25 · session 14 · `fc0074a` → this commit (Lumière 2.0 from the licensed Luxorefi template)
+
+**Changed**
+- **Core additions (PR 1)** from the handoff's PROPOSAL.md, industry-neutral and optional: hero `rating` (classification from the confirmed facts, through the pack's `HeroRating`) and `bookingBar` (a GET form to the site's Book link with arrival/departure/guests — no availability, no prices), `banners` and `mediaBand` blocks, `points` checklist on text-and-image, `icon` on feature items (built-in line-icon set `src/site/icons.tsx`, our own paths), rooms block `linkLabel`/`linkHref` → `.hh-section-head--split`, room cards with `.hh-room-tag` (category) and `.hh-room-facts` (occupancy, bed, size with icons). Migration `lumiere_blocks` (additive). Base CSS for every template; seeded pages and customer zero's home use the new elements; `site-http` test checks the exact markup; health checks cover banner photos and links.
+- **Template Lumière 2.0 (PR 2)**: `templates.ts` entry, the handoff's CSS section in `site.css` (tokens only, `:has()` for the header over the photo hero; one fix: without a photo hero the booking bar sits on a navy band, found by axe), migration `lumiere_template` (enum value), gates and screenshots on four templates, tokens exported, design contract §5/§6, checklist.
+- **Font**: Butler (Luxorefi's heading font) is not used yet — the handoff shipped the OTF files but no licence text, and docs/11 §4 asks for an open licence on file. Lumière uses Playfair Display until the owner provides the licence; then convert to WOFF2 and switch `fonts.heading`.
+- Fact key `rating.stars` (crawler, seed) and `hotel.stars` (customer zero's import) both feed the stars and the schema.org rating; the crawler's key is the one going forward.
+
+**Measured**
+- Gates: 4 templates × 3 pages, stable and canary, 0 axe violations; Lumière pages 235–237 KB over the wire (fonts 87 KB). 159 tests green locally.
+
+**Not done**
+- Testimonials, news and video backgrounds (PROPOSAL.md §8): need real reviews, posts and a video policy first.
+- Hotelza: waiting for the owner's ThemeForest ZIP; same method (design session makes the handoff, this side builds it).
 
 ### 2026-09-25 · session 13 · `984c7e9` → this commit (overnight run: Phases 3, 4 and the Phase 5 mechanisms)
 

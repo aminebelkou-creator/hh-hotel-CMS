@@ -116,6 +116,32 @@ export const TEMPLATES = {
     fonts: { heading: 'playfair', body: 'inter' },
     corners: 'soft',
   },
+  lumiere: {
+    id: 'lumiere',
+    version: '2.0.0',
+    name: 'Lumière',
+    description: {
+      en: 'Luxurious and bright: ivory pages, a full-screen photo hero with a glass booking bar, navy bands and cards, champagne-gold buttons, large serif headlines. Suits upscale boutique and resort hotels.',
+      fr: 'Lumineux et luxueux : pages ivoire, grande photo plein écran avec barre de réservation vitrée, bandeaux et cartes bleu nuit, boutons or champagne, grands titres à empattements. Pour les hôtels boutique haut de gamme et les resorts.',
+    },
+    scheme: 'light',
+    palette: {
+      paper: '#fdf7f3',
+      surface: '#fcfcfc',
+      tint: '#fdf7f3',
+      ink: '#030303',
+      muted: '#45423f',
+      line: '#d9d2cc',
+      accent: '#d5b475',
+      inverse: '#0e1825',
+      inverseInk: '#fcfcfc',
+      inverseMuted: '#c7ccd4',
+    },
+    // Luxorefi's heading font is Butler; no web-font licence file was shipped with the handoff, so
+    // Playfair Display (OFL, installed) stands in until one is on file (docs/11 §4).
+    fonts: { heading: 'playfair', body: 'inter' },
+    corners: 'soft',
+  },
 } as const satisfies Record<string, TemplateDef>
 
 export type TemplateId = keyof typeof TEMPLATES

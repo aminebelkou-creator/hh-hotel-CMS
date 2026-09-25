@@ -30,7 +30,7 @@ const setTemplate = async (template) => {
 const browser = await chromium.launch({ channel: 'chrome' })
 const report = []
 try {
-  for (const template of ['maison', 'atelier', 'soiree']) {
+  for (const template of ['maison', 'atelier', 'soiree', 'lumiere']) {
     const version = await setTemplate(template)
     for (const [name, path, w] of pages) {
       const page = await browser.newPage({ viewport: { width: w, height: 900 } })

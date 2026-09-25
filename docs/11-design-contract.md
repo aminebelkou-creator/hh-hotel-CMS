@@ -76,11 +76,12 @@ Blocks render the same markup in every template (`src/site/Blocks.tsx`, pack ren
 | Block | Classes a template must handle |
 | --- | --- |
 | Header | `.hh-header`, `.hh-brand-name`, `.hh-brand-tag`, `.hh-nav`, `.hh-burger`, `.hh-nav-mobile`, `.hh-btn.hh-header-cta` |
-| Hero | `.hh-hero`, `.hh-hero--image` (photo + `.hh-hero-inner`), heading, `.hh-hero-sub`, `.hh-btn--light` |
-| Sections | `.hh-section`, `.hh-section--tint`, `.hh-section-title`, `.hh-eyebrow`, `.hh-lead`, `.hh-split`, `.hh-link-arrow` |
-| Features, gallery, quote, text, FAQ | `.hh-features`, `.hh-gallery`, `.hh-quote`, `.hh-prose`, `.hh-faq` |
+| Hero | `.hh-hero`, `.hh-hero--image` (photo + `.hh-hero-inner`), heading, `.hh-hero-sub`, `.hh-btn--light`; optional `.hh-hero-rating` + `.hh-stars` (the official classification from the confirmed facts) and `.hh-booking-bar` / `.hh-booking-field` (a plain GET form to the site's Book link: dates and guests, no availability, no prices) |
+| Sections | `.hh-section`, `.hh-section--tint`, `.hh-section-title`, `.hh-eyebrow`, `.hh-lead`, `.hh-split`, `.hh-link-arrow`; `.hh-section-head` with `--center` or `--split` (title + "see all" link) |
+| Features, gallery, quote, text, FAQ | `.hh-features` (items may carry `.hh-feature-icon` with an inline SVG from the built-in set, `src/site/icons.tsx`), `.hh-gallery`, `.hh-quote`, `.hh-prose`, `.hh-faq`; `.hh-checklist` under text-and-image |
+| Banners, photo band | `.hh-banners` > `.hh-banners-list` > `.hh-banner` > `.hh-banner-inner` (img + h3); `.hh-media-band` (one full-width photo) |
 | Call to action | `.hh-cta`, `.hh-cta--image` |
-| Hotel pack | `.hh-room*`, `.hh-offer*`, `.hh-badge`, `.hh-policies` |
+| Hotel pack | `.hh-room*` (cards: `.hh-room-tag` = category on the photo, `.hh-room-facts` = occupancy / bed / size with icons; `.hh-room-meta` stays for templates that prefer one line), `.hh-offer*`, `.hh-badge`, `.hh-policies` |
 | Contact and map | `.hh-contact`, `.hh-facts`, `.hh-map` |
 | Footer | `.hh-footer*`, `.hh-footer-legal` |
 
@@ -93,8 +94,11 @@ Accessibility rules every template keeps: one `h1` per page (first hero), visibl
 | `maison` | Maison | light | Cormorant Garamond / Inter | soft | Classic and warm: cream, serif headings, full-width photo hero. Default; customer zero's look |
 | `atelier` | Atelier | light | Manrope / Inter | square | Modern and minimal: white, sans-serif, photo beside the headline, uppercase labels, accent call-to-action band |
 | `soiree` | Soirée | dark | Playfair Display / Inter | soft | Dark and elegant: night palette, gold accent, centred italic headlines, outline buttons |
+| `lumiere` | Lumière 2.0 | light | Playfair Display (Butler once licensed) / Inter | soft | Luxurious and bright: ivory, full-screen photo hero with a glass booking bar, navy bands and cards, champagne-gold buttons. Faithful adaptation of the **licensed Luxorefi** Webflow template (owner's licence, 25 Sep); handoff in `Documents\hh-template-handoffs\luxorefi-lab` |
 
-Built by engineering on 24 September as the first set; a designer will add and refine templates within this contract.
+Built by engineering on 24 September as the first set; Lumière added on 25 September from a licensed template. A template may hide an optional element that is also shown elsewhere (Lumière hides the one-line room meta when the facts list is present) but never content that exists only there.
+
+Licensed templates: the licence file and its scope (many client sites) are the owner's; the template's own assets (icons, fonts, photos) are never copied into the repository — the look is rebuilt with our tokens, our icon set and open-licence fonts.
 
 ## 7. Who does what
 

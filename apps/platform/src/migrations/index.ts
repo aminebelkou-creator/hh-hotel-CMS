@@ -13,6 +13,8 @@ import * as migration_20260925_043753_phase3_generation_provenance from './20260
 import * as migration_20260925_044352_phase3_brand_proposal from './20260925_044352_phase3_brand_proposal';
 import * as migration_20260925_050204_phase4_issues_audit_log from './20260925_050204_phase4_issues_audit_log';
 import * as migration_20260925_050923_phase5_design_channel from './20260925_050923_phase5_design_channel';
+import * as migration_20260925_061743_lumiere_blocks from './20260925_061743_lumiere_blocks';
+import * as migration_20260925_062437_lumiere_template from './20260925_062437_lumiere_template';
 
 export const migrations = [
   {
@@ -88,6 +90,16 @@ export const migrations = [
   {
     up: migration_20260925_050923_phase5_design_channel.up,
     down: migration_20260925_050923_phase5_design_channel.down,
-    name: '20260925_050923_phase5_design_channel'
+    name: '20260925_050923_phase5_design_channel',
+  },
+  {
+    up: migration_20260925_061743_lumiere_blocks.up,
+    down: migration_20260925_061743_lumiere_blocks.down,
+    name: '20260925_061743_lumiere_blocks',
+  },
+  {
+    up: migration_20260925_062437_lumiere_template.up,
+    down: migration_20260925_062437_lumiere_template.down,
+    name: '20260925_062437_lumiere_template'
   },
 ];

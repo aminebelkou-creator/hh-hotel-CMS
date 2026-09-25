@@ -1,0 +1,86 @@
+{
+  "$description": "Lumière 2.0.0 (light): Luxurious and bright: ivory pages, a full-screen photo hero with a glass booking bar, navy bands and cards, champagne-gold buttons, large serif headlines. Suits upscale boutique and resort hotels.",
+  "color": {
+    "paper": {
+      "$type": "color",
+      "$value": "#fdf7f3"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": "#fcfcfc"
+    },
+    "tint": {
+      "$type": "color",
+      "$value": "#fdf7f3"
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "#030303"
+    },
+    "muted": {
+      "$type": "color",
+      "$value": "#45423f"
+    },
+    "line": {
+      "$type": "color",
+      "$value": "#d9d2cc"
+    },
+    "accent": {
+      "$type": "color",
+      "$value": "#d5b475"
+    },
+    "inverse": {
+      "$type": "color",
+      "$value": "#0e1825"
+    },
+    "inverseInk": {
+      "$type": "color",
+      "$value": "#fcfcfc"
+    },
+    "inverseMuted": {
+      "$type": "color",
+      "$value": "#c7ccd4"
+    },
+    "accentInk": {
+      "$type": "color",
+      "$value": "#000000"
+    },
+    "accentText": {
+      "$type": "color",
+      "$value": "#816d47"
+    },
+    "focus": {
+      "$type": "color",
+      "$value": "#1a5fb4"
+    }
+  },
+  "font": {
+    "heading": {
+      "$type": "fontFamily",
+      "$value": "playfair"
+    },
+    "body": {
+      "$type": "fontFamily",
+      "$value": "inter"
+    }
+  },
+  "radius": {
+    "card": {
+      "$type": "dimension",
+      "$value": "14px"
+    },
+    "media": {
+      "$type": "dimension",
+      "$value": "10px"
+    },
+    "button": {
+      "$type": "dimension",
+      "$value": "999px"
+    }
+  },
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "template": {
+    "$type": "string",
+    "$value": "lumiere"
+  }
+}

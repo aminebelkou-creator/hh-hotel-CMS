@@ -8,3 +8,5 @@ pnpm exec tsx src/design/export-tokens.ts ../../docs/design-tokens
 ```
 
 Rules: [`../11-design-contract.md`](../11-design-contract.md). Brief for designers: [`../14-designer-brief.md`](../14-designer-brief.md).
+
+- `lumiere.tokens.json`: Lumière 2.0 (licensed Luxorefi adaptation).

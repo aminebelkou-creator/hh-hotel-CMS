@@ -169,6 +169,37 @@ body.hh-site { margin: 0; }
 .hh-policies dd { margin: 0; color: var(--hh-muted); }
 .hh-footer-legal { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 32px; font-size: .85rem; }
 
+/* Structural elements added for licensed templates (docs/11 §5): base look, tokens only. */
+.hh-section-head { margin-bottom: 8px; }
+.hh-section-head--center { text-align: center; }
+.hh-section-head--center .hh-section-title { margin-left: auto; margin-right: auto; }
+.hh-section-head--split { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.hh-hero-rating { display: flex; align-items: center; gap: 10px; margin: 0 0 .8em; font-size: .95rem; }
+.hh-stars { color: var(--hh-accent); letter-spacing: 2px; }
+.hh-booking-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end; margin: 24px auto 0; padding: 18px; background: var(--hh-card); color: var(--hh-ink); border: 1px solid var(--hh-line); border-radius: var(--hh-radius); position: relative; z-index: 1; }
+.hh-booking-field { margin: 0; }
+.hh-booking-field label { display: block; font-size: .8rem; color: var(--hh-muted); margin-bottom: 6px; }
+.hh-booking-field input, .hh-booking-field select { width: 100%; padding: 10px 12px; border: 1px solid var(--hh-line); border-radius: var(--hh-radius-media); background: var(--hh-card); color: var(--hh-ink); font: inherit; }
+.hh-booking-bar button { padding: 12px 18px; border: 0; border-radius: var(--hh-radius-button); background: var(--hh-accent); color: var(--hh-accent-ink); font-weight: 600; cursor: pointer; }
+.hh-banners-list { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 18px; }
+.hh-banner-inner { position: relative; display: flex; align-items: center; justify-content: center; min-height: 200px; border-radius: var(--hh-radius); overflow: hidden; color: #ffffff; text-decoration: none; }
+.hh-banner-inner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hh-banner-inner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, .15), rgba(0, 0, 0, .65)); }
+.hh-banner-inner h3 { position: relative; z-index: 1; margin: 0; color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+.hh-checklist { list-style: none; padding: 0; margin: 0 0 1.4em; display: grid; gap: 8px; }
+.hh-checklist li { position: relative; padding-left: 28px; }
+.hh-checklist li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--hh-accent-text); font-weight: 700; }
+.hh-feature-icon { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 50%; background: var(--hh-tint); color: var(--hh-accent-text); margin-bottom: 12px; }
+.hh-feature-icon svg { width: 22px; height: 22px; }
+.hh-room-media { position: relative; }
+.hh-room-tag { position: absolute; right: 14px; bottom: 14px; padding: 4px 12px; background: var(--hh-card); color: var(--hh-ink); border-radius: var(--hh-radius-button); font-size: .8rem; font-weight: 600; }
+.hh-room-facts { list-style: none; margin: 0 0 .8em; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .9rem; color: var(--hh-muted); }
+.hh-room-facts li { display: inline-flex; align-items: center; gap: 6px; }
+.hh-room-facts svg { width: 18px; height: 18px; flex: none; }
+.hh-room:not(.hh-room--detailed) .hh-room-meta:has(+ .hh-room-facts) { display: none; }
+.hh-media-band { height: clamp(240px, 45vw, 560px); overflow: hidden; }
+.hh-media-band img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
 /* ── Template: Maison (classic, warm) ─────────────────────────────────────────
    The base rules above are Maison; nothing to override. */
 
@@ -233,6 +264,271 @@ body.hh-site { margin: 0; }
   .hh-btn:hover { transform: none; }
 }
 
+/* ── Template: Lumière (luxurious, bright) ─────────────────────────────────
+   Faithful adaptation of the licensed Luxorefi Webflow template (licence bought by the owner,
+   25 Sep 2026; handoff in Documents\hh-template-handoffs\luxorefi-lab). Values from the
+   template's own stylesheet: 500-weight serif headings, 20px body, 1320px container, 16px
+   radius, gold accent, navy bands, ivory paper. Tokens only, except white/black over photos and
+   the glass booking bar. Headings use Playfair Display until a web licence for Butler is on file. */
+[data-template='lumiere'] {
+  --hh-heading-weight: 500; --hh-heading-tracking: 0;
+  --hh-wrap: 1368px;                        /* 1320px content + 2 x 24px gutters */
+  --lx-r: calc(var(--hh-radius) * 1.143);   /* 16px with "soft" corners */
+  --lx-r-btn: calc(var(--hh-radius) * .572);/* 8px */
+  --lx-r-chip: calc(var(--hh-radius) * .286);/* 4px */
+  --lx-gap: 135px;                          /* section spacing >= 1440 */
+  --lx-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6.5 6.5 18'/%3E%3Cpath d='M8.5 6h10v10'/%3E%3C/svg%3E");
+  font-size: 20px; line-height: 1.5;
+}
+[data-template='lumiere'] h1, [data-template='lumiere'] h2, [data-template='lumiere'] h3, [data-template='lumiere'] h4 { line-height: 1.25; }
+[data-template='lumiere'] .hh-section { padding: var(--lx-gap) 0; }
+[data-template='lumiere'] .hh-section + .hh-section { padding-top: 0; }
+[data-template='lumiere'] .hh-section-title { font-size: 64px; margin-bottom: 0; }
+[data-template='lumiere'] .hh-lead { font-size: 20px; color: var(--hh-ink); }
+
+/* Labels: "(LABEL)", Inter 18px, uppercase, ink */
+[data-template='lumiere'] .hh-eyebrow { color: var(--hh-ink); font-size: 18px; font-weight: 400; letter-spacing: 0; text-transform: uppercase; margin-bottom: 24px; }
+[data-template='lumiere'] .hh-eyebrow::before { content: '(' / ''; }
+[data-template='lumiere'] .hh-eyebrow::after { content: ')' / ''; }
+
+/* Buttons: label + 56x46 icon box with the arrow (mask, coloured by tokens) */
+[data-template='lumiere'] .hh-btn,
+[data-template='lumiere'] .hh-split .hh-link-arrow,
+[data-template='lumiere'] .hh-section-head .hh-link-arrow { position: relative; display: inline-flex; align-items: center; gap: 25px; padding: 4px 4px 4px 19px; min-height: 56px; border: 1px solid var(--hh-accent); border-radius: var(--lx-r-btn); background: var(--hh-accent); color: var(--hh-accent-ink) !important; font-size: 20px; font-weight: 500; letter-spacing: 0; line-height: 1.4; text-decoration: none; transition: background-color .3s, color .3s; }
+[data-template='lumiere'] .hh-btn::after,
+[data-template='lumiere'] .hh-split .hh-link-arrow::after,
+[data-template='lumiere'] .hh-section-head .hh-link-arrow::after { content: '' / ''; flex: none; width: 56px; height: 46px; border-radius: var(--lx-r-chip); background: var(--hh-accent); }
+[data-template='lumiere'] .hh-btn::before,
+[data-template='lumiere'] .hh-split .hh-link-arrow::before,
+[data-template='lumiere'] .hh-section-head .hh-link-arrow::before { content: '' / ''; position: absolute; z-index: 1; right: 20px; top: 50%; width: 24px; height: 24px; margin-top: -12px; background: var(--hh-accent-ink); -webkit-mask: var(--lx-arrow) center / contain no-repeat; mask: var(--lx-arrow) center / contain no-repeat; transition: transform .25s; }
+[data-template='lumiere'] .hh-btn:hover { transform: none; box-shadow: none; }
+[data-template='lumiere'] .hh-btn:hover::before, [data-template='lumiere'] .hh-link-arrow:hover::before { transform: translate(2px, -2px); }
+/* "style two": light button with an ink border (links inside sections) */
+[data-template='lumiere'] .hh-split .hh-link-arrow, [data-template='lumiere'] .hh-section-head .hh-link-arrow { border-color: var(--hh-ink); background: var(--hh-card); color: var(--hh-ink) !important; }
+
+/* Header: over the photo hero; menu | centred name | book button */
+[data-template='lumiere'] .hh-header { background: var(--hh-paper); border: 0; backdrop-filter: none; }
+[data-template='lumiere']:has(#main > .hh-hero--image:first-child) .hh-header { position: absolute; left: 0; right: 0; top: 0; background: transparent; color: #fcfcfc; }
+[data-template='lumiere']:has(#main > .hh-hero--image:first-child) .hh-brand-tag { color: rgba(252, 252, 252, .85); }
+[data-template='lumiere']:has(#main > .hh-hero--image:first-child) .hh-lang { color: #fcfcfc; }
+[data-template='lumiere']:has(#main > .hh-hero--image:first-child) .hh-burger summary span { background: #fcfcfc; }
+[data-template='lumiere']:has(#main > .hh-hero--image:first-child) .hh-header :focus-visible { outline-color: #fcfcfc; }
+[data-template='lumiere'] .hh-header-inner { min-height: 0; padding-top: 40px; padding-bottom: 40px; }
+[data-template='lumiere'] .hh-brand-name { font-size: 30px; line-height: 1.05; }
+[data-template='lumiere'] .hh-brand-tag { font-size: 12px; letter-spacing: .12em; margin-top: 4px; }
+[data-template='lumiere'] .hh-nav { font-size: 16px; gap: 50px; }
+[data-template='lumiere'] .hh-nav a { border: 0; }
+[data-template='lumiere'] .hh-nav a[aria-current='page'] { text-decoration: underline; text-underline-offset: 4px; }
+[data-template='lumiere'] .hh-header-cta { font-size: 16px; min-height: 48px; }
+[data-template='lumiere'] .hh-header-cta::after { width: 42px; height: 38px; }
+[data-template='lumiere'] .hh-nav-mobile { color: var(--hh-ink); }
+@media (min-width: 1181px) {
+  [data-template='lumiere'] .hh-header-inner { display: grid; grid-template-columns: 1fr auto 1fr; }
+  [data-template='lumiere'] .hh-nav { grid-column: 1; grid-row: 1; justify-self: start; }
+  [data-template='lumiere'] .hh-brand { grid-column: 2; grid-row: 1; margin: 0; text-align: center; justify-content: center; }
+  [data-template='lumiere'] .hh-header-cta { grid-column: 3; grid-row: 1; justify-self: end; }
+}
+
+/* Hero: full screen, black top/bottom gradient, centred, glass booking bar */
+[data-template='lumiere'] .hh-hero { text-align: center; }
+[data-template='lumiere'] .hh-hero--image { min-height: 100svh; display: flex; flex-direction: column; align-items: stretch; padding: 157px 0 41px; background: #030303; color: #fcfcfc; }
+[data-template='lumiere'] .hh-hero--image::after { background: linear-gradient(180deg, #030303 3%, rgba(3, 3, 3, .38) 50%, #030303 97%); }
+[data-template='lumiere'] .hh-hero-inner { display: flex; flex-direction: column; align-items: center; }
+[data-template='lumiere'] .hh-hero h1, [data-template='lumiere'] .hh-hero h2 { font-size: 76px; line-height: 1.2; max-width: 14ch; margin: 23px 0 48px; }
+[data-template='lumiere'] .hh-hero-sub { font-size: 20px; max-width: 46ch; margin: -28px 0 40px; opacity: 1; }
+[data-template='lumiere'] .hh-hero--image .hh-btn--light { background: var(--hh-accent); color: var(--hh-accent-ink) !important; border-color: var(--hh-accent); }
+[data-template='lumiere'] .hh-hero:not(.hh-hero--image) { padding: 120px 0 80px; background: var(--hh-paper); }
+/* Without a photo there is no dark glass to sit on: the booking bar becomes a navy band (same white text). */
+[data-template='lumiere'] .hh-hero:not(.hh-hero--image) .hh-booking-bar { background: var(--hh-inverse); margin-top: 40px; -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* NEW (hero field "rating"): stars from the hotel's classification fact */
+[data-template='lumiere'] .hh-hero-rating { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 20px; }
+[data-template='lumiere'] .hh-stars { letter-spacing: 4px; font-size: 22px; }
+/* NEW (hero option "booking bar"): a GET form to the site's booking link */
+[data-template='lumiere'] .hh-booking-bar { position: relative; z-index: 1; margin-top: auto; padding: 35px 28px; border-radius: var(--lx-r); background: rgba(252, 252, 252, .1); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); display: grid; grid-template-columns: repeat(4, 1fr); gap: 35px; text-align: left; }
+[data-template='lumiere'] .hh-booking-field { position: relative; margin: 0; }
+[data-template='lumiere'] .hh-booking-bar { align-items: end; }
+[data-template='lumiere'] .hh-booking-field label { display: block; margin: 0 0 8px 2px; font-size: 14px; line-height: 1.2; color: #fcfcfc; }
+[data-template='lumiere'] .hh-booking-field input, [data-template='lumiere'] .hh-booking-field select { width: 100%; height: 56px; padding: 12px 15px 12px 20px; border: 1px solid #fcfcfc; border-radius: var(--lx-r-btn); background: transparent; color: #fcfcfc; font: inherit; font-size: 18px; color-scheme: dark; }
+[data-template='lumiere'] .hh-booking-field select option { color: #030303; }
+[data-template='lumiere'] .hh-booking-bar button { height: 56px; border: 1px solid transparent; border-radius: var(--lx-r-btn); background: var(--hh-accent); color: var(--hh-accent-ink); font: inherit; font-size: 18px; cursor: pointer; transition: background-color .3s, border-color .3s; }
+[data-template='lumiere'] .hh-booking-bar button:hover { background: #fcfcfc; border-color: var(--hh-accent); color: #030303; }
+[data-template='lumiere'] .hh-booking-bar :focus-visible { outline-color: #fcfcfc; }
+
+/* Text and image (about / extra facilities): two columns, 16px photo */
+[data-template='lumiere'] .hh-split { display: flex; gap: 100px; align-items: center; }
+[data-template='lumiere'] .hh-split > * { flex: 1 1 0; min-width: 0; }
+[data-template='lumiere'] .hh-split-text > p:not(.hh-eyebrow) { margin: 24px 0 40px; }
+[data-template='lumiere'] .hh-split-text > p:not(.hh-eyebrow) + p { margin-top: -24px; }
+[data-template='lumiere'] .hh-split-media img { border-radius: var(--lx-r); aspect-ratio: 645 / 700; }
+[data-template='lumiere'] .hh-split--left { gap: 112px; }
+[data-template='lumiere'] .hh-split--left .hh-split-media { order: -1; }
+/* NEW (textImage field "points"): checklist with gold ticks */
+[data-template='lumiere'] .hh-checklist { list-style: none; padding: 0; margin: -8px 0 40px; display: grid; gap: 10px; }
+[data-template='lumiere'] .hh-checklist li { position: relative; padding-left: 34px; }
+[data-template='lumiere'] .hh-checklist li::before { content: '' / ''; position: absolute; left: 0; top: 5px; width: 20px; height: 20px; border-radius: 50%; background: var(--hh-accent); }
+[data-template='lumiere'] .hh-checklist li::after { content: '' / ''; position: absolute; left: 0; top: 5px; width: 20px; height: 20px; background: var(--hh-accent-ink); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 10.2 2.6 2.6L14 7.4'/%3E%3C/svg%3E") center / 20px no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 10.2 2.6 2.6L14 7.4'/%3E%3C/svg%3E") center / 20px no-repeat; }
+
+/* Section heads (NEW wrapper for heading + optional link, used by banners/rooms) */
+[data-template='lumiere'] .hh-section-head { margin-bottom: 40px; }
+[data-template='lumiere'] .hh-section-head--center { display: flex; flex-direction: column; align-items: center; text-align: center; }
+[data-template='lumiere'] .hh-section-head--center .hh-section-title { max-width: 900px; text-wrap: balance; }
+[data-template='lumiere'] .hh-section-head--split { display: flex; justify-content: space-between; align-items: flex-end; gap: 50px; }
+
+/* NEW block "banners" (accommodation): navy band, framed photo strips, title on hover */
+[data-template='lumiere'] .hh-banners { background: var(--hh-inverse); color: var(--hh-inverse-ink); padding: var(--lx-gap) 0 !important; margin-bottom: var(--lx-gap); }
+[data-template='lumiere'] .hh-banners .hh-eyebrow { color: var(--hh-inverse-ink); }
+[data-template='lumiere'] .hh-banners-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 30px; }
+[data-template='lumiere'] .hh-banner { border: 1px solid var(--hh-inverse-ink); border-radius: var(--lx-r); padding: 9px; }
+[data-template='lumiere'] .hh-banner-inner { position: relative; display: flex; align-items: center; justify-content: center; height: 240px; border-radius: var(--lx-r); overflow: hidden; color: #fcfcfc; text-decoration: none; }
+[data-template='lumiere'] .hh-banner-inner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .8s ease; }
+[data-template='lumiere'] .hh-banner-inner::after { content: ''; position: absolute; inset: 0; background: rgba(3, 3, 3, .6); opacity: 0; transition: opacity .5s; }
+[data-template='lumiere'] .hh-banner-inner h3 { position: relative; z-index: 1; margin: 0; font-size: 32px; color: #fcfcfc; opacity: 0; transition: opacity .5s; }
+[data-template='lumiere'] .hh-banner-inner:hover::after, [data-template='lumiere'] .hh-banner-inner:focus-visible::after,
+[data-template='lumiere'] .hh-banner-inner:hover h3, [data-template='lumiere'] .hh-banner-inner:focus-visible h3 { opacity: 1; }
+[data-template='lumiere'] .hh-banner-inner:hover img { transform: scale(1.04); }
+[data-template='lumiere'] .hh-banners :focus-visible { outline-color: var(--hh-inverse-ink); }
+@media (hover: none) { [data-template='lumiere'] .hh-banner-inner::after, [data-template='lumiere'] .hh-banner-inner h3 { opacity: 1; } }
+
+/* Rooms (cards): photo 645:600, category tag bottom-right, name + facts under */
+[data-template='lumiere'] .hh-room-grid { grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 0; }
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) { background: transparent; border: 0; border-radius: 0; overflow: visible; }
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) .hh-room-media { position: relative; border-radius: var(--lx-r); overflow: hidden; margin-bottom: 20px; }
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) .hh-room-media img { aspect-ratio: 645 / 600; transition: transform .8s ease; }
+[data-template='lumiere'] .hh-room:hover .hh-room-media img { transform: scale(1.05); }
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) .hh-room-body { padding: 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 40px; }
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) .hh-room-body > .hh-eyebrow,
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) .hh-room-body > p:not(.hh-room-meta),
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) .hh-room-meta:has(+ .hh-room-facts) { display: none; }
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) .hh-link-arrow { position: absolute; inset: 0 0 auto; height: 100%; font-size: 0; border: 0; background: none; }
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) { position: relative; }
+[data-template='lumiere'] .hh-room:not(.hh-room--detailed) .hh-link-arrow::after { content: none; }
+[data-template='lumiere'] .hh-room h3 { font-size: 24px; margin: 0; line-height: 1.3; }
+[data-template='lumiere'] .hh-room-meta { margin: 0; color: var(--hh-ink); font-size: 18px; }
+/* NEW (rooms card): category tag on the photo, and facts with icons */
+[data-template='lumiere'] .hh-room-tag { position: absolute; right: 30px; bottom: 30px; padding: 4px 15px 4px 33px; background: #fcfcfc; color: #060614; font-family: var(--hh-serif); font-size: 24px; line-height: 1.3; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 16px 50%); }
+[data-template='lumiere'] .hh-room-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 18px; }
+[data-template='lumiere'] .hh-room-facts li { display: flex; align-items: center; gap: 10px; }
+[data-template='lumiere'] .hh-room-facts svg { width: 20px; height: 20px; flex: none; }
+[data-template='lumiere'] .hh-room--detailed { border: 0; background: var(--hh-card); border-radius: var(--lx-r); }
+
+/* Features (hotel facilities): centred head, navy cards 3 across */
+[data-template='lumiere'] .hh-section--tint { background: var(--hh-paper); padding-top: 0 !important; }
+[data-template='lumiere'] .hh-section--tint .hh-wrap { display: flex; flex-direction: column; align-items: center; }
+[data-template='lumiere'] .hh-section--tint .hh-section-title { text-align: center; margin-bottom: 24px; }
+[data-template='lumiere'] .hh-section--tint .hh-lead { text-align: center; max-width: 460px; margin: 0; }
+[data-template='lumiere'] .hh-features { width: 100%; grid-template-columns: repeat(3, 1fr); gap: 40px 30px; margin-top: 40px; }
+[data-template='lumiere'] .hh-features li { background: var(--hh-inverse); color: var(--hh-inverse-ink); border: 0; border-radius: var(--lx-r); padding: 40px; }
+[data-template='lumiere'] .hh-features h3 { color: var(--hh-inverse-ink); font-size: 32px; margin: 24px 0 48px; }
+[data-template='lumiere'] .hh-features p { color: var(--hh-inverse-ink); font-size: 20px; }
+/* NEW (features item field "icon"): 58px light disc with a line icon */
+[data-template='lumiere'] .hh-feature-icon { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; background: var(--hh-inverse-ink); color: var(--hh-inverse); }
+[data-template='lumiere'] .hh-feature-icon svg { width: 26px; height: 26px; }
+
+/* NEW block "media band": full-width photo (or video) */
+[data-template='lumiere'] .hh-media-band { position: relative; height: 720px; overflow: hidden; background: #030303; }
+[data-template='lumiere'] .hh-media-band img, [data-template='lumiere'] .hh-media-band video { width: 100%; height: 100%; object-fit: cover; }
+
+/* Quote as a testimonial card (NEW block "testimonials" reuses this card) */
+[data-template='lumiere'] .hh-quote { text-align: left; max-width: var(--hh-wrap); }
+[data-template='lumiere'] .hh-quote blockquote { width: min(678px, 100%); background: var(--hh-inverse); color: var(--hh-inverse-ink); border-radius: var(--lx-r); padding: 40px 50px 110px; margin: 0; font-family: var(--hh-sans); font-style: normal; font-size: 20px; line-height: 1.5; }
+[data-template='lumiere'] .hh-quote blockquote::before { content: '' / ''; display: block; width: 36px; height: 28px; margin-bottom: 28px; background: var(--hh-accent); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 28'%3E%3Cpath d='M0 28V16Q0 7 5 3T16 0v6q-4 0-6 2.5T8 14h8v14zm20 0V16q0-9 5-13t11-3v6q-4 0-6 2.5T28 14h8v14z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 28'%3E%3Cpath d='M0 28V16Q0 7 5 3T16 0v6q-4 0-6 2.5T8 14h8v14zm20 0V16q0-9 5-13t11-3v6q-4 0-6 2.5T28 14h8v14z'/%3E%3C/svg%3E") center / contain no-repeat; }
+[data-template='lumiere'] .hh-quote blockquote::after { content: none; }
+[data-template='lumiere'] .hh-quote figcaption { position: relative; margin: -86px 0 0 50px; color: var(--hh-inverse-ink); font-family: var(--hh-serif); font-weight: 500; font-size: 20px; letter-spacing: 0; text-transform: none; width: min(578px, calc(100% - 100px)); }
+
+/* Gallery: two alternating rows 1.2 / .8 then .8 / 1.2 */
+[data-template='lumiere'] .hh-gallery { grid-template-columns: repeat(10, 1fr); grid-auto-rows: 530px; gap: 30px; margin-top: 0; }
+[data-template='lumiere'] .hh-gallery figure { grid-column: span 4; border-radius: var(--lx-r); overflow: hidden; }
+[data-template='lumiere'] .hh-gallery figure:nth-child(4n+1), [data-template='lumiere'] .hh-gallery figure:nth-child(4n+4) { grid-column: span 6; }
+[data-template='lumiere'] .hh-gallery img { height: 100%; aspect-ratio: auto; border-radius: 0; transition: transform .8s ease; }
+[data-template='lumiere'] .hh-gallery figure:hover img { transform: scale(1.04); }
+[data-template='lumiere'] .hh-section:has(> .hh-wrap > .hh-gallery) .hh-section-title { text-align: center; margin-bottom: 40px; }
+
+/* Call to action: dark photo band, left-to-right fade, left aligned */
+[data-template='lumiere'] .hh-cta { text-align: left; padding: 120px 0; background: #030303; color: #fcfcfc; }
+[data-template='lumiere'] .hh-cta--image > img { opacity: 1; }
+[data-template='lumiere'] .hh-cta--image::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #030303 10%, rgba(3, 3, 3, .6) 55%, rgba(3, 3, 3, .15)); }
+[data-template='lumiere'] .hh-cta-inner { position: relative; z-index: 1; max-width: var(--hh-wrap); }
+[data-template='lumiere'] .hh-cta-inner > * { max-width: 620px; }
+[data-template='lumiere'] .hh-cta h2 { font-size: 64px; }
+[data-template='lumiere'] .hh-cta p { font-size: 20px; opacity: 1; }
+[data-template='lumiere'] .hh-cta .hh-btn { background: var(--hh-accent); color: var(--hh-accent-ink) !important; }
+[data-template='lumiere'] .hh-cta :focus-visible { outline-color: #fcfcfc; }
+
+/* Contact, rules, FAQ, forms */
+[data-template='lumiere'] .hh-facts, [data-template='lumiere'] .hh-policies > div { background: rgba(203, 161, 83, .1); border: 1px solid rgba(3, 3, 3, .25); border-radius: 8px; }
+[data-template='lumiere'] .hh-policies dt { font-size: 28px; }
+[data-template='lumiere'] .hh-faq summary { font-family: var(--hh-serif); font-weight: 500; font-size: 24px; }
+[data-template='lumiere'] .hh-faq details { border-color: rgba(3, 3, 3, .25); padding: 22px 0; }
+[data-template='lumiere'] .hh-map { border-radius: var(--lx-r); }
+[data-template='lumiere'] .hh-form-field input, [data-template='lumiere'] .hh-form-field textarea { border-radius: 8px; border-color: rgba(3, 3, 3, .25); min-height: 56px; }
+
+/* Footer: navy, serif column titles */
+[data-template='lumiere'] .hh-footer { padding: 125px 0 0; font-size: 18px; }
+[data-template='lumiere'] .hh-footer-grid { grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 20px; padding-bottom: 135px; }
+[data-template='lumiere'] .hh-footer-name { font-size: 32px; margin-bottom: 15px; }
+[data-template='lumiere'] .hh-footer-title { font-family: var(--hh-serif); font-size: 32px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--hh-inverse-ink); margin-bottom: 20px; }
+[data-template='lumiere'] .hh-footer p { margin-bottom: 15px; }
+[data-template='lumiere'] .hh-footer a:hover { color: var(--hh-accent); text-decoration: none; }
+[data-template='lumiere'] .hh-footer-legal { margin-top: 0; padding-top: 24px; border-top: 1px solid rgba(252, 252, 252, .2); font-size: 18px; }
+[data-template='lumiere'] .hh-footer-meta { margin-top: 0; border: 0; padding: 12px 0 24px; font-size: 16px; }
+[data-template='lumiere'] .hh-footer :focus-visible { outline-color: var(--hh-inverse-ink); }
+
+/* Breakpoints (the template's own: 1440 / 1280 / 991 / 767) */
+@media (max-width: 1439px) {
+  [data-template='lumiere'] { --hh-wrap: 1218px; --lx-gap: 120px; }
+  [data-template='lumiere'] .hh-section-title, [data-template='lumiere'] .hh-cta h2 { font-size: 56px; }
+  [data-template='lumiere'] .hh-hero h1, [data-template='lumiere'] .hh-hero h2 { font-size: 68px; margin: 15px 0 30px; }
+  [data-template='lumiere'] .hh-hero-sub { margin-top: -12px; }
+  [data-template='lumiere'] .hh-hero--image { padding-top: 140px; }
+  [data-template='lumiere'] .hh-split { gap: 60px; }
+  [data-template='lumiere'] .hh-split--left { gap: 80px; }
+  [data-template='lumiere'] .hh-features h3 { font-size: 30px; }
+  [data-template='lumiere'] .hh-booking-bar { padding: 24px; gap: 20px; }
+  [data-template='lumiere'] .hh-media-band { height: 500px; }
+  [data-template='lumiere'] .hh-gallery { grid-auto-rows: 460px; }
+}
+@media (max-width: 1279px) {
+  [data-template='lumiere'] { --hh-wrap: 1008px; --lx-gap: 100px; }
+  [data-template='lumiere'] .hh-section-title, [data-template='lumiere'] .hh-cta h2 { font-size: 48px; }
+  [data-template='lumiere'] .hh-hero h1, [data-template='lumiere'] .hh-hero h2 { font-size: 56px; }
+  [data-template='lumiere'] .hh-features { grid-template-columns: 1fr 1fr; gap: 20px; }
+  [data-template='lumiere'] .hh-booking-bar { grid-template-columns: 1fr 1fr; }
+  [data-template='lumiere'] .hh-gallery { grid-auto-rows: 360px; }
+  [data-template='lumiere'] .hh-nav { gap: 28px; }
+}
+@media (max-width: 991px) {
+  [data-template='lumiere'] { --lx-gap: 80px; font-size: 18px; }
+  [data-template='lumiere'] .hh-section-title, [data-template='lumiere'] .hh-cta h2 { font-size: 40px; }
+  [data-template='lumiere'] .hh-hero h1, [data-template='lumiere'] .hh-hero h2 { font-size: 46px; }
+  [data-template='lumiere'] .hh-split, [data-template='lumiere'] .hh-split--left { flex-direction: column; align-items: stretch; gap: 40px; }
+  [data-template='lumiere'] .hh-footer-grid { grid-template-columns: 1fr 1fr; }
+  [data-template='lumiere'] .hh-header-cta { display: none; }
+}
+@media (max-width: 767px) {
+  [data-template='lumiere'] { --lx-gap: 64px; }
+  [data-template='lumiere'] .hh-section-title, [data-template='lumiere'] .hh-cta h2 { font-size: 34px; }
+  [data-template='lumiere'] .hh-hero h1, [data-template='lumiere'] .hh-hero h2 { font-size: 38px; }
+  [data-template='lumiere'] .hh-hero--image { padding-top: 150px; }
+  [data-template='lumiere'] .hh-banner-inner::after, [data-template='lumiere'] .hh-banner-inner h3 { opacity: 1; }
+  [data-template='lumiere'] .hh-banner-inner h3 { font-size: 26px; }
+  [data-template='lumiere'] .hh-header-inner { padding-top: 24px; padding-bottom: 24px; }
+  [data-template='lumiere'] .hh-booking-bar { grid-template-columns: 1fr; gap: 12px; padding: 16px; }
+  [data-template='lumiere'] .hh-room-grid, [data-template='lumiere'] .hh-features { grid-template-columns: 1fr; }
+  [data-template='lumiere'] .hh-section-head--split { flex-direction: column; align-items: flex-start; gap: 24px; }
+  [data-template='lumiere'] .hh-banner-inner { height: 160px; }
+  [data-template='lumiere'] .hh-media-band { height: 320px; }
+  [data-template='lumiere'] .hh-gallery { grid-template-columns: 1fr; grid-auto-rows: 260px; }
+  [data-template='lumiere'] .hh-gallery figure, [data-template='lumiere'] .hh-gallery figure:nth-child(n) { grid-column: auto; }
+  [data-template='lumiere'] .hh-quote blockquote { padding: 30px 26px 100px; }
+  [data-template='lumiere'] .hh-quote figcaption { margin-left: 26px; }
+  [data-template='lumiere'] .hh-footer-grid { grid-template-columns: 1fr; padding-bottom: 64px; }
+  [data-template='lumiere'] .hh-footer { padding-top: 80px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-template='lumiere'] .hh-btn::before, [data-template='lumiere'] .hh-banner-inner img, [data-template='lumiere'] .hh-banner-inner::after, [data-template='lumiere'] .hh-banner-inner h3, [data-template='lumiere'] .hh-room-media img, [data-template='lumiere'] .hh-gallery img { transition: none; }
+  [data-template='lumiere'] .hh-room:hover .hh-room-media img, [data-template='lumiere'] .hh-gallery figure:hover img, [data-template='lumiere'] .hh-btn:hover::before, [data-template='lumiere'] .hh-banner-inner:hover img { transform: none; }
+}
+
 /* ---- Canary: the next version of each template, seen only by sites on the canary channel ----
    Upgrade path (docs/11 §upgrades): write the new rules here under [data-canary], run the gates
    with GATE_CHANNEL=canary, watch customer zero for a few days, then move the rules into the
@@ -240,3 +536,4 @@ body.hh-site { margin: 0; }
 [data-template='maison'][data-canary] {}
 [data-template='atelier'][data-canary] {}
 [data-template='soiree'][data-canary] {}
+[data-template='lumiere'][data-canary] {}

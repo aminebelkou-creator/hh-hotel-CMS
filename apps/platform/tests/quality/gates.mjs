@@ -9,7 +9,7 @@ import { gzipSync } from 'node:zlib'
 
 const base = (process.argv[2] || process.env.PLATFORM_URL || 'http://localhost:3000').replace(/\/+$/, '')
 const slug = process.argv[3] || 'site-10'
-const templates = (process.env.GATE_TEMPLATES || 'maison,atelier,soiree').split(',')
+const templates = (process.env.GATE_TEMPLATES || 'maison,atelier,soiree,lumiere').split(',')
 // GATE_CHANNEL=canary runs the pages on the canary channel (the next template version, docs/11 §upgrades).
 const channel = process.env.GATE_CHANNEL === 'canary' ? 'canary' : 'stable'
 const pages = [
