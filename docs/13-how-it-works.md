@@ -118,5 +118,6 @@ flowchart LR
 | The owner | [`../HANDOFF.md`](../HANDOFF.md) (state and next actions), [`CHECKLIST.md`](CHECKLIST.md), [`10-roadmap-phases.md`](10-roadmap-phases.md), [`12-strategy-decisions.md`](12-strategy-decisions.md) |
 | An engineer or coding agent | This page, [`../CLAUDE.md`](../CLAUDE.md) (rules), [`09-system-design.md`](09-system-design.md), [`06-release-pipeline-design.md`](06-release-pipeline-design.md), [`11-design-contract.md`](11-design-contract.md) |
 | A designer | [`14-designer-brief.md`](14-designer-brief.md), then [`11-design-contract.md`](11-design-contract.md) and [`screenshots/`](screenshots/README.md) |
+| Giving work to an AI agent or a designer | [`prompts/`](prompts/README.md): ready-to-use example prompts |
 | Evaluating hosting | [`04-edgeone-makers-evaluation.md`](04-edgeone-makers-evaluation.md), [`05-week1-spike-results.md`](05-week1-spike-results.md), [`outreach/`](outreach/) |
 | Reviewing the product | [`01-solution-definition.md`](01-solution-definition.md) (the spec), [`02-90-day-plan.md`](02-90-day-plan.md) (the baseline plan) |

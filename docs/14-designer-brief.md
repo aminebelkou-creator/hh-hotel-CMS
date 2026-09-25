@@ -70,67 +70,9 @@ An engineer or a coding agent implements the design in `apps/platform/src/design
 
 ## 7. Example prompts
 
-### A. Implement a designer's template (for a coding agent in this repository)
+Maintained in [`prompts/`](prompts/README.md):
 
-```text
-You are working in the hh-hotel-CMS repository. Read CLAUDE.md, docs/13-how-it-works.md and
-docs/11-design-contract.md first, and follow them.
-
-Task: add a new site template called "Riviera" (id: riviera), from the designer's handoff in
-docs/design-handoff/riviera/ (tokens JSON, annotated frames, notes).
-
-Do:
-1. Add the template to apps/platform/src/design/templates.ts: palette from the handoff tokens,
-   fonts (from FONT_IDS, or add the new open-licence font to src/design/fonts/ and fonts.ts),
-   corners, scheme, version 1.0.0, English and French descriptions.
-2. Add a "Template: Riviera" section to apps/platform/src/app/(sites)/s/[site]/site.css using
-   only [data-template='riviera'] selectors and --hh-* tokens. Do not change markup in
-   src/site/ or packs/hotel/src/render/. No fixed colours except white/black over photos.
-3. Create a migration for the new enum value (pnpm payload migrate:create), regenerate types
-   and the import map, run tsc.
-4. Run tests/int/design.int.spec.ts and the full local suite; add riviera to
-   tests/visual/templates.mjs and take screenshots; compare them with the handoff frames and
-   list the differences you could not match and why.
-5. Update docs/11-design-contract.md §6, docs/screenshots/README.md and the checklist.
-Stop and ask if the design needs markup changes or a block that does not exist.
-```
-
-### B. Propose a new template when there is no designer (for an AI design assistant)
-
-```text
-Design a website template for small independent hotels by the sea (family-run, 15-40 rooms,
-Mediterranean coast). It will be used by many hotels, each with its own photos and texts, in
-French and English, mostly viewed on phones.
-
-Constraints (from our design contract):
-- Colours only as these tokens: paper (page background), surface (cards), tint (alternate
-  sections), ink (text), muted (secondary text), line (borders), accent (brand colour), inverse,
-  inverseInk, inverseMuted (footer band). Text on every background must reach 4.5:1.
-- Fonts: open licence, self-hosted, Latin subset. Allowed today: Inter, Manrope, Playfair
-  Display, Cormorant Garamond; you may propose one more open-licence font.
-- Corners: square, soft or round.
-- Fixed blocks: header, hero, text and image, text, features, gallery, quote, call to action,
-  rooms (cards or detailed), offers, house rules, FAQ, contact facts, map, footer.
-- Must differ clearly from our existing templates: Maison (cream, serif, classic), Atelier
-  (white, sans-serif, square, split hero), Soirée (dark, gold, italic serif).
-
-Deliver: (1) the token values as W3C design tokens JSON; (2) the font pair and why; (3) for
-each block, how its layout and style differ from a plain stacked layout, in one or two
-sentences; (4) a name and a one-sentence description in English and French; (5) a desktop
-and mobile mock-up of the home page with placeholder photos.
-```
-
-### C. Brief for a freelance designer (email)
-
-```text
-Subject: Website template for independent hotels: brief
-
-We run a managed website service for independent hotels in France. Every hotel's site is built
-from the same blocks; a "template" gives them a look. We have three templates and want [one / two]
-more, for [seaside / mountain / family] hotels.
-
-Please read the attached brief (docs/14-designer-brief.md), the design rules
-(docs/11-design-contract.md), the token files (docs/design-tokens/) and the screenshots of our
-existing templates. Deliverables and the checklist are in sections 4 and 5 of the brief.
-Budget: [...]. Deadline: [...]. We implement the design ourselves; you do not need to write code.
-```
+- [Implement a designer's template](prompts/implement-template.md) — for a coding agent, once the handoff arrives.
+- [Propose a new template](prompts/propose-template.md) — for an AI design assistant, when there is no designer.
+- [Brief a freelance designer](prompts/designer-brief-email.md) — an email to send with this brief.
+- [Propose a template and brand for a hotel](prompts/brand-proposal.md) — choosing among existing templates.

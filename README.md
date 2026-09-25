@@ -2,7 +2,7 @@
 
 **Website-as-a-Service for independent hotels.** A multi-tenant platform that generates a hotel's direct-booking website from its own data, hosts it on managed EU infrastructure, and keeps it current on the hotel's behalf. Part of the **xedge** project.
 
-> **Start here:** [`docs/13-how-it-works.md`](docs/13-how-it-works.md) for how the platform works in plain words · [`HANDOFF.md`](HANDOFF.md) for where things stand and what to do next · [`docs/CHECKLIST.md`](docs/CHECKLIST.md) for progress · [`docs/02-90-day-plan.md`](docs/02-90-day-plan.md) for the plan.
+> **Start here:** [`docs/13-how-it-works.md`](docs/13-how-it-works.md) for how the platform works in plain words · [`HANDOFF.md`](HANDOFF.md) for where things stand and what to do next · [`docs/CHECKLIST.md`](docs/CHECKLIST.md) for progress · [`docs/02-90-day-plan.md`](docs/02-90-day-plan.md) for the plan · [§15 Documentation](#15-documentation) for everything else, including [example prompts](docs/prompts/README.md).
 
 | | |
 | --- | --- |
@@ -359,32 +359,69 @@ Three files, each with one job:
 
 Not in the first 90 days: self-serve signup, billing automation, the control-plane dashboard, the autonomous service loop at fleet scale, agency workspaces, multi-property, a second hosting adapter, or any vertical other than hotels.
 
-## 15. Documents
+## 15. Documentation
+
+All documentation lives in [`docs/`](docs/README.md). Start with the first row that matches you.
+
+**Start here**
 
 | Document | What it is |
 | --- | --- |
-| [`HANDOFF.md`](HANDOFF.md) | Current state, plan deltas, next actions, delta log |
-| [`docs/CHECKLIST.md`](docs/CHECKLIST.md) | Living checklist: 90-day plan items, gates, open decisions, metrics |
-| [`docs/01-solution-definition.md`](docs/01-solution-definition.md) | **Hotelier Website Platform — Solution Definition**: service model, capability map, domain model, architecture, decisions, risks |
-| [`docs/02-90-day-plan.md`](docs/02-90-day-plan.md) | Week-by-week plan to the first paying hotels |
-| [`docs/03-webstudio-evaluation.md`](docs/03-webstudio-evaluation.md) | Prior art: what to take, why not to adopt |
-| [`docs/04-edgeone-makers-evaluation.md`](docs/04-edgeone-makers-evaluation.md) | Hosting: verified facts, quotas, residency, EdgeOne API |
-| [`docs/05-week1-spike-results.md`](docs/05-week1-spike-results.md) | Measured results and findings 1–25: isolation, deploys, Neon, RLS, migrations, CI, content releases |
-| [`docs/06-release-pipeline-design.md`](docs/06-release-pipeline-design.md) | Release pipeline v0: per-site lock, immutable releases, verify, rollback |
+| [`docs/13-how-it-works.md`](docs/13-how-it-works.md) | **How the platform works**, in plain words: one multi-tenant Payload for all hotels, the words we use, what happens when a hotel publishes or a guest visits, where everything lives, common questions, what to read next |
+| [`HANDOFF.md`](HANDOFF.md) | **Where things stand**: current state, plan deltas, next actions, delta log of every session |
+| [`docs/CHECKLIST.md`](docs/CHECKLIST.md) | **Progress**: 90-day plan items, phase lists, gates, open decisions, metrics |
+
+**For the owner and the business**
+
+| Document | What it is |
+| --- | --- |
+| [`docs/01-solution-definition.md`](docs/01-solution-definition.md) | The spec: service model, capabilities, domain model, architecture, decisions, risks |
+| [`docs/02-90-day-plan.md`](docs/02-90-day-plan.md) | The baseline plan, week by week, to the first paying hotels (changes only by decision) |
+| [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) | The next phases (self-service, own domain and templates, generation, operated service, paying hotels) with deliverables |
+| [`docs/12-strategy-decisions.md`](docs/12-strategy-decisions.md) | Strategy decisions (24 Sep): what a hotel gets, domains, plugins, EdgeOne features, security, GDPR and accessibility, email, design |
+| [`docs/outreach/`](docs/outreach/) | Vendor correspondence, starting with the Tencent Makers email |
+
+**For engineers and coding agents**
+
+| Document | What it is |
+| --- | --- |
+| [`CLAUDE.md`](CLAUDE.md) | Non-negotiable rules and known gotchas for anyone changing the code |
+| [`docs/09-system-design.md`](docs/09-system-design.md) | System design, illustrated: context, containers, isolation, ingest, releases, schema changes |
+| [`docs/06-release-pipeline-design.md`](docs/06-release-pipeline-design.md) | Release pipeline: per-site lock, immutable releases, verification, rollback |
 | [`docs/07-content-model-and-hotel-pack.md`](docs/07-content-model-and-hotel-pack.md) | Platform primitives, provenance, locales, hotel pack types |
 | [`docs/08-ingest-spike.md`](docs/08-ingest-spike.md) | Ingest on customer zero: facts, conflicts, site audit |
-| [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) | **Next phases**: from hotelier self-service to five paying hotels, mapped onto the 90-day plan and its gates |
-| [`docs/11-design-contract.md`](docs/11-design-contract.md) | **Design contract**: templates, brand, tokens, contrast gates, fonts; who designs what |
-| [`docs/13-how-it-works.md`](docs/13-how-it-works.md) | **How the platform works**: one multi-tenant Payload, glossary, flows, repository map, common questions, reading guide |
-| [`docs/14-designer-brief.md`](docs/14-designer-brief.md) | **Designer brief** with example prompts; tokens in [`docs/design-tokens/`](docs/design-tokens/) |
-| [`docs/12-strategy-decisions.md`](docs/12-strategy-decisions.md) | **Strategy decisions** (24 Sep): architecture, domains, plugins, EdgeOne features, security, GDPR and accessibility, email, design |
-| [`docs/screenshots/`](docs/screenshots/README.md) | Dated screenshots of the live site and admin |
-| [`docs/09-system-design.md`](docs/09-system-design.md) | **System design, illustrated**: context, containers, isolation, ingest, releases, schema changes, repository map |
 | [`docs/contracts/`](docs/contracts/) | Cross-team contracts: erasure and export, chatbot widget, booking-engine embed |
-| [`docs/outreach/`](docs/outreach/) | Vendor correspondence, starting with the Tencent Makers email |
-| [`CLAUDE.md`](CLAUDE.md) | Rules and gotchas for AI coding agents working in this repository |
 
-The spec is edited as a Claude Docs artifact, *Hotelier Website Platform — Solution Definition*, and exported to `docs/01-solution-definition.md` after each change. The checklist and `HANDOFF.md` in this repository are the operational source of truth; the artifact is the design source of truth.
+**For designers**
+
+| Document | What it is |
+| --- | --- |
+| [`docs/14-designer-brief.md`](docs/14-designer-brief.md) | The brief: what a designer decides, what is fixed, every block, deliverables, checklist |
+| [`docs/11-design-contract.md`](docs/11-design-contract.md) | The rules: templates, brand, tokens, contrast gates, fonts, block classes, who designs what |
+| [`docs/design-tokens/`](docs/design-tokens/) | Each template's colours, fonts and corners in W3C design-token format, and what a hotel can change |
+| [`docs/screenshots/`](docs/screenshots/README.md) | Real hotel content in every template, and dated screenshots of the live site and admin |
+
+**Example prompts** — [`docs/prompts/`](docs/prompts/README.md)
+
+| Prompt | For |
+| --- | --- |
+| [Start a working session](docs/prompts/start-session.md) | A coding agent picking up the next action and finishing with docs updated |
+| [Implement a designer's template](docs/prompts/implement-template.md) | A coding agent, once a designer delivers |
+| [Propose a new template](docs/prompts/propose-template.md) | An AI design assistant, when there is no designer |
+| [Brief a freelance designer](docs/prompts/designer-brief-email.md) | An email to a designer |
+| [Propose a template and brand for a hotel](docs/prompts/brand-proposal.md) | An AI assistant choosing among our templates |
+| [Onboard a new hotel](docs/prompts/onboard-hotel.md) | A coding agent putting a hotel on the platform from its website |
+| [Add a feature or a plugin](docs/prompts/add-feature.md) | A coding agent extending the core, the hotel pack, or adopting a Payload plugin |
+
+**Evidence and evaluations**
+
+| Document | What it is |
+| --- | --- |
+| [`docs/05-week1-spike-results.md`](docs/05-week1-spike-results.md) | Measured results and findings 1–30: isolation, deploys, Neon, RLS, migrations, CI, releases, photos, domains |
+| [`docs/04-edgeone-makers-evaluation.md`](docs/04-edgeone-makers-evaluation.md) | Hosting: verified facts, quotas, residency, EdgeOne API |
+| [`docs/03-webstudio-evaluation.md`](docs/03-webstudio-evaluation.md) | Prior art: what to take, why not to adopt |
+
+The spec is edited as a Claude Docs artifact, *Hotelier Website Platform — Solution Definition*, and exported to `docs/01-solution-definition.md` after each change. The checklist and `HANDOFF.md` are the operational source of truth; the artifact is the design source of truth.
 
 ## 16. Contributing
 

@@ -45,7 +45,7 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 - [x] **ENG** Design contract: tokens, brand fields, contrast gates, self-hosted fonts — [`11-design-contract.md`](11-design-contract.md)
 - [x] **ENG** Three templates built in-house (Maison, Atelier, Soirée); a hotel switches with no content change — [screenshots](screenshots/README.md)
 - [x] **ENG** Platform moved to a Makers project in area overseas, so custom domains can be added (finding 22)
-- [x] **ENG** Guides: how the platform works ([`13-how-it-works.md`](13-how-it-works.md)); designer brief with example prompts ([`14-designer-brief.md`](14-designer-brief.md)); template tokens for designers ([`design-tokens/`](design-tokens/))
+- [x] **ENG** Guides: how the platform works ([`13-how-it-works.md`](13-how-it-works.md)); designer brief ([`14-designer-brief.md`](14-designer-brief.md)); template tokens for designers ([`design-tokens/`](design-tokens/)); example prompts ([`prompts/`](prompts/README.md)); README documentation section by audience
 - [ ] **ENG** Own-domain serving: hotel recognised from the domain, `/` instead of `/s/<site>`, `/admin` only on our domain
 - [ ] **ENG** Edge cache of published pages (EdgeOne KV keyed by release); target under 1 s
 - [ ] **ENG** Photo uploads from phones under the 6 MB function limit
