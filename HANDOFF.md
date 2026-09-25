@@ -162,7 +162,8 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 **Changed (batch 3: photos on phones, lightbox everywhere it helps)**
 - Regression from batch 2 fixed: the new `width`/`height` attributes fixed the rendered height wherever the CSS set `width` + `aspect-ratio` but no `height` (text-and-image photo drawn full height on phones, room thumbnails squeezed into strips). Base rule `.hh-theme img { height: auto }`; room photo and thumbnails rules reviewed.
 - One page viewer `src/site/Lightbox.tsx` (client component, rendered once by `Blocks`) replaces `Gallery.tsx`: any `<a data-lightbox="group" href="full">` opens in it, photos of a group browse together. Wired on the gallery, text-and-image photos, and on the rooms page the room photo + thumbnails (grouped per room). Hero, banners, photo band, CTA and room cards stay as they are (backgrounds or links). The full-size file is fetched only on tap: no page-weight cost. Unused `lightbox.ts` (inline-script attempt) removed.
-- `tests/visual/templates.mjs` also captures the rooms page at 390 px.
+- `tests/visual/templates.mjs` also captures the rooms page at 390 px and flags distorted content photos; `tests/visual/mobile-photos.mjs <url>` checks shapes and that the lightbox opens.
+- Measured: CI green (`6e45102`), deploy run 36178259828 green, customer zero republished as **r12**. Live at 390 px on Lumière: home 7, rooms 9, gallery 16 viewable photos, 0 distorted, lightbox opens on each page. Screenshots `docs/screenshots/2026-09-25/site-{home,rooms,lightbox}-mobile.jpg`.
 
 **Changed (batch 2)**
 - Release snapshot carries `images`: every platform photo of the tenant keyed by each URL variant → srcset (400/960/1920 WebP + original), intrinsic size, full-size file. `upgradeSnapshot` fills `{}` for older releases.

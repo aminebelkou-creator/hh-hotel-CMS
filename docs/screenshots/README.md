@@ -16,6 +16,8 @@ Taken on the **public platform** (https://hh-platform.edgeone.dev, release r8, c
 | Home (FR) | [site-home-fr.jpg](2026-09-25/site-home-fr.jpg) |
 | Home on a phone | [site-home-mobile.jpg](2026-09-25/site-home-mobile.jpg) |
 | Rooms (FR) | [site-rooms-fr.jpg](2026-09-25/site-rooms-fr.jpg) |
+| Rooms on a phone (r12: photos keep their shape, square thumbnails) | [site-rooms-mobile.jpg](2026-09-25/site-rooms-mobile.jpg) |
+| Lightbox on a phone (a room thumbnail tapped; swipe for the room's other photos) | [site-lightbox-mobile.jpg](2026-09-25/site-lightbox-mobile.jpg) |
 | Services (EN) | [site-services-en.jpg](2026-09-25/site-services-en.jpg) |
 | Neighbourhood (FR) | [site-neighbourhood-fr.jpg](2026-09-25/site-neighbourhood-fr.jpg) |
 | Contact (FR) | [site-contact-fr.jpg](2026-09-25/site-contact-fr.jpg) |
