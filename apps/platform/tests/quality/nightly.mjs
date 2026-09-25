@@ -30,7 +30,8 @@ const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undef
 let failures = 0
 try {
   for (const slug of slugs) {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } }) // axe needs a context-owned page
+    const page = await context.newPage()
     const url = `${base}/s/${slug}`
     const findings = []
     try {
@@ -43,9 +44,11 @@ try {
         }
       }
     } catch (e) {
-      findings.push({ kind: 'uptime', severity: 'error', title: `The home page could not be loaded (${e.message.slice(0, 80)})`, url, fingerprint: 'axe:uptime' })
+      // A tooling failure is ours, not the hotel's: log it, record nothing against the site.
+      console.error(`${slug}: nightly run failed: ${e.message.slice(0, 200)}`)
+      failures++
     }
-    await page.close()
+    await context.close()
     const r = await fetch(`${base}/api/health/report`, { method: 'POST', headers, body: JSON.stringify({ site: slug, source: 'nightly-axe', findings }) })
     const j = await r.json().catch(() => ({}))
     console.log(`${slug}: axe ${findings.length} finding(s) → ${r.ok ? `${j.opened} new, ${j.resolved} resolved` : `report failed ${r.status}`}`)
