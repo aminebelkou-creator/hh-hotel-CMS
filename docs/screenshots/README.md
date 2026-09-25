@@ -18,6 +18,9 @@ Taken on the **public platform** (https://hh-platform.edgeone.dev, release r8, c
 | Rooms (FR) | [site-rooms-fr.jpg](2026-09-25/site-rooms-fr.jpg) |
 | Rooms on a phone (r12: photos keep their shape, square thumbnails) | [site-rooms-mobile.jpg](2026-09-25/site-rooms-mobile.jpg) |
 | Lightbox on a phone (a room thumbnail tapped; swipe for the room's other photos) | [site-lightbox-mobile.jpg](2026-09-25/site-lightbox-mobile.jpg) |
+| Blog on the home page (r13: the latest three posts) | [desktop](2026-09-25/blog-home-desktop.jpg), [phone](2026-09-25/blog-home-mobile.jpg) |
+| Blog page *Le carnet du Marais* | [desktop](2026-09-25/blog-list-desktop.jpg), [phone](2026-09-25/blog-list-mobile.jpg) |
+| A post (Le Marais à pied) | [desktop](2026-09-25/blog-post-desktop.jpg), [phone](2026-09-25/blog-post-mobile.jpg) |
 | Services (EN) | [site-services-en.jpg](2026-09-25/site-services-en.jpg) |
 | Neighbourhood (FR) | [site-neighbourhood-fr.jpg](2026-09-25/site-neighbourhood-fr.jpg) |
 | Contact (FR) | [site-contact-fr.jpg](2026-09-25/site-contact-fr.jpg) |
