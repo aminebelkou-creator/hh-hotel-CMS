@@ -1,5 +1,6 @@
 import React from 'react'
 import { currentOffers, pick, type HotelSnapshot, type Localized } from '../types'
+import { imgAttrs, SIZES, type ImageIndex } from './img'
 
 type Props = {
   block: { heading?: Localized<string>; intro?: Localized<string>; limit?: number | null }
@@ -8,12 +9,13 @@ type Props = {
   defaultLocale: string
   resolveHref: (href: string | null | undefined) => string | null
   today?: string
+  images?: ImageIndex
 }
 
 const T = { fr: { until: 'Jusqu’au', from: 'À partir du' }, en: { until: 'Until', from: 'From' } }
 
 /** Current offers as cards. Dates are checked when the page is served, not when it was published. */
-export function OffersBlock({ block, hotel, locale, defaultLocale, resolveHref, today }: Props) {
+export function OffersBlock({ block, hotel, locale, defaultLocale, resolveHref, today, images }: Props) {
   const p = <V,>(v: Localized<V> | null | undefined) => pick(v, locale, defaultLocale)
   const t = locale === 'fr' ? T.fr : T.en
   const fmt = (d: string) => new Date(d).toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
@@ -32,7 +34,7 @@ export function OffersBlock({ block, hotel, locale, defaultLocale, resolveHref, 
                 {o.imageUrl && (
                   <div className="hh-offer-media">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={o.imageUrl} alt={p(o.imageAlt) || ''} loading="lazy" decoding="async" />
+                    <img src={o.imageUrl} alt={p(o.imageAlt) || ''} loading="lazy" decoding="async" {...imgAttrs(images, o.imageUrl, SIZES.card)} />
                     {p(o.highlight) && <span className="hh-badge">{p(o.highlight)}</span>}
                   </div>
                 )}

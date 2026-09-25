@@ -110,6 +110,21 @@ describe('proposeBrand and apply', () => {
     await expect(applyBrandProposal(payload, { tenantId: A.tenantId, siteId: A.siteId })).rejects.toThrow(/No proposal/)
   })
 
+  it('the release snapshot indexes platform photos with a srcset from their WebP variants', async () => {
+    const { buildSnapshot } = await import('@/releases/snapshot')
+    const snap = await buildSnapshot(payload, A.tenantId, A.siteId)
+    const m = await payload.findByID({ collection: 'media', id: mediaIds[0], overrideAccess: true })
+    const entry = snap.images?.[m.url as string]
+    expect(entry).toBeTruthy()
+    expect(entry!.w).toBe(300)
+    expect(entry!.h).toBe(200)
+    expect(entry!.srcset).toMatch(/-400x\d+\.webp 400w|\.webp 300w/) // the source is 300 px wide: no enlargement
+    // Every variant URL points at the same entry, and the full-size file is the largest.
+    const thumb = (m.sizes as { thumb?: { url?: string | null } })?.thumb?.url
+    if (thumb) expect(snap.images?.[thumb]).toEqual(entry)
+    expect(entry!.full).toBe(m.url)
+  })
+
   it('adds a rationale when a model is configured', async () => {
     setAiForTests({ name: 'openai', available: true, model: 'scripted', complete: async () => 'Un choix sobre pour une maison quatre étoiles.' })
     const p = await proposeBrand(payload, { tenantId: A.tenantId, siteId: A.siteId })

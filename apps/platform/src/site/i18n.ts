@@ -29,6 +29,9 @@ const LABELS = {
     checkAvailability: 'Vérifier les disponibilités',
     call: 'Appeler',
     quickActions: 'Actions rapides',
+    close: 'Fermer',
+    previous: 'Photo précédente',
+    next: 'Photo suivante',
   },
   en: {
     menu: 'Menu',
@@ -60,6 +63,9 @@ const LABELS = {
     checkAvailability: 'Check availability',
     call: 'Call',
     quickActions: 'Quick actions',
+    close: 'Close',
+    previous: 'Previous photo',
+    next: 'Next photo',
   },
 } as const
 export type Labels = Record<keyof (typeof LABELS)['en'], string>

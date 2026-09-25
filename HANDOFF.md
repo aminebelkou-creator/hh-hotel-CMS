@@ -157,9 +157,15 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 ## Delta log
 
-### 2026-09-25 · session 15 · fix-later batch 1 (contact and Book on phones, legal set, offers on home)
+### 2026-09-25 · session 15 · fix-later batch 1 (contact and Book on phones, legal set, offers on home) and batch 2 (gallery, lighter images)
 
-**Changed**
+**Changed (batch 2)**
+- Release snapshot carries `images`: every platform photo of the tenant keyed by each URL variant → srcset (400/960/1920 WebP + original), intrinsic size, full-size file. `upgradeSnapshot` fills `{}` for older releases.
+- `src/site/Img.tsx`: one image element for every core block (srcset, `sizes` per context, width/height, eager + high priority for the first hero); the hotel pack's rooms and offers renderers take the same index.
+- `src/site/Gallery.tsx` (client component): lightbox on the native `<dialog>`; links work without JS. An inline `<script>` was tried first: React duplicates and hoists it and it never runs (hydration error #418) — use a client component for behaviour.
+- Measured at 390 px on customer zero: 17/17 photos now fetch the 400 px variant; lightbox opens/arrows/closes.
+
+**Changed (batch 1)**
 - Header: the first confirmed phone as a `tel:` link (desktop); a sticky bottom bar on phones with **Call** and **Book**, every template, Lumière styled navy (`src/site/Chrome.tsx`, base CSS). Labels in `i18n.ts`.
 - Legal set: customer zero gets *Règlement intérieur et CGV* (`reglement-cgv`, rewritten from the hotel's own page, every amount and time theirs). The generator now drafts three footer legal pages for every site (`src/generate/legal.ts`: mentions légales, confidentialité & cookies, règlement & CGV) from the facts, unknowns visibly marked.
 - Offers block on customer zero's home and on every generated home page (hidden while no offer is active); the generated rooms block links to the rooms page.

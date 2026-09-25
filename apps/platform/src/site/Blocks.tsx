@@ -9,6 +9,8 @@ import { practicalInfo } from './load'
 import type { Labels } from './i18n'
 import { FormBlock } from './FormBlock'
 import { Icon, isIconId } from './icons'
+import { Img as SharedImg, fullSizeOf, SIZES } from './Img'
+import { Gallery } from './Gallery'
 
 type Ctx = { snapshot: SiteSnapshot; locale: string; t: Labels }
 
@@ -18,14 +20,10 @@ const paragraphs = (text: unknown) =>
     .map((p) => p.trim())
     .filter(Boolean)
 
-/* eslint-disable @next/next/no-img-element */
-function Img({ src, alt, eager }: { src?: string | null; alt?: string; eager?: boolean }) {
-  if (!src) return null
-  return <img src={src} alt={alt ?? ''} loading={eager ? 'eager' : 'lazy'} decoding="async" />
-}
 
 export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
   const { snapshot, locale, t } = ctx
+  const Img = (props: { src?: string | null; alt?: string; eager?: boolean; sizes?: keyof typeof SIZES }) => <SharedImg snapshot={snapshot} {...props} />
   const d = snapshot.site.defaultLocale
   const p = <V,>(v: unknown) => pick(v as Localized<V>, locale, d)
   const hasHero = blocks[0]?.blockType === 'hero'
@@ -43,7 +41,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
             const cta = linkHref(snapshot, locale, b.ctaHref as string)
             return (
               <section key={key} className={b.imageUrl ? 'hh-hero hh-hero--image' : 'hh-hero'}>
-                {b.imageUrl ? <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} eager={i === 0} /> : null}
+                {b.imageUrl ? <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} eager={i === 0} sizes="full" /> : null}
                 <div className="hh-hero-inner hh-wrap">
                   {b.rating === 'classification' && <HeroRating facts={snapshot.facts} locale={locale} />}
                   <Tag>{p<string>(b.heading)}</Tag>
@@ -120,7 +118,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                   </div>
                   {b.imageUrl ? (
                     <div className="hh-split-media">
-                      <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} />
+                      <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} sizes="half" />
                     </div>
                   ) : null}
                 </div>
@@ -168,7 +166,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                       const href = linkHref(snapshot, locale, it.href ?? undefined)
                       const inner = (
                         <>
-                          <Img src={it.imageUrl} alt={p<string>(it.imageAlt)} />
+                          <Img src={it.imageUrl} alt={p<string>(it.imageAlt)} sizes="full" />
                           <h3>{p<string>(it.title)}</h3>
                         </>
                       )
@@ -192,7 +190,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
           case 'mediaBand':
             return b.imageUrl ? (
               <section key={key} className="hh-media-band">
-                <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} />
+                <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} sizes="full" />
               </section>
             ) : null
           case 'gallery': {
@@ -201,13 +199,13 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
               <section key={key} className="hh-section">
                 <div className="hh-wrap">
                   {p<string>(b.heading) && <h2 className="hh-section-title">{p<string>(b.heading)}</h2>}
-                  <div className="hh-gallery">
-                    {images.map((im, k) => (
-                      <figure key={k}>
-                        <Img src={im.url} alt={p<string>(im.alt)} />
-                      </figure>
-                    ))}
-                  </div>
+                  <Gallery
+                    labels={{ close: t.close, previous: t.previous, next: t.next }}
+                    photos={images.map((im) => {
+                      const meta = snapshot.images?.[im.url]
+                      return { src: im.url, full: fullSizeOf(snapshot, im.url), alt: p<string>(im.alt) ?? '', srcset: meta?.srcset, sizes: meta ? SIZES.third : undefined, w: meta?.w, h: meta?.h }
+                    })}
+                  />
                 </div>
               </section>
             )
@@ -268,6 +266,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                 locale={locale}
                 defaultLocale={d}
                 resolveHref={(h) => linkHref(snapshot, locale, h)}
+                images={snapshot.images}
               />
             )
           case 'policies': {
@@ -287,7 +286,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
             const href = linkHref(snapshot, locale, b.buttonHref as string)
             return (
               <section key={key} className={b.imageUrl ? 'hh-cta hh-cta--image' : 'hh-cta'}>
-                {b.imageUrl ? <Img src={b.imageUrl as string} alt="" /> : null}
+                {b.imageUrl ? <Img src={b.imageUrl as string} alt="" sizes="full" /> : null}
                 <div className="hh-wrap hh-cta-inner">
                   {p<string>(b.heading) && <h2>{p<string>(b.heading)}</h2>}
                   {p<string>(b.text) && <p>{p<string>(b.text)}</p>}
@@ -414,6 +413,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                 defaultLocale={d}
                 roomsHref={roomsPage ? pageHref(snapshot, locale, roomsPage.slug) : undefined}
                 linkHref={linkHref(snapshot, locale, b.linkHref as string) ?? undefined}
+                images={snapshot.images}
                 headingLevel={!hasHero && i === 0 ? 'h1' : 'h2'}
               />
             )

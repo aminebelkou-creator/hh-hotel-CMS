@@ -1,10 +1,13 @@
 import React from 'react'
 import { pick, type HotelSnapshot, type Localized } from '../types'
+import { imgAttrs, SIZES, type ImageIndex } from './img'
 
 type Props = {
   block: { heading?: Localized<string>; intro?: Localized<string>; limit?: number | null; layout?: string | null; linkLabel?: Localized<string>; linkHref?: string | null }
   /** Resolved "see all" address (the site's routing turns a slug into a path); undefined hides the link. */
   linkHref?: string
+  /** Platform photos of the release, for srcset and sizes. */
+  images?: ImageIndex
   hotel: HotelSnapshot | undefined
   locale: string
   defaultLocale: string
@@ -28,7 +31,7 @@ const Ico = ({ d }: { d: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" dangerouslySetInnerHTML={{ __html: d }} />
 )
 
-export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, headingLevel = 'h2', linkHref }: Props) {
+export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, headingLevel = 'h2', linkHref, images }: Props) {
   const t = locale === 'fr' ? T.fr : T.en
   const p = <V,>(v: Localized<V> | null | undefined) => pick(v, locale, defaultLocale)
   const rooms = (hotel?.rooms ?? []).slice(0, block.limit || undefined)
@@ -68,7 +71,7 @@ export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, hea
                 {img && (
                   <div className="hh-room-media">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.url} alt={p(img.alt) || p(r.name) || ''} loading="lazy" decoding="async" />
+                    <img src={img.url} alt={p(img.alt) || p(r.name) || ''} loading="lazy" decoding="async" {...imgAttrs(images, img.url, detailed ? SIZES.half : SIZES.card)} />
                     {!detailed && r.category && <span className="hh-room-tag">{r.category}</span>}
                   </div>
                 )}
@@ -113,7 +116,7 @@ export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, hea
                     <div className="hh-room-thumbs">
                       {r.images.slice(1, 5).map((im, i) => (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img key={i} src={im.url} alt={p(im.alt) || ''} loading="lazy" decoding="async" />
+                        <img key={i} src={im.url} alt={p(im.alt) || ''} loading="lazy" decoding="async" {...imgAttrs(images, im.url, SIZES.thumb)} />
                       ))}
                     </div>
                   )}

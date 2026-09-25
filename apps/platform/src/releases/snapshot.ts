@@ -25,6 +25,7 @@ export type SnapshotPage = {
 }
 
 export type SnapshotRedirect = { from: string; to: string; permanent: boolean }
+export type SnapshotImage = { w: number; h: number; srcset: string; full: string }
 export type SnapshotFormField = { blockType: string; name: string; label?: string | null; required?: boolean | null; width?: number | null; defaultValue?: unknown; options?: { label: string; value: string }[]; message?: unknown }
 export type SnapshotForm = {
   id: number
@@ -60,6 +61,8 @@ export type SiteSnapshot = {
   }
   /** Static map image for the map block (made at publish from confirmed coordinates), or null. */
   mapImage?: string | null
+  /** Platform photos referenced by the pages, by every URL variant: intrinsic size and a srcset built from the WebP variants (render-time only). */
+  images?: Record<string, SnapshotImage>
   /** Old-site paths redirected to pages of this site (redirects plugin). */
   redirects?: SnapshotRedirect[]
   /** Form definitions referenced by form blocks, so the site renders them without the CMS. */
@@ -158,6 +161,18 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
     : []
   const imageUrl = new Map(images.map((m) => [Number(m.id), (m as { sizes?: { hero?: { url?: string | null } }; url?: string | null }).sizes?.hero?.url || m.url || null]))
 
+  // Every platform photo of the tenant, keyed by each of its URLs, so the renderer can emit srcset,
+  // width/height (no layout shift) and the full-size file for the lightbox. Tens of rows per hotel.
+  const allMedia = (await payload.find({ collection: 'media', where: { tenant: { equals: tenantId } }, depth: 0, pagination: false, overrideAccess: true })).docs
+  const imageIndex: Record<string, SnapshotImage> = {}
+  for (const m of allMedia as unknown as { url?: string | null; width?: number | null; height?: number | null; sizes?: Record<string, { url?: string | null; width?: number | null }> }[]) {
+    if (!m.url || !m.width || !m.height) continue
+    const variants = [...Object.values(m.sizes ?? {}).filter((v) => v?.url && v.width).map((v) => ({ url: v.url!, w: v.width! })), { url: m.url, w: m.width }].sort((a, b) => a.w - b.w)
+    const srcset = variants.map((v) => `${v.url} ${v.w}w`).join(', ')
+    const full = variants[variants.length - 1].url
+    for (const v of variants) imageIndex[v.url] = { w: m.width, h: m.height, srcset, full }
+  }
+
   return {
     schema: 2,
     site: {
@@ -177,6 +192,7 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
     },
     pages: pages.docs.map((p) => toSnapshotPage(p, imageUrl)),
     mapImage,
+    images: imageIndex,
     redirects,
     forms,
     facts: facts.docs

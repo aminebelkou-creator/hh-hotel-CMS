@@ -48,6 +48,7 @@ const seedBlocks = (slug: string, n: number): SeedBlocks => {
     { blockType: 'features', heading: 'Why stay with us', intro: 'Three reasons.', items: [{ icon: 'bed', title: 'Quiet rooms', text: 'Double glazing on every window.' }, { icon: 'coffee', title: 'Breakfast', text: 'Fresh bread every morning.' }, { icon: 'pin', title: 'Central', text: 'Walk everywhere.' }], provenance: seedProvenance },
     { blockType: 'textImage', eyebrow: 'The house', heading: 'A family home since 1952', body: 'Restored room by room.', imagePosition: 'right', points: [{ text: 'Free luggage room' }, { text: 'Lift to every floor' }], provenance: seedProvenance },
     { blockType: 'rooms', heading: 'Rooms', intro: 'From the standard room to the suite.', layout: 'cards', limit: 3, linkLabel: 'See all rooms', linkHref: 'rooms' },
+    { blockType: 'gallery', heading: 'In pictures', images: [{ url: PHOTO, alt: 'The courtyard' }, { url: PHOTO, alt: 'A room' }] },
     { blockType: 'quote', text: 'Perfect stay, we will be back.', author: 'A guest' },
     { blockType: 'cta', heading: 'Book direct', text: 'Best rate guaranteed.', buttonLabel: 'Contact us', buttonHref: 'contact' },
   ]
