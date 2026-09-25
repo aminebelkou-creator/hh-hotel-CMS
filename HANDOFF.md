@@ -10,28 +10,33 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ---
 
-## Current state — 24 September 2026, end of session 11
+## Current state — 25 September 2026, end of session 12
 
 ### Where we are
 
 | | |
 | --- | --- |
-| Plan position | Day −4. The 90-day plan starts Monday 28 September; engineering started early on 22 September |
+| Plan position | Day −3. The 90-day plan starts Monday 28 September; engineering started early on 22 September. Phase 1 and the engineering half of Phase 2 are done; what remains of Phase 2 is the owner's: a domain, Tencent's answer, an email provider |
 | Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
 | Customer zero | **Marketing website live, content approved by the owner (24 Sep)**: release r4, now served by the new Makers project **`hh-platform` (area overseas)** at https://hh-platform.edgeone.dev/s/hotel-herse-dor (deployment `dpufqbhwwc0l`, templates live; customer zero on Maison). The old project `hh-platform-poc` (area global, custom domains impossible without ICP) still serves the same database at https://hh-platform-poc.edgeone.cool until retired. 6 pages + 3 legal pages, FR/EN, room types, offer, house rules, FAQ, map, schema.org Hotel and FAQPage, sitemap. **Photos now on our own storage** (0 images from the old site). Owner account `proprietaire@hotel-herse-dor.demo` (password in user env var `HH_OWNER_PASSWORD`) |
 | Look | **Three templates** (Maison, Atelier, Soirée) and a brand per site, under the design contract (`docs/11`); customer zero stays on Maison |
-| Admin | **Phase 1 done**: Website panel on sites and pages (Publish site, Undo last publish, View site, releases), Preview button on pages, photo uploads with WebP sizes. Checked live as the owner, who sees only their hotel |
+| Admin | **Phase 1 done**: Website panel on sites and pages (Publish site, Undo last publish, View site, releases), Preview button on pages, photo uploads with WebP sizes (phone photos shrunk in the browser). **Phase 2**: SEO fields per page, Redirects, Forms and Form submissions per hotel; login lockout after 5 tries. Checked live as the owner, who sees only their hotel |
 | Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
-| CI / deploy | Every push: migrations on a fresh Postgres, drift check, **import-map check**, seed, typecheck, suites, build, HTTP suites. `deploy` workflow: migrate Neon + RLS + Makers |
-| Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains: **unblocked** — finding 22 was the project's area (global includes mainland China, needs ICP); the new `overseas` project can add them. Next: a test subdomain the owner controls |
+| CI / deploy | Every push: migrations on a fresh Postgres, drift check, import-map check, seed, typecheck, suites, build, HTTP suites, **quality gates** (axe, structured data, page weight on every template); CodeQL; Dependabot weekly. `deploy` workflow: migrate Neon + RLS + Makers `hh-platform` |
+| Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains: **unblocked** (project area overseas) and **own-domain serving is built** (`src/proxy.ts`: a verified domain answers at `/`, `/admin` only on ours). Next: a test subdomain the owner controls, then add it in the Makers console and in the admin |
+| Speed | Origin: one query per page, in-process release cache, cache headers. About 1.1 s per page from Paris, 0.3 s of it is the function. **The Makers CDN does not cache function responses (finding 31)**; Neon free tier adds 2–5 s on a cold start. Under 1 s needs the host's cache rules or a paid Neon plan |
 
 ### What exists
 
 | Thing | Where | State |
 | --- | --- | --- |
-| Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1. Collections: users, tenants, sites, pages, media, domains, releases, facts, plus `rooms` from the hotel pack. Multi-tenant and MCP plugins (no delete tools) |
+| Platform app | `apps/platform` | Next.js 16.3.3, Payload 3.90.1. Collections: users, tenants, sites, pages, media, domains, releases, facts, redirects, forms, form-submissions, plus `rooms` and `offers` from the hotel pack. Plugins: multi-tenant, MCP (no delete tools), SEO, redirects, form builder; nodemailer email when `SMTP_*` is set |
+| Own domain | `src/proxy.ts`, `src/site/hosts.ts`, `app/(sites)/h/[host]/` | A request on a non-platform host is rewritten to `/h/<host>/…`; only `verified`/`active` domains are served; www/apex twin → 308 to the primary; canonical, hreflang, sitemap and robots use the primary host; `/admin`, `/api` (except `POST /api/contact`), `/preview`, `/s` answer 404 there. `PLATFORM_HOSTS` env lists our hosts |
+| Contact form | `src/forms/contactEndpoint.ts`, `src/site/FormBlock.tsx` | The form block posts JSON to `POST /api/contact` (honeypot, 2.5 s timing check, required fields), which creates the submission under the form's tenant through the Local API — the multi-tenant plugin refuses anonymous REST writes (finding 32) |
+| Security | `src/proxy.ts`, `Users.ts`, `.github/` | Security headers on every response (nosniff, referrer policy, frame options, permissions policy, HSTS, COOP); login lockout 5 tries / 15 min; Dependabot weekly (no Payload majors); CodeQL |
+| Quality gates | `tests/quality/gates.mjs` | Every push, on seeded site-10 in all three templates: axe WCAG 2.2 AA zero violations, JSON-LD parses (Hotel on home, FAQPage on contact), one h1/lang/canonical/viewport, page weight over the wire without photos under 450 KB (measured 218–271 KB; JS 136 KB, fonts 73–125 KB). `pnpm test:gates <base-url> [site-slug]` locally; `PW_CHANNEL=chrome` to use the installed Chrome |
 | Hotel pack | `packs/hotel` (`@hh/pack-hotel`) | Room types and offers collections; rooms, offers and policies blocks; snapshot contribution (offers filtered by date at render); schema.org `Hotel`. Loaded only through `src/packs.ts` |
-| Page blocks | `src/collections/Pages.ts` | hero, text and image, text (with subheadings), features, gallery, quote, FAQ, call to action, contact details, map, rich text; menu label and order, footer flag; reserved slugs refused |
+| Page blocks | `src/collections/Pages.ts` | hero, text and image, text (with subheadings), features, gallery, quote, FAQ, call to action, contact details, map (static image made at publish from OpenStreetMap tiles, no third-party request), form, rich text; menu label and order, footer flag; reserved slugs refused. Seeded tenants carry every core block so the gates exercise the full CSS |
 | Design | `src/design/`, `docs/11`, `docs/14`, `docs/design-tokens/` | Design contract, three templates (Maison, Atelier, Soirée), brand fields with contrast gates, self-hosted fonts; designer brief with example prompts; tokens exported for designers |
 | Guides | `docs/13-how-it-works.md`, `docs/12-strategy-decisions.md` | How the platform works in plain words (glossary, flows, repository map, reading guide); strategy decisions of 24 Sep |
 | Admin self-service | `src/admin/PublishPanel.tsx`, `src/app/(sites)/preview/` | Website panel (publish, undo, view site, last 6 releases); draft preview for signed-in users (other tenants: 404, noindex) |
@@ -41,9 +46,9 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Fact base | `src/collections/Facts.ts`, `src/ingest/` | Customer zero: 21 confirmed, 6 rejected, 12 unconfirmed. Engineering confirmed what the hotel's own site supports ("Demo" note); coordinates approximate |
 | Release pipeline v0 | `src/releases/`, `src/jobs/publishSite.ts` | Unchanged; snapshots now carry pack data (rooms) and site tagline/logo/CTA (schema 2) |
 | Booking (parked) | `src/booking/` | Adapter + clockPMS BE mock, unused by the site; unit tests keep it compiling |
-| Migrations | `src/migrations` | Latest: `phase1_selfservice` (additive: offers, text/FAQ/offers/policies blocks, footer flag, media source URL, `media_blobs`). Rehearsed on 50 tenants + customer zero: 185 ms locally, 0 of 51 changed; 1.3 s on Neon |
-| Test suites | `tests/int` | 12 files, 94 tests: isolation (incl. rooms, offers), extended, audit (scans `packs/`), REST/GraphQL, RLS (9 tables), RLS under Payload, facts, releases, booking (parked), normaliser, public site over HTTP, self-service (preview, uploads, offers, FAQ) |
-| RLS | `src/db/rls.sql` | 9 tables incl. `facts`, `rooms`, `offers`, context-optional. Not yet enforcing for live requests |
+| Migrations | `src/migrations` | Latest four: `phase1_selfservice`, `site_templates`, `plugins_seo_redirects_forms` (copies the old `seo_*` columns into the plugin's `meta_*`), `drop_pages_seo_group`. Rehearsed on 50 tenants + customer zero: 0 of 51 changed |
+| Test suites | `tests/int`, `tests/quality` | 16 files, 117 tests: isolation (incl. rooms, offers, redirects, forms), extended, audit (scans `packs/`), REST/GraphQL, RLS (12 tables), RLS under Payload, facts, releases, booking (parked), normaliser, design contract, public site over HTTP, self-service, own domain (fake `Host` header), plugins and contact form; plus the quality gates (9 pages) |
+| RLS | `src/db/rls.sql` | 12 tables incl. `facts`, `rooms`, `offers`, `redirects`, `forms`, `form_submissions`, context-optional. Not yet enforcing for live requests |
 | Local databases | Docker `hh-postgres` | `hh_platform` rebuilt from migrations (50 tenants + customer zero), `hh_check` (10 + customer zero). The old `next dev` that pushed schema into `hh_platform` is stopped |
 
 ### Watch out
@@ -55,28 +60,30 @@ Read this first when you pick the project up, whether you are a person or an AI 
 - Photos live in Postgres (`media_blobs`); fine for tens of hotels. Moving to object storage replaces only the adapter (CLAUDE.md 27).
 - The legal pages are drafts: the owner must validate them before the site replaces the hotel's current one.
 - Never run `next dev` against `hh_platform` or `hh_check` for long: dev mode pushes schema. Use `next start` on port 3100 for local checks.
+- `edgeone makers link` overwrites `apps/platform/.env` with the project's variables (CLAUDE.md 31); restore the local one afterwards.
+- The Makers CDN ignores `Cache-Control` on function responses (finding 31): do not expect edge hits; speed work belongs at the origin or in the host's cache rules.
+- Anonymous writes through REST are refused by the multi-tenant plugin (finding 32): a visitor-facing write needs a custom endpoint that uses the Local API under the right tenant, as `/api/contact` does.
+- A block whose slug matches a collection name collides in GraphQL (finding 33): give it an `interfaceName` and `graphQL.singularName`.
 
 ### Next actions, in order
 
-Phase 2 of [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md). Done so far: design contract and three templates (24 Sep). Decisions behind the list: [`docs/12-strategy-decisions.md`](docs/12-strategy-decisions.md).
+Engineering items of Phase 2 in [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) are done (25 Sep). What is left needs the owner first; engineering can start Phase 3 preparation meanwhile.
 
 | # | Owner | Action | Done when |
 | --- | --- | --- | --- |
-| 1 | ENG | Own-domain serving: hotel recognised from the host, `/` instead of `/s/<site>`, `/admin` only on our domain | Works locally with a test host; live once a domain exists |
-| 2 | ENG | Edge cache of published pages (EdgeOne KV, keyed by release) | Pages under 1 s from Paris |
-| 3 | ENG | Photo uploads under the 6 MB function limit; static map image at publish | A phone photo uploads; no third-party request on public pages |
-| 4 | ENG | Adopt Payload SEO, Redirects, Form Builder, Import/Export; contact form with EU email (SMTP) | Tenant-scoped, isolation-tested; messages stored in the admin |
-| 5 | ENG | Security basics (edge rate limits, headers, Dependabot, code scanning); quality gates in CI for every template | Rules live; a failing page blocks the merge |
-| 6 | OWN | Send the Tencent email (updated draft); delete `hh-platform-poc`; validate the legal pages | Gate 1 answers by 9 Oct |
-| 7 | OWN | Our platform domain + test subdomain; email provider account | Own domain and email live |
-| 8 | OWN | AI model key; shortlist of hotels; a designer later | Phase 3 |
+| 1 | OWN | Send the Tencent email (updated draft); delete `hh-platform-poc`; validate the legal pages | Gate 1 answers by 9 Oct |
+| 2 | OWN | Our platform domain + a test subdomain (add it in the Makers console, then in the admin as a domain); an email provider account (Scaleway TEM proposed), SMTP values as Makers variables `SMTP_*` | A hotel site answers on its own domain with HTTPS; a contact message reaches an inbox |
+| 3 | ENG | Once the test domain exists: mark it `verified`, set `PLATFORM_HOSTS` on Makers, check redirects www/apex, canonical, sitemap live; then republish customer zero | Gate 1 evidence |
+| 4 | ENG | Review the Dependabot pull requests (actions, Next group) after CI; never a Payload major | Dependencies current |
+| 5 | ENG | Phase 3 preparation without the AI key: ingest v1 crawl scaffold, fact review screen design, generation prompts as skills | Ready to switch on with the key |
+| 6 | OWN | AI model key; shortlist of hotels; a designer later | Phase 3 |
 
 ### Waiting on the owner
 
 | Action | Blocks |
 | --- | --- |
 | Send the Tencent email: [`docs/outreach/tencent-makers-platforms-email.md`](docs/outreach/tencent-makers-platforms-email.md) | Gate 1, custom domains |
-| A test domain for the custom-domain work | Phase 2 |
+| A test domain for the custom-domain work; an email provider (SMTP) | Gate 1 evidence; contact form email |
 | AI model key | Phase 3 |
 | Revoke the Tencent CAM key beginning `IKIDTYWK` | Security hygiene |
 | Share the repository with the team; shortlist 15 hotels | Anyone else working on it; design partners |
@@ -121,12 +128,33 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Release pipeline v0 in week 4 | Content releases built in week 0 (23 Sep), Gate 2 content targets met on Neon | Week 4 keeps the domain bind and the ISR-or-static decision; code deploys stay at ~3 min and are proposed out of the 60 s target |
 | Booking-engine embed in weeks 10–12 (XT) | Owner decision 24 Sep: no booking logic on the site for now; the 23 Sep adapter and mock are parked | The site's "Book" button is a link; the XT embed item waits until the owner asks for it |
 | Hotelier self-service (Phase 1) from 28 Sep to 11 Oct | Done on 24 Sep, except amenities as a type. Photos in Postgres, not object storage | Phase 2 can start early; object storage becomes a later swap of the storage adapter |
-| Two template packages, accessibility- and performance-gated, in week 4 | Three templates built in-house on 24 Sep (no designer yet) under a written design contract; they live in `apps/platform/src/design`, not separate packages; CI accessibility/performance gates still to do | Designers work from `docs/14-designer-brief.md`; gates stay a Phase 2 item |
+| Two template packages, accessibility- and performance-gated, in week 4 | Three templates built in-house on 24 Sep (no designer yet) under a written design contract; they live in `apps/platform/src/design`, not separate packages; gates in CI since 25 Sep (axe, structured data, page-weight budget; no Lighthouse run) | Designers work from `docs/14-designer-brief.md`; a template that fails a gate cannot merge |
+| Phase 2 engineering in weeks 3–5 | Done in week 0 (25 Sep) except what needs a real domain and an email provider; edge caching is not possible on Makers (finding 31) | Weeks 3–5 become domain go-live, Gate 1 evidence and Phase 3 preparation |
 | Hosting on the first Makers project | The first project (area global, includes mainland China) cannot add custom domains without an ICP filing; the platform moved to project `hh-platform` (area overseas) on 24 Sep | Old project to be deleted by the owner; custom domains unblocked |
 | Hotel pack in week 5 | Pack v0 built in week 0 (rooms collection, rooms block, schema.org Hotel) as a workspace package, with no hotel concept in the core | Week 5 extends it (offers, amenities as a type, policies) rather than creating it |
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-25 · session 12 · `e314d4f` → this commit (Phase 2 engineering, run without prompts)
+
+**Changed**
+- **Own-domain serving** (`f7e11b4`): `src/proxy.ts` (Next 16 `proxy`) rewrites a non-platform host to `/h/<host>/…`; only verified/active domains are served; www/apex twin redirects to the primary; canonical, hreflang, sitemap, robots use the primary host; platform-only paths answer 404 on a hotel domain; `Domains` normalises and validates hostnames, only super-admins change status. Test `own-domain.int.spec.ts` with a fake `Host` header.
+- **Speed** (`6196d0c`, `f1eed61`): cache headers on public pages, one SQL round trip per page (`SITE_SQL`), immutable in-process release cache, publish verification by release id. Finding 31: the Makers CDN never caches function responses, so the gain is at the origin (about 1.1 s from Paris, was 2.2 s).
+- **Phone photos and static map** (`f1eed61`): `UploadShrinker` admin provider shrinks photos over 4 MB or 2400 px in the browser; 5 MB cap; the map block is a WebP image made at publish from OpenStreetMap tiles (`src/media/static-map.ts`), no iframe, no third-party request.
+- **Plugins and contact form** (`c6a8c06`): SEO (`meta` per page, share image localized), Redirects (in the release, `permanentRedirect`), Form Builder (forms and submissions per hotel, `form` block, `POST /api/contact` with honeypot and timing check — finding 32), nodemailer behind `SMTP_*`. Migrations `plugins_seo_redirects_forms` and `drop_pages_seo_group`; RLS on 12 tables; finding 33 (block/collection name collision in GraphQL). Import/Export deferred.
+- **Security basics** (`c6a8c06`): security headers on every response, login lockout, Dependabot, CodeQL.
+- **Quality gates** (this commit): `tests/quality/gates.mjs` runs in CI after the HTTP suites on seeded site-10 in every template: axe WCAG 2.0–2.2 A/AA, JSON-LD, h1/lang/canonical/viewport, page-weight budget over the wire; seeded pages now carry every core block. `pnpm test:gates`. Lighthouse not run: the budget covers its weight signal; scores stay an owner check on PageSpeed.
+- Docs: checklist, roadmap rows, design contract §gates, how-it-works glossary (redirect, form, SEO fields, gates), README status and proof, findings 28–33 in `docs/05`.
+
+**Measured**
+- Local hh_check: 117 tests green with the 3100 server; gates 9/9 pages, 0 axe violations, JS 136 KB, fonts 73–125 KB, 218–271 KB per page without photos.
+- Migration rehearsal on 50 tenants + customer zero: 0 of 51 changed.
+
+**Answered**
+- Retire `hh-platform-poc`: only the owner can delete it in the console; nothing references it any more (deploy targets `hh-platform`).
+- Email provider: Scaleway TEM (EU, cheap, SMTP) proposed, Brevo as alternative; the platform only needs the `SMTP_*` variables.
+- Why send the Tencent email: platforms API for domains, quotas and pricing at 100–1,000 tenants, a DPA that covers edge processing, staff access.
 
 ### 2026-09-24 · session 11 · `8caa70e` → this commit
 

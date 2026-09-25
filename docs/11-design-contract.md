@@ -60,7 +60,7 @@ Interchange format: W3C Design Tokens (DTCG). `toDTCG()` exports a resolved them
 
 Evidence: the design test resolves 600 random accents per template and 400 random background/text pairs with no failing pair.
 
-Other gates, per template, in CI (Phase 2 quality gates): accessibility checks (axe, WCAG 2.2 AA) and a performance budget on customer zero's pages in every template.
+Other gates, per template, in CI (`tests/quality/gates.mjs`, every push): axe with the WCAG 2.0–2.2 A and AA rules on home, rooms and contact in every template, zero violations; every JSON-LD block parses (home carries the `Hotel`, a FAQ its `FAQPage`); exactly one `h1`, a `lang`, a canonical link and a viewport meta; and a page-weight budget over the wire without the hotel's photos: HTML 40 KB, CSS 20 KB, JS 180 KB, fonts 200 KB, 450 KB and 40 requests in total. Measured 25 Sep: JS 136 KB, fonts 73–125 KB, 218–271 KB per page.
 
 ## 4. Fonts
 

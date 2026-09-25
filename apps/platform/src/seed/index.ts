@@ -8,8 +8,46 @@
 import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import type { Page } from '@/payload-types'
 
 import { SEED_PASSWORD, SUPER_ADMIN_EMAIL, TENANT_COUNT, tenantEmail, tenantSlug } from './constants'
+
+const seedProvenance = { origin: 'generated' as const, sourceFact: 'seed' }
+
+/**
+ * Every core block on the three seeded pages, so the quality gates (tests/quality/gates.mjs)
+ * exercise the templates' full CSS: accessibility, structured data and page weight.
+ */
+type SeedBlocks = NonNullable<Page['blocks']>
+const seedBlocks = (slug: string, n: number): SeedBlocks => {
+  const hero: SeedBlocks[number] = { blockType: 'hero', heading: `Welcome to tenant ${n}`, subheading: `${slug} page of a seeded hotel`, ctaLabel: 'Contact us', ctaHref: 'contact', provenance: seedProvenance }
+  if (slug === 'rooms') {
+    return [
+      hero,
+      { blockType: 'rooms', heading: 'Our rooms', intro: 'Each room type, described from the confirmed facts.', layout: 'detailed' },
+      { blockType: 'offers', heading: 'Offers', intro: 'Current offers appear here while they run.' },
+      { blockType: 'policies', heading: 'Good to know', showTimes: true, items: [{ title: 'Pets', text: 'Small pets are welcome on request.' }, { title: 'Children', text: 'Cots are available for children under two.' }] },
+      { blockType: 'cta', heading: 'Ready to book?', text: 'Book directly for the best rate.', buttonLabel: 'Contact us', buttonHref: 'contact' },
+    ]
+  }
+  if (slug === 'contact') {
+    return [
+      hero,
+      { blockType: 'contact', heading: 'Contact', intro: 'We answer every message within a day.' },
+      { blockType: 'faq', heading: 'Questions', items: [{ question: 'Is breakfast included?', answer: 'Breakfast is served every morning and can be added to any rate.' }, { question: 'Do you have parking?', answer: 'Public parking is a short walk away.' }], provenance: seedProvenance },
+      { blockType: 'text', heading: 'Getting here', body: 'The hotel is ten minutes on foot from the station.\n\n## By car\n\nFollow the signs to the centre.', provenance: seedProvenance },
+    ]
+  }
+  return [
+    hero,
+    { blockType: 'text', heading: `About tenant ${n}`, body: 'A small independent hotel, seeded for tests.\n\nTwo paragraphs of plain text.', provenance: seedProvenance },
+    { blockType: 'features', heading: 'Why stay with us', intro: 'Three reasons.', items: [{ title: 'Quiet rooms', text: 'Double glazing on every window.' }, { title: 'Breakfast', text: 'Fresh bread every morning.' }, { title: 'Central', text: 'Walk everywhere.' }], provenance: seedProvenance },
+    { blockType: 'textImage', eyebrow: 'The house', heading: 'A family home since 1952', body: 'Restored room by room.', imagePosition: 'right', provenance: seedProvenance },
+    { blockType: 'rooms', heading: 'Rooms', intro: 'From the standard room to the suite.', layout: 'cards', limit: 3 },
+    { blockType: 'quote', text: 'Perfect stay, we will be back.', author: 'A guest' },
+    { blockType: 'cta', heading: 'Book direct', text: 'Best rate guaranteed.', buttonLabel: 'Contact us', buttonHref: 'contact' },
+  ]
+}
 
 const run = async () => {
   const payload = await getPayload({ config })
@@ -64,7 +102,7 @@ const run = async () => {
           site: site.id,
           tenant: tenant.id,
           _status: 'published',
-          blocks: [{ blockType: 'hero', heading: `Welcome to tenant ${n}`, provenance: { origin: 'generated', sourceFact: 'seed' } }],
+          blocks: seedBlocks(slug, n),
         },
         overrideAccess: true,
       })

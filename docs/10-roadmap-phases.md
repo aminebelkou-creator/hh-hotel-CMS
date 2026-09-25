@@ -42,14 +42,14 @@ Goal: a site on the hotel's own domain, in a design that can change without touc
 | **Gate 1: hosting decision.** Makers confirmed in writing by Tencent, or the Cloudflare EU fallback executed | Decision recorded; custom domain works on the chosen host |
 | **Custom domain** for customer zero (DNS, verification, certificate), `/s/<site>` becomes `/` | `www` of a test domain serves the site with HTTPS |
 | **Design contract and templates**: tokens, brand fields, contrast gates, self-hosted fonts ([`11-design-contract.md`](11-design-contract.md)) | **Done early (24 Sep)**: three templates (Maison, Atelier, Soirée); customer zero switchable with no content change |
-| **Own domain serving**: the platform recognises the hotel from the domain; `/admin` only on our domain | Tested locally now, live with the test domain |
-| **Speed**: published pages cached at the edge (EdgeOne KV, keyed by release so rollback stays instant) | Pages under 1 s from Paris (today about 2.2 s) |
-| **Photo uploads from phones**: size cap or in-browser resize under the 6 MB function limit | A 12 MB phone photo uploads |
-| **Plugins adopted**: Payload SEO, Redirects (old site URLs), Form Builder, Import/Export ([`12-strategy-decisions.md`](12-strategy-decisions.md)) | Each tenant-scoped and covered by the isolation tests |
-| **Security basics**: edge rate limits on login and API, security headers, Dependabot and code scanning | Rules live; CI alerts on vulnerable dependencies |
-| **Static map image** made at publish time instead of the live OpenStreetMap embed (GDPR) | No third-party request on public pages |
-| **Quality gates in CI**: accessibility (axe, WCAG 2.2 AA), Lighthouse performance budget, structured-data validation | A failing page blocks the merge |
-| Contact form (Form Builder; email through an EU provider, Scaleway TEM proposed), still no booking logic | Messages stored in the admin and reaching the hotel's inbox; spam protection (honeypot and rate limit, Friendly Captcha if needed) |
+| **Own domain serving**: the platform recognises the hotel from the domain; `/admin` only on our domain | **Done 25 Sep** (`src/proxy.ts`, fake-host tests); live once a domain exists |
+| **Speed**: published pages cached at the edge (EdgeOne KV, keyed by release so rollback stays instant) | **Origin done 25 Sep**: one query per page, in-process release cache, cache headers. The Makers CDN ignores them (finding 31), so pages are about 1.1 s from Paris; under 1 s needs the host's cache or a paid Neon plan |
+| **Photo uploads from phones**: size cap or in-browser resize under the 6 MB function limit | **Done 25 Sep**: shrunk in the browser before upload, 5 MB cap |
+| **Plugins adopted**: Payload SEO, Redirects (old site URLs), Form Builder, Import/Export ([`12-strategy-decisions.md`](12-strategy-decisions.md)) | **Done 25 Sep** for SEO, Redirects, Form Builder (tenant-scoped, RLS, isolation-tested); Import/Export deferred |
+| **Security basics**: edge rate limits on login and API, security headers, Dependabot and code scanning | **Done 25 Sep**: headers, login lockout, Dependabot, CodeQL. Edge rate limits are a host console setting (owner) |
+| **Static map image** made at publish time instead of the live OpenStreetMap embed (GDPR) | **Done 25 Sep** |
+| **Quality gates in CI**: accessibility (axe, WCAG 2.2 AA), Lighthouse performance budget, structured-data validation | **Done 25 Sep**: `tests/quality/gates.mjs` on every push, all three templates × three pages; page-weight budget instead of Lighthouse |
+| Contact form (Form Builder; email through an EU provider, Scaleway TEM proposed), still no booking logic | **Done 25 Sep** except email delivery: messages stored per hotel, honeypot and timing checks; email once the owner sets `SMTP_*` |
 
 ## Phase 3 — Generate a site from a hotel's URL (2 – 22 Nov, weeks 6–8) · Gate 2 on 2 Nov
 

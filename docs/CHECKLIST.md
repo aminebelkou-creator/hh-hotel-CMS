@@ -24,7 +24,7 @@ The weekly items below map onto five phases, detailed in [`10-roadmap-phases.md`
 | --- | --- | --- | --- |
 | 0 — Proof and first site | 22–27 Sep | Isolation, hosting, CI, releases, customer zero's site | **Done**: site live and approved ([screenshots](screenshots/README.md)) |
 | 1 — Hotelier self-service | 28 Sep – 11 Oct | Publish and preview from the admin, photo uploads, hotel pack v1, legal pages | **Done early (24 Sep)** except amenities as a type ([screenshots](screenshots/README.md)) |
-| 2 — Own domain, templates, quality gates | 12 Oct – 1 Nov | Gate 1, custom domain, two templates, accessibility/performance in CI | **In progress**: design contract and three templates done 24 Sep; custom domains now possible (project area overseas), waiting for a test domain |
+| 2 — Own domain, templates, quality gates | 12 Oct – 1 Nov | Gate 1, custom domain, two templates, accessibility/performance in CI | **Engineering done 25 Sep** (own-domain serving, speed, phone photos, static map, plugins, contact form, security basics, quality gates); custom domains possible (project area overseas), waiting for a test domain and Tencent's answer for Gate 1 |
 | 3 — Generate from a URL | 2 – 22 Nov | AI ingest, fact review, generation, translation; design partners | Needs the AI key |
 | 4 — Operated service | 23 Nov – 13 Dec | Scheduled checks, one-tap fixes, monthly report, RLS enforcing | — |
 | 5 — Five paying hotels | 14 – 25 Dec | Gate 4 | — |
@@ -53,7 +53,7 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 - [x] **ENG** Contact form: form block, `POST /api/contact`, honeypot and timing checks, submissions in the admin per hotel; email through SMTP once the owner sets the provider (`SMTP_*` variables)
 - [x] **ENG** Security basics: security headers on every response, login lockout (5 tries, 15 min), Dependabot, CodeQL. Edge rate limits are a console setting on the host (owner)
 - [x] **ENG** Static map image at publish time instead of the OpenStreetMap embed — `src/media/static-map.ts`
-- [ ] **ENG** Quality gates in CI: axe, Lighthouse budget, structured data, for every template
+- [x] **ENG** Quality gates in CI for every template: axe (WCAG 2.2 AA), structured data, page-weight budget, one h1/lang/canonical — `tests/quality/gates.mjs`, runs on every push. Lighthouse itself is not run (the budget covers its weight signal; scores come from the owner's PageSpeed checks)
 - [ ] **ENG** Brand proposal agent and branding skill (Phase 3)
 - [ ] **ENG** Visual studio v0 on the same blocks (Phase 3)
 - [ ] **ENG** Hotel dashboard and team dashboard (Phase 4)

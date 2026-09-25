@@ -42,6 +42,10 @@ flowchart LR
 | **Media** | Photos. Uploaded once, resized to WebP, stored in the database, served at `/media/…` | `collections/Media.ts`, `src/media/` |
 | **Owner / super-admin** | A hotel's owner account sees only its tenant; super-admins (our team) see all | `collections/Users.ts`, `src/access/` |
 | **Domain** | A hostname for a site. The hotel adds it in the admin and a CNAME at its DNS provider; our team marks it verified; the site then answers at `/` on that domain and `/admin` stays on ours | `collections/Domains.ts`, `src/proxy.ts`, `app/(sites)/h/` |
+| **Redirect** | An old address of the hotel's previous website (`/chambres.html`) sent to a page of the new one, so links and rankings survive. Part of the release | `redirects` collection (Payload plugin), `redirectFor` in `src/site/render.tsx` |
+| **Form / submission** | A contact form built in the admin (Website → Forms) and placed on a page with the form block. Messages land in Form submissions, per hotel, and go by email once SMTP is set | `forms`, `form-submissions` (Payload plugin), `src/forms/contactEndpoint.ts`, `src/site/FormBlock.tsx` |
+| **SEO fields** | Title, description and share image per page, filled by the hotel or generated | `meta` group on pages (Payload SEO plugin) |
+| **Quality gates** | Automatic checks on every push: accessibility, structured data and page weight for every template | `tests/quality/gates.mjs` |
 | **RLS** | Row-level security: the database itself refuses cross-tenant rows | `src/db/rls.sql` |
 | **Migration** | A versioned change to the database structure, applied in order everywhere | `src/migrations/` |
 | **Onboarding content** | A hotel's site written as code, applied in every language and published by a script (used for customer zero) | `src/onboarding/` |
@@ -50,7 +54,7 @@ flowchart LR
 
 **A hotelier edits and publishes.** They sign in to `/admin` (owner account, their hotel only), edit a page, press Preview to see the draft in the site's design, then press **Publish site** in the Website panel. The release pipeline takes a lock on the site, builds the snapshot (published pages, confirmed facts, rooms and offers, template and brand), stores it with a checksum, points the site at it and checks it is live. **Undo last publish** points back to the previous release.
 
-**A guest visits.** The page is rendered from the site's current release only; drafts, unconfirmed facts and other hotels' data cannot appear. The page gets the template's layout, the brand's colours and fonts (self-hosted), structured data for Google (Hotel, FAQ), a sitemap and language alternates.
+**A guest visits.** The page is rendered from the site's current release only; drafts, unconfirmed facts and other hotels' data cannot appear. The page gets the template's layout, the brand's colours and fonts (self-hosted), structured data for Google (Hotel, FAQ), a sitemap and language alternates. On the hotel's own domain the same page answers at `/` and the admin is not reachable there. A visitor who sends the contact form posts to `/api/contact`; the message is stored under the hotel and emailed when a mail provider is configured.
 
 **We onboard a hotel** (today by engineering, Phase 3 by agent). Create the tenant and site; import facts from the hotel's current website (confirmed by the hotel or, for the demo, by us); write or generate pages; import photos; choose a template and brand; create the owner account; publish; connect the domain.
 

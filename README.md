@@ -6,8 +6,8 @@
 
 | | |
 | --- | --- |
-| **Status** | Pre-launch. Weeks 1–2 engineering and Phase 1 (hotelier self-service) done early, plus a design contract and three templates. Customer zero's marketing website (FR/EN, room types, offers, FAQ, legal pages, photos on our own storage) is live on the proof of concept and its owner can publish from the admin; the 90-day plan runs 28 September to 25 December 2026 |
-| **Proof** | 104 tests green on every push (isolation, RLS, facts, releases, design contract, public site, draft preview, photo uploads and templates over HTTP). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
+| **Status** | Pre-launch. Weeks 1–2 engineering, Phase 1 (hotelier self-service) and the engineering half of Phase 2 (own-domain serving, speed, phone photos, static map, SEO/redirects/forms plugins, contact form, security basics, quality gates) done early, plus a design contract and three templates. Customer zero's marketing website (FR/EN, room types, offers, FAQ, legal pages, photos on our own storage) is live on the proof of concept and its owner can publish from the admin; the 90-day plan runs 28 September to 25 December 2026 |
+| **Proof** | 117 tests plus 9 quality-gate pages green on every push (isolation, RLS on 12 tables, facts, releases, design contract, public site, own-domain serving, plugins and contact form over HTTP; axe WCAG 2.2 AA, structured data and a page-weight budget on every template). On production infrastructure (EdgeOne Makers + Neon, Frankfurt): content publish 3.1 s and rollback 1.2 s against Gate 2 targets of 60 s and 10 s |
 | **Live proof of concept** | https://hh-platform.edgeone.dev — customer zero at [/s/hotel-herse-dor](https://hh-platform.edgeone.dev/s/hotel-herse-dor) (demo: a marketing website in French and English; admin at `/admin`) |
 | **Next gate** | Gate 1, week 3 (12 October): hosting provider confirmed, CMS frozen. Waiting on Tencent. Custom domains now possible (project moved to area overseas, finding 22); waiting for a test domain |
 | **Owner** | Hotel Hersedor Paris / xedge |
@@ -177,7 +177,7 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 | Multi-tenant access control | Done. 13-case isolation matrix across read, write, move, join and self-promotion |
 | `overrideAccess` audit | Done. Every use in `src/` must be allowlisted with a reason, or the test fails |
 | REST and GraphQL isolation | Done. Tested against the live URL |
-| Postgres RLS | Done as an evaluation: policies on 9 tables, restricted role, 9 tests. Not yet enforced for live requests |
+| Postgres RLS | Done as an evaluation: policies on 12 tables, restricted role, 12 tests. Not yet enforced for live requests |
 | Hotelier self-service | Done (Phase 1). Website panel in the admin (publish, undo, view site, releases), draft preview, photo uploads, owner accounts |
 | Templates and brand | Done: design contract, three templates, brand fields with contrast gates, self-hosted fonts (`src/design/`) |
 | MCP server | Plugin enabled: pages (find, create, update), sites (find, update), media (find), facts (find, create: agents propose, people confirm). No delete tools |
@@ -231,7 +231,8 @@ The proof-of-concept platform in `apps/platform` proved the risky parts first: t
 │       ├── src/migrations/    Payload migrations (the only way shared schemas change)
 │       ├── src/releases/      publish, rollback, snapshot, checksum, renderer lookup
 │       ├── src/seed/          seed, password rotation
-│       ├── tests/int/         isolation, audit, REST/GraphQL, RLS, facts, releases, design, public site, self-service
+│       ├── tests/int/         isolation, audit, REST/GraphQL, RLS, facts, releases, design, public site, self-service, own domain, plugins
+│       ├── tests/quality/     quality gates: axe, structured data, page weight, per template
 │       ├── tests/visual/      screenshot scripts (site, admin, every template)
 │       └── edgeone.json       Makers build and Frankfurt region
 ├── docs/
