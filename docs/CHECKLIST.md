@@ -54,15 +54,19 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 - [x] **ENG** Security basics: security headers on every response, login lockout (5 tries, 15 min), Dependabot, CodeQL. Edge rate limits are a console setting on the host (owner)
 - [x] **ENG** Static map image at publish time instead of the OpenStreetMap embed — `src/media/static-map.ts`
 - [x] **ENG** Quality gates in CI for every template: axe (WCAG 2.2 AA), structured data, page-weight budget, one h1/lang/canonical — `tests/quality/gates.mjs`, runs on every push. Lighthouse itself is not run (the budget covers its weight signal; scores come from the owner's PageSpeed checks)
-- [ ] **ENG** Brand proposal agent and branding skill (Phase 3)
-- [ ] **ENG** Visual studio v0 on the same blocks (Phase 3)
-- [ ] **ENG** Hotel dashboard and team dashboard (Phase 4)
-- [ ] **ENG** Alerts (Sentry EU, uptime), admin action log, backups with a restore drill (Phase 4)
-- [ ] **BIZ** Data processing agreement for hotels, providers list, processing register, breach procedure (before the first invoice)
+- [x] **ENG** Brand proposal (accent from logo/photos, template from facts, apply after approval) — `src/design/propose-brand.ts`, Look panel; prompt `docs/prompts/onboard-hotel-self-service.md`
+- [x] **ENG** Ingest v1 in the admin, fact review screen, generation from confirmed facts, translation with edit protection — `src/ingest/`, `src/generate/`, `/admin/review/<site>`; one model door `src/ai/provider.ts` (mock until the key exists)
+- [ ] **ENG** Visual studio v0 on the same blocks (Phase 3) — not started; the admin forms plus preview cover editing today
+- [x] **ENG** Hotel dashboard and team dashboard (admin home), issues with one-tap fixes, nightly checks and axe on live sites, monthly report, action log — `src/health/`, `src/admin/Dashboard.tsx`, `.github/workflows/nightly.yml`
+- [x] **ENG** Uptime workflow every 30 min, action log, backup scope extended to every tenant table and restore drill re-run (Phase 4). Sentry not added (owner: account)
+- [x] **ENG** Template upgrade path: canary channel per site, `[data-canary]` CSS sections, gates on both channels (Phase 5 mechanism)
+- [ ] **ENG** RLS enforcing for live requests (after Gate 1: restricted role on Neon)
+- [ ] **BIZ** Data processing agreement for hotels, providers list, processing register, breach procedure (before the first invoice) — engineering drafts in `docs/compliance/`; lawyer review needed
 - [ ] **BIZ** External accessibility audit and penetration test (before the first invoice)
 - [ ] **OWN** Delete the old Makers project `hh-platform-poc` in the console
 - [ ] **OWN** Our platform domain and a test subdomain; email provider account
 - [ ] **OWN** A designer to add and refine templates within the contract
+- [ ] **OWN** Sentry (EU) account if error alerts beyond uptime are wanted; AI model key to switch on extraction, copy, translation
 
 ## Before week 1 — owner actions
 

@@ -11,6 +11,8 @@ import * as migration_20260925_014408_drop_pages_seo_group from './20260925_0144
 import * as migration_20260925_043231_phase3_ingest from './20260925_043231_phase3_ingest';
 import * as migration_20260925_043753_phase3_generation_provenance from './20260925_043753_phase3_generation_provenance';
 import * as migration_20260925_044352_phase3_brand_proposal from './20260925_044352_phase3_brand_proposal';
+import * as migration_20260925_050204_phase4_issues_audit_log from './20260925_050204_phase4_issues_audit_log';
+import * as migration_20260925_050923_phase5_design_channel from './20260925_050923_phase5_design_channel';
 
 export const migrations = [
   {
@@ -76,6 +78,16 @@ export const migrations = [
   {
     up: migration_20260925_044352_phase3_brand_proposal.up,
     down: migration_20260925_044352_phase3_brand_proposal.down,
-    name: '20260925_044352_phase3_brand_proposal'
+    name: '20260925_044352_phase3_brand_proposal',
+  },
+  {
+    up: migration_20260925_050204_phase4_issues_audit_log.up,
+    down: migration_20260925_050204_phase4_issues_audit_log.down,
+    name: '20260925_050204_phase4_issues_audit_log',
+  },
+  {
+    up: migration_20260925_050923_phase5_design_channel.up,
+    down: migration_20260925_050923_phase5_design_channel.down,
+    name: '20260925_050923_phase5_design_channel'
   },
 ];

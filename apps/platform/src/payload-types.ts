@@ -77,6 +77,8 @@ export interface Config {
     releases: Release;
     facts: Fact;
     crawls: Crawl;
+    issues: Issue;
+    'audit-log': AuditLog;
     rooms: Room;
     offers: Offer;
     redirects: Redirect;
@@ -100,6 +102,8 @@ export interface Config {
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
     facts: FactsSelect<false> | FactsSelect<true>;
     crawls: CrawlsSelect<false> | CrawlsSelect<true>;
+    issues: IssuesSelect<false> | IssuesSelect<true>;
+    'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
     rooms: RoomsSelect<false> | RoomsSelect<true>;
     offers: OffersSelect<false> | OffersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -264,6 +268,10 @@ export interface Site {
    * Maison: Classic and warm: serif headings, cream background, full-width photos. Suits heritage and boutique hotels. · Atelier: Modern and minimal: sans-serif type, white space, square corners, photo beside the headline. Suits design and city hotels. · Soirée: Dark and elegant: night palette, gold accent, centred headlines. Suits luxury and evening-led hotels.
    */
   template?: ('maison' | 'atelier' | 'soiree') | null;
+  /**
+   * Template upgrades reach canary sites first (customer zero, our demo sites), then everyone. Render-time only: not part of releases.
+   */
+  designChannel?: ('stable' | 'canary') | null;
   /**
    * Optional: leave empty to use the template as designed. Colours as #rrggbb. Button text, links and secondary text are adjusted automatically to stay readable (WCAG AA).
    */
@@ -1089,6 +1097,92 @@ export interface Crawl {
   createdAt: string;
 }
 /**
+ * What the platform noticed about your website, with a fix to approve when there is one.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "issues".
+ */
+export interface Issue {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  site: number | Site;
+  kind:
+    | 'broken-link'
+    | 'missing-alt'
+    | 'missing-meta'
+    | 'stale-content'
+    | 'expired-offer'
+    | 'missing-fact'
+    | 'uptime'
+    | 'performance'
+    | 'accessibility'
+    | 'unanswered';
+  severity: 'info' | 'warning' | 'error';
+  title: string;
+  detail?: string | null;
+  /**
+   * Where it was seen
+   */
+  url?: string | null;
+  status: 'open' | 'applied' | 'resolved' | 'dismissed';
+  fingerprint: string;
+  /**
+   * What "Apply" would do
+   */
+  fixLabel?: string | null;
+  fix?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  source?: string | null;
+  detectedAt?: string | null;
+  resolvedAt?: string | null;
+  appliedBy?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Every change to your website content, with who made it.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log".
+ */
+export interface AuditLog {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  collectionSlug: string;
+  docId: string;
+  operation: 'create' | 'update' | 'delete';
+  /**
+   * user:<id> <email>, api-key:<id>, job, system
+   */
+  actor: string;
+  summary: string;
+  /**
+   * Field names that changed
+   */
+  changed?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * generation, translation, import, publish…
+   */
+  context?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Room types shown on the hotel website. Changes go live with the next publish.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1439,6 +1533,14 @@ export interface PayloadLockedDocument {
         value: number | Crawl;
       } | null)
     | ({
+        relationTo: 'issues';
+        value: number | Issue;
+      } | null)
+    | ({
+        relationTo: 'audit-log';
+        value: number | AuditLog;
+      } | null)
+    | ({
         relationTo: 'rooms';
         value: number | Room;
       } | null)
@@ -1571,6 +1673,7 @@ export interface SitesSelect<T extends boolean = true> {
   defaultLocale?: T;
   theme?: T;
   template?: T;
+  designChannel?: T;
   brand?:
     | T
     | {
@@ -2012,6 +2115,45 @@ export interface CrawlsSelect<T extends boolean = true> {
   startedBy?: T;
   finishedAt?: T;
   state?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "issues_select".
+ */
+export interface IssuesSelect<T extends boolean = true> {
+  tenant?: T;
+  site?: T;
+  kind?: T;
+  severity?: T;
+  title?: T;
+  detail?: T;
+  url?: T;
+  status?: T;
+  fingerprint?: T;
+  fixLabel?: T;
+  fix?: T;
+  source?: T;
+  detectedAt?: T;
+  resolvedAt?: T;
+  appliedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log_select".
+ */
+export interface AuditLogSelect<T extends boolean = true> {
+  tenant?: T;
+  collectionSlug?: T;
+  docId?: T;
+  operation?: T;
+  actor?: T;
+  summary?: T;
+  changed?: T;
+  context?: T;
   updatedAt?: T;
   createdAt?: T;
 }

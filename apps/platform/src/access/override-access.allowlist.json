@@ -72,6 +72,22 @@
     {
       "file": "src/design/propose-brand.ts",
       "reason": "Brand proposal and apply, run after src/design/brand-endpoints.ts has checked the caller's access to the site; every query filters on the explicit tenantId; apply runs the same contrast gates as a hand-picked brand."
+    },
+    {
+      "file": "src/health/check.ts",
+      "reason": "Site checks, run for an explicit (tenantId, siteId) after the endpoint checked the caller's access or the nightly service token; every query filters on the tenant; writes only issues of that tenant."
+    },
+    {
+      "file": "src/health/endpoints.ts",
+      "reason": "Nightly service endpoints behind HEALTH_TOKEN iterate live sites and hand each to checkSite with its own tenantId; the apply endpoint changes content only under the caller's own access and marks the issue afterwards."
+    },
+    {
+      "file": "src/health/report.ts",
+      "reason": "Monthly report for an explicit (tenantId, siteId) after the endpoint checked the caller's access; every count filters on the tenant."
+    },
+    {
+      "file": "src/collections/AuditLog.ts",
+      "reason": "Action-log hooks write one row per change under the changed document's own tenant; the row is never reachable to a user's write, and content access was already checked by the operation that fired the hook."
     }
   ]
 }

@@ -59,7 +59,7 @@ const run = async () => {
   const seededIds = seeded.docs.map((t) => t.id)
   if (seededIds.length) {
     await payload.update({ collection: 'sites', where: { tenant: { in: seededIds } }, data: { currentRelease: null }, overrideAccess: true })
-    for (const collection of ['releases', 'facts', 'rooms', 'domains', 'pages', 'sites'] as const) {
+    for (const collection of ['issues', 'crawls', 'releases', 'facts', 'rooms', 'offers', 'redirects', 'forms', 'domains', 'pages', 'sites', 'audit-log'] as const) {
       await payload.delete({ collection, where: { tenant: { in: seededIds } }, overrideAccess: true })
     }
   }

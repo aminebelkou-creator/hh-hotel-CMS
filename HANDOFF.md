@@ -10,19 +10,19 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ---
 
-## Current state — 25 September 2026, end of session 12
+## Current state — 25 September 2026, end of session 13 (overnight autonomous run)
 
 ### Where we are
 
 | | |
 | --- | --- |
-| Plan position | Day −3. The 90-day plan starts Monday 28 September; engineering started early on 22 September. Phase 1 and the engineering half of Phase 2 are done; what remains of Phase 2 is the owner's: a domain, Tencent's answer, an email provider |
+| Plan position | Day −3. The 90-day plan starts Monday 28 September; engineering started early on 22 September. **Phases 1–4 engineering built ahead of the plan** (Phase 3: ingest, review, generation, translation, brand proposal; Phase 4: nightly checks, issues with one-tap fixes, monthly report, dashboards, action log, uptime); Phase 5 mechanisms (canary template upgrades, full-scope backups) and compliance drafts in place. What is missing needs the owner: a domain, Tencent's answer, an email provider, the AI model key, a lawyer, real hotels |
 | Product focus | **Changed by the owner on 24 Sep: a hotel marketing website, no booking logic, no PMS work.** The booking step is removed from the site and its code parked (`src/booking/`) |
 | Customer zero | **Marketing website live, content approved by the owner (24 Sep)**: release r5 (25 Sep: static map, SEO fields, templates), served by the Makers project **`hh-platform` (area overseas)** at https://hh-platform.edgeone.dev/s/hotel-herse-dor (code `123c732` deployed 25 Sep; customer zero on Maison). The old project `hh-platform-poc` (area global, custom domains impossible without ICP) still serves the same database at https://hh-platform-poc.edgeone.cool until retired. 6 pages + 3 legal pages, FR/EN, room types, offer, house rules, FAQ, map, schema.org Hotel and FAQPage, sitemap. **Photos now on our own storage** (0 images from the old site). Owner account `proprietaire@hotel-herse-dor.demo` (password in user env var `HH_OWNER_PASSWORD`) |
 | Look | **Three templates** (Maison, Atelier, Soirée) and a brand per site, under the design contract (`docs/11`); customer zero stays on Maison |
-| Admin | **Phase 1 done**: Website panel on sites and pages (Publish site, Undo last publish, View site, releases), Preview button on pages, photo uploads with WebP sizes (phone photos shrunk in the browser). **Phase 2**: SEO fields per page, Redirects, Forms and Form submissions per hotel; login lockout after 5 tries. Checked live as the owner, who sees only their hotel |
+| Admin | **Home = dashboard** (hotel: live version, domain, health, open issues with Apply/Dismiss/Check now, this month's numbers; our team: the fleet table). Sites carry four panels: Website (publish/undo), **Import the current website** (crawl → facts, Review facts screen, Draft pages, Translate), **Look** (propose/apply a template and accent), Publish. Collections added: Crawls, Issues, Action log. Phase 1–2 items unchanged |
 | Gate 2 (content) | Met on Neon on 23 Sep: publish 3.1 s including HTTP verification, rollback 1.2 s (targets 60 s / 10 s) |
-| CI / deploy | Every push: migrations on a fresh Postgres, drift check, import-map check, seed, typecheck, suites, build, HTTP suites, **quality gates** (axe, structured data, page weight on every template); CodeQL; Dependabot weekly. `deploy` workflow: migrate Neon + RLS + Makers `hh-platform` |
+| CI / deploy | Every push: migrations on a fresh Postgres, drift check, import-map check, seed, typecheck, suites, build, HTTP suites (now 9 files), quality gates on **both design channels**; CodeQL; Dependabot weekly. **Nightly** (`nightly.yml`, 03:17 UTC): platform checks + axe on every live site → issues. **Uptime** every 30 min. `deploy` workflow: migrate Neon + RLS + Makers `hh-platform` |
 | Gate 1 (week 3) | Waiting on Tencent (email not sent). Custom domains: **unblocked** (project area overseas) and **own-domain serving is built** (`src/proxy.ts`: a verified domain answers at `/`, `/admin` only on ours). Next: a test subdomain the owner controls, then add it in the Makers console and in the admin |
 | Speed | Origin: one query per page, in-process release cache, cache headers. About 1.1 s per page from Paris, 0.3 s of it is the function. **The Makers CDN does not cache function responses (finding 31)**; Neon free tier adds 2–5 s on a cold start. Under 1 s needs the host's cache rules or a paid Neon plan |
 
@@ -35,6 +35,18 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Contact form | `src/forms/contactEndpoint.ts`, `src/site/FormBlock.tsx` | The form block posts JSON to `POST /api/contact` (honeypot, 2.5 s timing check, required fields), which creates the submission under the form's tenant through the Local API — the multi-tenant plugin refuses anonymous REST writes (finding 32) |
 | Security | `src/proxy.ts`, `Users.ts`, `.github/` | Security headers on every response (nosniff, referrer policy, frame options, permissions policy, HSTS, COOP); login lockout 5 tries / 15 min; Dependabot weekly (no Payload majors); CodeQL |
 | Quality gates | `tests/quality/gates.mjs` | Every push, on seeded site-10 in all three templates: axe WCAG 2.2 AA zero violations, JSON-LD parses (Hotel on home, FAQPage on contact), one h1/lang/canonical/viewport, page weight over the wire without photos under 450 KB (measured 218–271 KB; JS 136 KB, fonts 73–125 KB). `pnpm test:gates <base-url> [site-slug]` locally; `PW_CHANNEL=chrome` to use the installed Chrome |
+| AI door | `src/ai/provider.ts` | `getAi()`: mock by default; `AI_PROVIDER=anthropic|openai` + `AI_API_KEY` (+ `AI_MODEL`, `AI_BASE_URL`) switch on extraction, page copy, translation, brand rationale. Tests script it with `setAiForTests` |
+| Ingest v1 | `src/ingest/{crawl,run,extract-ai,facts,endpoints}.ts`, `collections/Crawls.ts`, `admin/IngestPanel.tsx` | Chunked polite crawl from the admin (8 pages / 30 s per request, browser-driven), deterministic extraction with sources, optional model pass (allow-listed keys, unconfirmed, method `agent`); facts merge evidence per sighting |
+| Fact review | `admin/ReviewView.tsx`, `admin/FactReview.tsx` | `/admin/review/<siteId>`: grouped by kind, edit value, confirm / reject / undo, "confirm the sure ones" (≥ 0.8) |
+| Generation | `src/generate/{generate,copy,protect,endpoints}.ts` | Drafts home/rooms/services/contact and room types from confirmed facts; slots `gen:<page>:<block>`; a person's edit marks the block `human` (hook) and survives regeneration; model copy checked (numbers no fact backs are dropped) |
+| Translation | `src/generate/translate.ts` | Field-by-field from the collection's field definitions; generated blocks rewritten, human text only filled when empty; needs a model |
+| Brand proposal | `src/design/{propose-brand,brand-endpoints}.ts`, `admin/BrandPanel.tsx` | Accent from the logo or photos (sharp, saturated dominant colour), template from stars / words / photo mood, readable on the template; `sites.brandProposal`, applied on approval through the contrast gates |
+| Health | `src/health/{check,report,endpoints,kinds}.ts`, `collections/Issues.ts`, `tests/quality/nightly.mjs` | Checks on the live release: links (internal slugs and external URLs), photos without alt, missing search text (fix), stale releases, expired offers (fix), missing hotel facts, uptime/speed of the home page; issues de-duplicated by fingerprint, auto-resolved when gone, dismissed stay dismissed. `POST /api/sites/:id/check`, `/api/issues/:id/apply`, service endpoints `/api/health/run` and `/report` behind `HEALTH_TOKEN` |
+| Dashboards | `admin/Dashboard.tsx`, `admin/IssueList.tsx` | Admin home; reads with the user's own access; super-admins get the fleet |
+| Action log | `collections/AuditLog.ts` | `withAudit` hooks on sites, pages, facts, domains, media, redirects, forms, rooms, offers, crawls: who, what, changed field names (never values); read-only |
+| Design channel | `sites.designChannel`, `src/site/theme.ts`, `site.css` (last section) | Canary sites get `[data-canary]`; the upgrade path is in `docs/11` §upgrades; gates run both channels |
+| Tenant tables | `src/db/tenant-tables.ts` | The one list (15 tables) behind RLS, checksums, backup/restore; a test checks `rls.sql` agrees |
+| Compliance drafts | `docs/compliance/` | Register, sub-processors, DPA skeleton, breach procedure, accessibility statement template |
 | Hotel pack | `packs/hotel` (`@hh/pack-hotel`) | Room types and offers collections; rooms, offers and policies blocks; snapshot contribution (offers filtered by date at render); schema.org `Hotel`. Loaded only through `src/packs.ts` |
 | Page blocks | `src/collections/Pages.ts` | hero, text and image, text (with subheadings), features, gallery, quote, FAQ, call to action, contact details, map (static image made at publish from OpenStreetMap tiles, no third-party request), form, rich text; menu label and order, footer flag; reserved slugs refused. Seeded tenants carry every core block so the gates exercise the full CSS |
 | Design | `src/design/`, `docs/11`, `docs/14`, `docs/design-tokens/` | Design contract, three templates (Maison, Atelier, Soirée), brand fields with contrast gates, self-hosted fonts; designer brief with example prompts; tokens exported for designers |
@@ -46,9 +58,9 @@ Read this first when you pick the project up, whether you are a person or an AI 
 | Fact base | `src/collections/Facts.ts`, `src/ingest/` | Customer zero: 21 confirmed, 6 rejected, 12 unconfirmed. Engineering confirmed what the hotel's own site supports ("Demo" note); coordinates approximate |
 | Release pipeline v0 | `src/releases/`, `src/jobs/publishSite.ts` | Unchanged; snapshots now carry pack data (rooms) and site tagline/logo/CTA (schema 2) |
 | Booking (parked) | `src/booking/` | Adapter + clockPMS BE mock, unused by the site; unit tests keep it compiling |
-| Migrations | `src/migrations` | Latest four: `phase1_selfservice`, `site_templates`, `plugins_seo_redirects_forms` (copies the old `seo_*` columns into the plugin's `meta_*`), `drop_pages_seo_group`. Rehearsed on 50 tenants + customer zero: 0 of 51 changed |
-| Test suites | `tests/int`, `tests/quality` | 16 files, 117 tests: isolation (incl. rooms, offers, redirects, forms), extended, audit (scans `packs/`), REST/GraphQL, RLS (12 tables), RLS under Payload, facts, releases, booking (parked), normaliser, design contract, public site over HTTP, self-service, own domain (fake `Host` header), plugins and contact form; plus the quality gates (9 pages) |
-| RLS | `src/db/rls.sql` | 12 tables incl. `facts`, `rooms`, `offers`, `redirects`, `forms`, `form_submissions`, context-optional. Not yet enforcing for live requests |
+| Migrations | `src/migrations` | Latest: `phase3_ingest`, `phase3_generation_provenance`, `phase3_brand_proposal`, `phase4_issues_audit_log`, `phase5_design_channel` (all additive). Earlier: `plugins_seo_redirects_forms`, `drop_pages_seo_group`, `site_templates`, `phase1_selfservice` |
+| Test suites | `tests/int`, `tests/quality` | 20 files, 159 tests (ingest, generate/translate, brand, health added): isolation (incl. rooms, offers, redirects, forms), extended, audit (scans `packs/`), REST/GraphQL, RLS (12 tables), RLS under Payload, facts, releases, booking (parked), normaliser, design contract, public site over HTTP, self-service, own domain (fake `Host` header), plugins and contact form; plus the quality gates (9 pages) |
+| RLS | `src/db/rls.sql`, `src/db/tenant-tables.ts` | 15 tables (+ `crawls`, `issues`, `audit_log`), context-optional. Not yet enforcing for live requests |
 | Local databases | Docker `hh-postgres` | `hh_platform` rebuilt from migrations (50 tenants + customer zero), `hh_check` (10 + customer zero). The old `next dev` that pushed schema into `hh_platform` is stopped |
 
 ### Watch out
@@ -62,6 +74,9 @@ Read this first when you pick the project up, whether you are a person or an AI 
 - Never run `next dev` against `hh_platform` or `hh_check` for long: dev mode pushes schema. Use `next start` on port 3100 for local checks.
 - CI once ran `payload migrate` with no output and no migrations (run 36086946504, 25 Sep); the seed then failed on a missing table. A re-run passed. If it repeats, add a `migrate:status` check after the migrate step.
 - Dependabot: actions bumps and the Next group merge after CI; toolchain majors (TypeScript, @types/node, vitest, eslint, jsdom) and GraphQL/dotenv majors are ignored in `dependabot.yml` and taken by hand.
+- **A non-draft `payload.update` on a page that has a newer draft version flips the page to draft** (CLAUDE.md 37): pass `_status: 'published'` or save with `draft: true`. Generation and translation always save drafts.
+- **`HEALTH_TOKEN`** (Makers production variable and GitHub secret, value in Windows user var `HH_HEALTH_TOKEN`) protects the nightly endpoints; `PUBLIC_BASE_URL` on Makers is the address the uptime check calls.
+- Sites' `designChannel` is render-time only; never put it in a release.
 - `edgeone makers link` overwrites `apps/platform/.env` with the project's variables (CLAUDE.md 31); restore the local one afterwards.
 - The Makers CDN ignores `Cache-Control` on function responses (finding 31): do not expect edge hits; speed work belongs at the origin or in the host's cache rules.
 - Anonymous writes through REST are refused by the multi-tenant plugin (finding 32): a visitor-facing write needs a custom endpoint that uses the Local API under the right tenant, as `/api/contact` does.
@@ -69,23 +84,24 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ### Next actions, in order
 
-Engineering items of Phase 2 in [`docs/10-roadmap-phases.md`](docs/10-roadmap-phases.md) are done (25 Sep). What is left needs the owner first; engineering can start Phase 3 preparation meanwhile.
+Engineering has built ahead of the plan (Phases 1–4 and the Phase 5 mechanisms, 25 Sep). The list is now mostly the owner's; engineering items are the ones that need no external input.
 
 | # | Owner | Action | Done when |
 | --- | --- | --- | --- |
-| 1 | OWN | Send the Tencent email (updated draft); delete `hh-platform-poc`; validate the legal pages | Gate 1 answers by 9 Oct |
-| 2 | OWN | Our platform domain + a test subdomain (add it in the Makers console, then in the admin as a domain); an email provider account (Scaleway TEM proposed), SMTP values as Makers variables `SMTP_*` | A hotel site answers on its own domain with HTTPS; a contact message reaches an inbox |
-| 3 | ENG | Once the test domain exists: mark it `verified`, set `PLATFORM_HOSTS` on Makers, check redirects www/apex, canonical, sitemap live; then republish customer zero | Gate 1 evidence |
-| 4 | ENG | Dependabot: #1, #3, #4 (Next 16.3.5, React 19.3), #6 merged 25 Sep; #2 rebasing; #5 (dev tools) waits for a hand-made TypeScript decision; #7/#8 majors ignored | Dependencies current |
-| 5 | ENG | Phase 3 preparation without the AI key: ingest v1 crawl scaffold, fact review screen design, generation prompts as skills | Ready to switch on with the key |
-| 6 | OWN | AI model key; shortlist of hotels; a designer later | Phase 3 |
+| 1 | OWN | Send the Tencent email (add the Makers Agents questions only if the guest agent study is revived); delete `hh-platform-poc`; validate the legal pages | Gate 1 answers by 9 Oct |
+| 2 | OWN | Our platform domain + a test subdomain (Makers console, then the admin); an email provider (Scaleway TEM proposed) → Makers variables `SMTP_*`; the **AI model key** → Makers variables `AI_PROVIDER`, `AI_API_KEY` (`AI_MODEL` optional) | Own domain live; contact form and monthly report emails; extraction, copy and translation switched on |
+| 3 | ENG | Once the domain exists: mark it `verified`, set `PLATFORM_HOSTS` on Makers, check redirects, canonical, sitemap live; republish customer zero | Gate 1 evidence |
+| 4 | ENG | With the model key: run the Phase 3 flow on customer zero's own website as the 80 % measure (import → review → compare with the hand-written facts), tune prompts | Number in the checklist |
+| 5 | ENG | RLS enforcing for live requests: restricted role on Neon, `SET LOCAL ROLE` + tenant ids per request (docs/05 proposal) | Owner-role connections limited to migrations |
+| 6 | ENG | Visual studio v0 spike (Puck on the same blocks) — only if the admin forms + preview prove insufficient with the design partners | Decision recorded |
+| 7 | OWN | Lawyer review of `docs/compliance/`; external accessibility audit and pen test before the first invoice; Sentry account if wanted; shortlist of hotels; a designer | Phase 5 |
 
 ### Waiting on the owner
 
 | Action | Blocks |
 | --- | --- |
 | Send the Tencent email: [`docs/outreach/tencent-makers-platforms-email.md`](docs/outreach/tencent-makers-platforms-email.md) | Gate 1, custom domains |
-| A test domain for the custom-domain work; an email provider (SMTP) | Gate 1 evidence; contact form email |
+| A test domain for the custom-domain work; an email provider (SMTP); the AI model key | Gate 1 evidence; contact form and report emails; Phase 3 model features |
 | AI model key | Phase 3 |
 | Revoke the Tencent CAM key beginning `IKIDTYWK` | Security hygiene |
 | Share the repository with the team; shortlist 15 hotels | Anyone else working on it; design partners |
@@ -100,6 +116,8 @@ Engineering items of Phase 2 in [`docs/10-roadmap-phases.md`](docs/10-roadmap-ph
 | Customer zero owner's password (`proprietaire@hotel-herse-dor.demo`) | Windows user env var `HH_OWNER_PASSWORD` |
 | EdgeOne Makers API token | Windows user env var `EDGEONE_PAGES_API_TOKEN`; GitHub secret `EDGEONE_PAGES_API_TOKEN` (dedicated CI token; rotate before it expires) |
 | Tencent CAM key (new) | Windows user env vars `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY` |
+| Nightly health token | Windows user env var `HH_HEALTH_TOKEN`; Makers project variable `HEALTH_TOKEN`; GitHub secret `HEALTH_TOKEN` |
+| AI model key (when it exists) | Makers project variables `AI_PROVIDER`, `AI_API_KEY`; locally in `apps/platform/.env` only |
 
 ### Resume in five commands
 
@@ -137,6 +155,23 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 | Customers before platform (principle 1) | No hotel conversations yet | BIZ work has to start in week 1 regardless of engineering progress |
 
 ## Delta log
+
+### 2026-09-25 · session 13 · `984c7e9` → this commit (overnight run: Phases 3, 4 and the Phase 5 mechanisms)
+
+**Changed**
+- **Phase 3** (`8242767`): one model door (`src/ai/provider.ts`, mock unless configured); ingest v1 in the admin (crawls collection, chunked crawl driven from the browser, deterministic extraction with sources, optional model pass); fact review screen `/admin/review/<site>`; generation of pages and room types from confirmed facts with provenance slots and the human-edit hook; translation field by field with edit protection; brand proposal from logo/photos/facts with apply-on-approval. Three additive migrations. 32 new tests.
+- **Phase 4** (this commit): `issues` collection and `src/health` (checks on the live release, one-tap fixes under the approver's rights, monthly report, service endpoints behind `HEALTH_TOKEN`), nightly workflow with axe on every live home page, uptime workflow, admin home dashboards (hotel and fleet), action log with hooks on every content collection. `HEALTH_TOKEN` and `PUBLIC_BASE_URL` set on Makers production; `HEALTH_TOKEN` as a GitHub secret.
+- **Phase 5 mechanisms**: design channel (canary first) with `[data-canary]` CSS sections and gates on both channels; `src/db/tenant-tables.ts` as the single list behind RLS, checksums and backup (backup scope grew from 6 root tables to 15, 123 with children; restore drill passed: 116 rows, 190 ms, 0 other tenants changed); compliance drafts in `docs/compliance/`.
+- Docs: roadmap Phases 3–5 rows, checklist, CLAUDE.md 37–39, design contract §upgrades, prompts (self-service onboarding), docs index.
+
+**Measured**
+- Local hh_check: 159 tests green (20 files) with the 3100 server; gates 9/9 pages on stable and canary; restore rehearsal 0/11 tenants changed after restore.
+
+**Not done, and why**
+- Visual studio v0 (Puck): a spike with no design partner to judge it would be guesswork; the admin forms + preview are the editing path until a hotel says otherwise.
+- RLS enforcing for live requests: needs a restricted role on Neon (owner console) and a session-role hop per request; scheduled after Gate 1.
+- Sentry: needs an account (owner). Uptime alerts exist through the workflow.
+- Model-dependent measures (80 % of facts, translation quality): wait for the AI key; every path runs deterministically meanwhile.
 
 ### 2026-09-25 · session 12 · `e314d4f` → this commit (Phase 2 engineering, run without prompts)
 

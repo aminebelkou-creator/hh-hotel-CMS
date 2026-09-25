@@ -10,6 +10,7 @@ import 'dotenv/config'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { TENANT_TABLES } from './tenant-tables'
 
 const [mode, file] = process.argv.slice(2)
 const arg = (flag: string) => {
@@ -19,21 +20,7 @@ const arg = (flag: string) => {
 const ignore = ['updated_at', ...arg('--ignore')]
 const expectedChanged = new Set(arg('--only-tenants'))
 
-const TABLES: [string, string][] = [
-  ['sites', 'tenant_id'],
-  ['pages', 'tenant_id'],
-  ['_pages_v', 'version_tenant_id'],
-  ['media', 'tenant_id'],
-  ['domains', 'tenant_id'],
-  ['releases', 'tenant_id'],
-  ['facts', 'tenant_id'],
-  ['rooms', 'tenant_id'],
-  ['offers', 'tenant_id'],
-  ['redirects', 'tenant_id'],
-  ['forms', 'tenant_id'],
-  ['form_submissions', 'tenant_id'],
-  ['crawls', 'tenant_id'],
-]
+const TABLES: readonly [string, string][] = TENANT_TABLES
 
 const payload = await getPayload({ config })
 type Pool = { query: (sql: string, p?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> }

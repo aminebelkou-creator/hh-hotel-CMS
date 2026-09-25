@@ -112,3 +112,15 @@ A future **skill** packages sections 2–7 for agents, with one tool that writes
 - Each template has a `version`. A change to a template's CSS or defaults bumps it and is visible on every site using it at its next render; releases store the template id and brand, not the CSS. This is intended: template fixes reach all sites (spec: "evergreen by construction").
 - A breaking visual change becomes a new template id rather than a silent change to an existing one.
 - Old releases (before templates existed) render as `maison` (`upgradeSnapshot`).
+
+## Upgrading a template: canary first
+
+A release stores the template's *name*, so a change to a template's CSS reaches every site on it at the next render. To ship a change without surprising every hotel at once:
+
+1. Write the new rules in `site.css` under the template's `[data-canary]` block (the last section of the file), never in its stable section.
+2. Run the gates on both channels: `pnpm test:gates <base>` and `GATE_CHANNEL=canary pnpm test:gates <base>` (CI runs both on every push).
+3. Sites on the **canary** channel (`sites.designChannel`, set by our team only; customer zero and our demo sites) see the new version immediately; watch them for a few days, take screenshots (`tests/visual/templates.mjs`).
+4. Promote: move the rules into the template's stable section, bump `TEMPLATES[id].version`, leave the canary block empty, deploy. Every site follows; no content changes, no republish.
+5. If something is wrong on canary, delete the canary rules: stable sites never saw them.
+
+The channel is render-time only (read from the site row on every request) and is never part of a release, so a rollback of content does not change the look and a look change does not need a publish.

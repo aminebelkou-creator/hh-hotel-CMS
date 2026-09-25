@@ -58,7 +58,7 @@ export async function loadLiveReleaseByHost(
  * One round trip for the public path: the site's pointer, tenant and primary domain.
  * (Payload's find would cost two queries per collection and three collections.)
  */
-const SITE_SQL = `select s.id, s.slug, s.status, s.tenant_id, s.current_release_id,
+const SITE_SQL = `select s.id, s.slug, s.status, s.tenant_id, s.current_release_id, s.design_channel,
   (select d.hostname from domains d where d.site_id = s.id and d."primary" = true and d.status in ('verified','active') order by d.id limit 1) as primary_host,
   dd.hostname as matched_host
   from sites s`
@@ -72,10 +72,11 @@ function rowToSite(row: Record<string, unknown> | undefined): SiteRow | null {
     tenant: row.tenant_id == null ? null : Number(row.tenant_id),
     currentRelease: row.current_release_id == null ? null : Number(row.current_release_id),
     primaryHost: (row.primary_host as string | null)?.toLowerCase() ?? null,
+    designChannel: (row.design_channel as string | null) ?? 'stable',
   }
 }
 
-type SiteRow = { id: number; slug: string; status: string | null; tenant: number | null; currentRelease: number | null; primaryHost: string | null }
+type SiteRow = { id: number; slug: string; status: string | null; tenant: number | null; currentRelease: number | null; primaryHost: string | null; designChannel: string }
 
 async function liveReleaseOf(payload: Payload, site: SiteRow | null): Promise<LiveRelease | null> {
   if (!site || site.status === 'suspended' || !site.currentRelease) return null
@@ -106,7 +107,7 @@ async function liveReleaseOf(payload: Payload, site: SiteRow | null): Promise<Li
       checksum: cached.checksum,
       status: cached.status,
       // A fresh copy per request: the renderer sets basePath on it (render-time only).
-      snapshot: { ...cached.snapshot, site: { ...cached.snapshot.site } },
+      snapshot: { ...cached.snapshot, site: { ...cached.snapshot.site, designChannel: site.designChannel } },
       storedSnapshot: cached.stored,
     },
   }

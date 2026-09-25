@@ -9,6 +9,8 @@ export function themeAttrs(snapshot: SiteSnapshot | null | undefined, extraClass
     className: `hh-theme ${extraClass}`.trim(),
     'data-template': th.template,
     'data-scheme': th.scheme,
+    // Canary sites see the [data-canary] CSS sections (template upgrades, docs/11 §upgrades).
+    ...(snapshot?.site.designChannel === 'canary' ? { 'data-canary': '' } : {}),
     style: themeVars(th) as React.CSSProperties,
   }
 }

@@ -10,6 +10,8 @@ import { gzipSync } from 'node:zlib'
 const base = (process.argv[2] || process.env.PLATFORM_URL || 'http://localhost:3000').replace(/\/+$/, '')
 const slug = process.argv[3] || 'site-10'
 const templates = (process.env.GATE_TEMPLATES || 'maison,atelier,soiree').split(',')
+// GATE_CHANNEL=canary runs the pages on the canary channel (the next template version, docs/11 §upgrades).
+const channel = process.env.GATE_CHANNEL === 'canary' ? 'canary' : 'stable'
 const pages = [
   ['home', ''],
   ['rooms', '/rooms'],
@@ -28,9 +30,10 @@ const auth = { authorization: `JWT ${login.token}`, 'content-type': 'application
 const site = (await (await fetch(`${base}/api/sites?where[slug][equals]=${slug}&depth=0&limit=1`, { headers: auth })).json()).docs[0]
 if (!site) throw new Error(`site ${slug} not found`)
 const original = site.template || 'maison'
+const originalChannel = site.designChannel || 'stable'
 
-const setTemplate = async (template) => {
-  const r = await fetch(`${base}/api/sites/${site.id}`, { method: 'PATCH', headers: auth, body: JSON.stringify({ template }) })
+const setTemplate = async (template, designChannel = channel) => {
+  const r = await fetch(`${base}/api/sites/${site.id}`, { method: 'PATCH', headers: auth, body: JSON.stringify({ template, designChannel }) })
   if (!r.ok) throw new Error(`template ${template}: ${r.status}`)
   const p = await (await fetch(`${base}/api/sites/${site.id}/publish`, { method: 'POST', headers: auth })).json()
   if (p.outcome !== 'live') throw new Error(`publish ${template}: ${JSON.stringify(p)}`)
@@ -75,8 +78,10 @@ try {
       await page.goto(url, { waitUntil: 'networkidle', timeout: 90000 })
       await Promise.all(pending)
       const tpl = await page.evaluate(() => document.body.dataset.template)
-      const label = `${template}/${name}`
+      const canary = await page.evaluate(() => 'canary' in document.body.dataset)
+      const label = `${template}/${name}${channel === 'canary' ? ' (canary)' : ''}`
       if (tpl !== template) failures.push(`${label}: body[data-template] is ${tpl}`)
+      if (canary !== (channel === 'canary')) failures.push(`${label}: canary attribute ${canary ? 'present' : 'missing'}`)
       if (bad.length) failures.push(`${label}: failed requests ${bad.join(', ')}`)
 
       // 1. Accessibility: WCAG 2.0/2.1/2.2 A and AA, plus best practices that map to the contract.
@@ -126,7 +131,7 @@ try {
     }
   }
 } finally {
-  await setTemplate(original).catch((e) => console.error('restore failed', e))
+  await setTemplate(original, originalChannel).catch((e) => console.error('restore failed', e))
   await browser.close()
 }
 console.table(rows)
@@ -135,4 +140,4 @@ if (failures.length) {
   for (const f of failures) console.error(' - ' + f)
   process.exit(1)
 }
-console.log(`\nAll gates passed for ${templates.length} templates × ${pages.length} pages.`)
+console.log(`\nAll gates passed for ${templates.length} templates × ${pages.length} pages (${channel}).`)

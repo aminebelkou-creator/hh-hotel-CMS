@@ -4,6 +4,7 @@ import { publishEndpoint, rollbackEndpoint } from '../releases/endpoints'
 import { ingestEndpoint } from '../ingest/endpoints'
 import { generateEndpoint, translateEndpoint } from '../generate/endpoints'
 import { applyBrandEndpoint, proposeBrandEndpoint } from '../design/brand-endpoints'
+import { checkSiteEndpoint, reportEndpoint, sendReportEndpoint } from '../health/endpoints'
 import { isHex } from '../design/color'
 import { resolveTheme, type Brand } from '../design/theme'
 import { CORNERS, DEFAULT_TEMPLATE, FONT_IDS, FONT_LABELS, TEMPLATE_IDS, TEMPLATES } from '../design/templates'
@@ -24,7 +25,7 @@ export const Sites: CollectionConfig = {
   slug: 'sites',
   admin: { useAsTitle: 'name' },
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
-  endpoints: [publishEndpoint, rollbackEndpoint, ingestEndpoint, generateEndpoint, translateEndpoint, proposeBrandEndpoint, applyBrandEndpoint],
+  endpoints: [publishEndpoint, rollbackEndpoint, ingestEndpoint, generateEndpoint, translateEndpoint, proposeBrandEndpoint, applyBrandEndpoint, checkSiteEndpoint, reportEndpoint, sendReportEndpoint],
   fields: [
     {
       name: 'publishPanel',
@@ -90,6 +91,17 @@ export const Sites: CollectionConfig = {
       admin: {
         description: TEMPLATE_IDS.map((id) => `${TEMPLATES[id].name}: ${TEMPLATES[id].description.en}`).join(' · '),
       },
+    },
+    {
+      name: 'designChannel',
+      type: 'select',
+      defaultValue: 'stable',
+      options: [
+        { label: 'Stable', value: 'stable' },
+        { label: 'Canary (sees template changes first)', value: 'canary' },
+      ],
+      admin: { description: 'Template upgrades reach canary sites first (customer zero, our demo sites), then everyone. Render-time only: not part of releases.' },
+      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
     },
     {
       name: 'brand',

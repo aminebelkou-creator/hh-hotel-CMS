@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { getPayload, type Payload } from 'payload'
 import config from '@/payload.config'
+import { TENANT_TABLES, TENANT_TABLE_NAMES } from '@/db/tenant-tables'
 import { describe, it, beforeAll, expect } from 'vitest'
 import { TENANT_COUNT, tenantSlug } from '@/seed/constants'
 
@@ -44,12 +45,18 @@ const inTx = async <T>(opts: { role?: boolean; tenants?: number[] }, fn: (c: Cli
 const asTenant = <T>(ids: number[], fn: (c: Client) => Promise<T>) => inTx({ role: true, tenants: ids }, fn)
 
 describe('row-level security (database-enforced tenant boundary)', () => {
+  it('rls.sql and src/db/tenant-tables.ts name the same tables (backup, checksums and RLS agree)', () => {
+    const sql = readFileSync(fileURLToPath(new URL('../../src/db/rls.sql', import.meta.url)), 'utf8')
+    const pairs = [...sql.matchAll(/\('([a-z_]+)', '([a-z_]+)'\)/g)].map((m) => [m[1], m[2]])
+    expect(pairs).toEqual(TENANT_TABLES.map(([t, c]) => [t, c]))
+  })
+
   it('RLS is enabled and forced on every tenant table', async () => {
     const r = await pool.query(
       `select relname, relrowsecurity, relforcerowsecurity from pg_class
-       where relname in ('sites','pages','_pages_v','media','domains','releases','facts','rooms','offers','redirects','forms','form_submissions','crawls') and relkind = 'r'`,
+       where relname in (${TENANT_TABLE_NAMES.map((t) => `'${t}'`).join(',')}) and relkind = 'r'`,
     )
-    expect(r.rows.length).toBe(13)
+    expect(r.rows.length).toBe(TENANT_TABLE_NAMES.length)
     for (const row of r.rows) expect([row.relname, row.relrowsecurity, row.relforcerowsecurity]).toEqual([row.relname, true, true])
   })
 

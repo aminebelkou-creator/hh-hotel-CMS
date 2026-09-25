@@ -3,7 +3,7 @@
  *   tsx src/db/tenant-backup.ts export  <tenant id> <file>
  *   tsx src/db/tenant-backup.ts restore <tenant id> <file>
  *
- * Scope: the six tenant-scoped tables and every table hanging off them through Payload's
+ * Scope: every tenant-scoped table (src/db/tenant-tables.ts) and every table hanging off them through Payload's
  * `_parent_id` / `parent_id` foreign keys (locales, blocks, relationships, versions, hasMany
  * selects), discovered from the catalogue so new collections are covered automatically.
  * Not in scope: the tenant row, users and memberships (platform-level records).
@@ -14,6 +14,7 @@ import 'dotenv/config'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { TENANT_TABLES } from './tenant-tables'
 
 const [mode, tenantArg, file] = process.argv.slice(2)
 if (!['export', 'restore'].includes(mode) || !tenantArg || !file) {
@@ -21,14 +22,8 @@ if (!['export', 'restore'].includes(mode) || !tenantArg || !file) {
   process.exit(2)
 }
 
-const ROOTS: Record<string, string> = {
-  sites: 'tenant_id',
-  pages: 'tenant_id',
-  _pages_v: 'version_tenant_id',
-  media: 'tenant_id',
-  domains: 'tenant_id',
-  releases: 'tenant_id',
-}
+// Every tenant-scoped table (src/db/tenant-tables.ts): facts, rooms, offers, forms, issues… included.
+const ROOTS: Record<string, string> = Object.fromEntries(TENANT_TABLES)
 
 type Q = (sql: string, p?: unknown[]) => Promise<{ rows: Record<string, unknown>[]; rowCount: number | null }>
 type Client = { query: Q; release: () => void }
@@ -41,13 +36,13 @@ const tenant = Number(found.rows[0].id)
 // Foreign keys inside the public schema: child.col -> parent.pcol
 const fks = (
   await pool.query(`
-    select c.conrelid::regclass::text as child, a.attname as col,
+    select c.conrelid::regclass::text as child, a.attname as col, a.attnotnull as notnull,
            c.confrelid::regclass::text as parent, af.attname as pcol
     from pg_constraint c
     join pg_attribute a on a.attrelid = c.conrelid and a.attnum = c.conkey[1]
     join pg_attribute af on af.attrelid = c.confrelid and af.attnum = c.confkey[1]
     where c.contype = 'f' and c.connamespace = 'public'::regnamespace`)
-).rows.map((r) => ({ child: unquote(r.child), col: String(r.col), parent: unquote(r.parent), pcol: String(r.pcol) }))
+).rows.map((r) => ({ child: unquote(r.child), col: String(r.col), notnull: Boolean(r.notnull), parent: unquote(r.parent), pcol: String(r.pcol) }))
 function unquote(v: unknown) {
   return String(v).replace(/^"|"$/g, '')
 }
@@ -65,9 +60,20 @@ for (let grew = true; grew; ) {
 }
 const tables = Object.keys(pred)
 
-// Parents before children (Kahn), using every FK between in-scope tables.
+// Parents before children (Kahn), using every FK between in-scope tables. Nullable pointers
+// from a root table to another (sites.current_release_id -> releases, while releases.site_id
+// -> sites) form cycles: those edges are deferred, the column is inserted as NULL and set again
+// after every table is in.
 const deps = new Map(tables.map((t) => [t, new Set<string>()]))
-for (const fk of fks) if (fk.child !== fk.parent && pred[fk.child] && pred[fk.parent]) deps.get(fk.child)!.add(fk.parent)
+const deferred: { table: string; col: string }[] = []
+for (const fk of fks) {
+  if (fk.child === fk.parent || !pred[fk.child] || !pred[fk.parent]) continue
+  if (!fk.notnull && ROOTS[fk.child] && ROOTS[fk.parent]) {
+    deferred.push({ table: fk.child, col: fk.col })
+    continue
+  }
+  deps.get(fk.child)!.add(fk.parent)
+}
 const order: string[] = []
 while (order.length < tables.length) {
   const next = tables.find((t) => !order.includes(t) && [...deps.get(t)!].every((d) => order.includes(d)))
@@ -98,10 +104,17 @@ try {
   for (const t of [...order].reverse()) deleted += (await client.query(`delete from "${t}" where ${pred[t]}`, [tenant])).rowCount ?? 0
   let inserted = 0
   for (const t of order) {
-    const rows = backup.tables[t] ?? []
+    const rows = (backup.tables[t] ?? []) as Record<string, unknown>[]
     if (!rows.length) continue
-    const r = await client.query(`insert into "${t}" select * from json_populate_recordset(null::"${t}", $1::json)`, [JSON.stringify(rows)])
+    const nulled = deferred.filter((d) => d.table === t).map((d) => d.col)
+    const data = nulled.length ? rows.map((r) => ({ ...r, ...Object.fromEntries(nulled.map((c) => [c, null])) })) : rows
+    const r = await client.query(`insert into "${t}" select * from json_populate_recordset(null::"${t}", $1::json)`, [JSON.stringify(data)])
     inserted += r.rowCount ?? 0
+  }
+  for (const d of deferred) {
+    const rows = (backup.tables[d.table] ?? []) as Record<string, unknown>[]
+    if (!rows.length) continue
+    await client.query(`update "${d.table}" t set "${d.col}" = v."${d.col}" from json_populate_recordset(null::"${d.table}", $1::json) v where t.id = v.id`, [JSON.stringify(rows)])
   }
   await client.query('commit')
   payload.logger.info(`restored tenant ${tenant}: deleted ${deleted}, inserted ${inserted} rows in ${Date.now() - started} ms`)

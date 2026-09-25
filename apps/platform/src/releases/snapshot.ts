@@ -55,6 +55,8 @@ export type SiteSnapshot = {
     cta: { label: Localized<string> | null; href: string | null }
     /** Render-time only, never stored: '' when served on the hotel's own domain, else /s/<slug>. */
     basePath?: string
+    /** Render-time only (set by resolve.ts from the site row): 'canary' sites get template changes first. */
+    designChannel?: string
   }
   /** Static map image for the map block (made at publish from confirmed coordinates), or null. */
   mapImage?: string | null

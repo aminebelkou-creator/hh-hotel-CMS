@@ -232,3 +232,11 @@ body.hh-site { margin: 0; }
   .hh-btn { transition: none; }
   .hh-btn:hover { transform: none; }
 }
+
+/* ---- Canary: the next version of each template, seen only by sites on the canary channel ----
+   Upgrade path (docs/11 §upgrades): write the new rules here under [data-canary], run the gates
+   with GATE_CHANNEL=canary, watch customer zero for a few days, then move the rules into the
+   template's stable section above and leave this block empty. Never edit stable rules directly. */
+[data-template='maison'][data-canary] {}
+[data-template='atelier'][data-canary] {}
+[data-template='soiree'][data-canary] {}

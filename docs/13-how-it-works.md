@@ -46,6 +46,13 @@ flowchart LR
 | **Form / submission** | A contact form built in the admin (Website → Forms) and placed on a page with the form block. Messages land in Form submissions, per hotel, and go by email once SMTP is set | `forms`, `form-submissions` (Payload plugin), `src/forms/contactEndpoint.ts`, `src/site/FormBlock.tsx` |
 | **SEO fields** | Title, description and share image per page, filled by the hotel or generated | `meta` group on pages (Payload SEO plugin) |
 | **Quality gates** | Automatic checks on every push: accessibility, structured data and page weight for every template | `tests/quality/gates.mjs` |
+| **Import (crawl)** | Reading the hotel's current website into unconfirmed facts, from the site's Website panel; chunk by chunk so it works on serverless | `src/ingest/`, `crawls` collection |
+| **Review screen** | One pass over the facts: confirm, correct, reject | `/admin/review/<site>` (`src/admin/FactReview.tsx`) |
+| **Generation** | Drafting pages and room types from confirmed facts; blocks it wrote are marked `generated` and are rewritten on the next run unless a person edited them | `src/generate/` |
+| **Model door** | The one place that talks to an AI model; without a key everything still works, deterministically | `src/ai/provider.ts` |
+| **Issue** | Something the platform noticed about a site (a dead link, a photo without description, an expired offer…), with a one-tap fix when there is one; found every night | `issues` collection, `src/health/` |
+| **Action log** | Who changed what, when — field names, never values | `audit-log` collection |
+| **Design channel** | `stable` or `canary`: canary sites see a template's next version first (our team sets it) | `sites.designChannel`, `docs/11` §upgrades |
 | **RLS** | Row-level security: the database itself refuses cross-tenant rows | `src/db/rls.sql` |
 | **Migration** | A versioned change to the database structure, applied in order everywhere | `src/migrations/` |
 | **Onboarding content** | A hotel's site written as code, applied in every language and published by a script (used for customer zero) | `src/onboarding/` |

@@ -35,6 +35,7 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { TenantSelector as TenantSelector_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { UploadShrinker as UploadShrinker_8277d101d22c0f3d625e04c8f887bebb } from '../../../admin/UploadShrinker'
 import { TenantSelectionProvider as TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
+import { Dashboard as Dashboard_b1da18705623495fe0da513a008df5f5 } from '../../../admin/Dashboard'
 import { ReviewView as ReviewView_30ee33a34fb4407929a8e8aca929fe49 } from '../../../admin/ReviewView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -77,6 +78,7 @@ export const importMap = {
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelector": TenantSelector_d6d5f193a167989e2ee7d14202901e62,
   "/admin/UploadShrinker#UploadShrinker": UploadShrinker_8277d101d22c0f3d625e04c8f887bebb,
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelectionProvider": TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62,
+  "/admin/Dashboard#Dashboard": Dashboard_b1da18705623495fe0da513a008df5f5,
   "/admin/ReviewView#ReviewView": ReviewView_30ee33a34fb4407929a8e8aca929fe49,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

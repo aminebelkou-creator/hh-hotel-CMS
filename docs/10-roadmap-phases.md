@@ -71,14 +71,14 @@ Goal: the platform keeps sites healthy without a human, and shows the hotel what
 
 | Deliverable | Done when |
 | --- | --- |
-| Scheduled checks: broken links, stale content, accessibility, performance | Run nightly per site, issues listed in the admin |
-| Proposed fixes with one-tap approval | Hotelier approves a fix from the admin |
-| **Monthly service report** per hotel | Sent to customers 1–3 |
+| Scheduled checks: broken links, stale content, accessibility, performance | **Built 25 Sep**: `src/health/check.ts` + `.github/workflows/nightly.yml` (`tests/quality/nightly.mjs`: platform checks and axe on every live home page); issues per hotel in the admin |
+| Proposed fixes with one-tap approval | **Built 25 Sep**: `issues.fix` applied by `POST /api/issues/:id/apply` under the approver's own rights (search description, expired offer); dashboard buttons |
+| **Monthly service report** per hotel | **Built 25 Sep**: `src/health/report.ts`, `GET /api/sites/:id/report`, emailed by `POST …/report/send` once SMTP exists; summary on the dashboard |
 | Agents over MCP with scoped keys edit drafts, never publish | Audit log shows agent edits |
-| **Hotel dashboard**: site status, publish history, health, suggestions to approve, the monthly report | Home screen of the owner's admin |
-| **Team dashboard**: all hotels with status, domain, last publish, health, open issues | Our daily view of the fleet |
-| Error and uptime alerts (Sentry EU, per-site uptime), admin action log, backups with a restore drill | Alerts reach the team; restore rehearsed |
-| RLS enforcing for live requests | Owner-role connections limited to migrations |
+| **Hotel dashboard**: site status, publish history, health, suggestions to approve, the monthly report | **Built 25 Sep**: `src/admin/Dashboard.tsx` (admin home), `IssueList.tsx` |
+| **Team dashboard**: all hotels with status, domain, last publish, health, open issues | **Built 25 Sep**: the same admin home for super-admins shows the fleet table |
+| Error and uptime alerts (Sentry EU, per-site uptime), admin action log, backups with a restore drill | **Partly built 25 Sep**: uptime every 30 min (`.github/workflows/uptime.yml`, red run = alert), action log (`audit-log`, hooks on every content collection), single-tenant backup now covers all 15 tenant tables (123 with children) and the restore drill passed again. Sentry: not added (needs an account; the owner decides) |
+| RLS enforcing for live requests | Still evaluation: needs a restricted role on Neon and `SET LOCAL ROLE` per request; scheduled after Gate 1 (see `docs/05` proposal) |
 
 ## Phase 5 — Five paying hotels (14 – 25 Dec, weeks 12–13) · Gate 4 on 21 Dec
 
@@ -86,9 +86,9 @@ Goal: the platform keeps sites healthy without a human, and shows the hotel what
 | --- | --- |
 | Five hotels live on their own domains, invoiced | Gate 4 |
 | Human minutes per site per month measured | Number in the checklist metrics |
-| Template upgrade to all sites (canary first) | One upgrade shipped without a content regression |
-| Backups and single-tenant restore rehearsed in production | Rehearsal log |
-| **Compliance before the first invoice**: data processing agreement with each hotel, providers list, processing register, breach procedure, external accessibility audit and penetration test | Documents signed; audit and test reports |
+| Template upgrade to all sites (canary first) | **Mechanism built 25 Sep**: `sites.designChannel` (stable/canary, our team only), `[data-canary]` CSS sections, gates on both channels in CI (`docs/11` §upgrades). The first real upgrade is still to ship |
+| Backups and single-tenant restore rehearsed in production | Rehearsed locally on 25 Sep with the full table scope (`scripts/restore-rehearsal.ps1`); production rehearsal waits for a second real tenant |
+| **Compliance before the first invoice**: data processing agreement with each hotel, providers list, processing register, breach procedure, external accessibility audit and penetration test | **Drafts 25 Sep** in [`compliance/`](compliance/README.md) (register, sub-processors, DPA skeleton, breach procedure, accessibility statement); lawyer review, audit and pen test are owner items |
 
 ## Out of scope until the owner says otherwise
 

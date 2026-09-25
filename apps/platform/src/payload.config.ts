@@ -23,6 +23,9 @@ import { Domains } from './collections/Domains'
 import { Releases } from './collections/Releases'
 import { Facts } from './collections/Facts'
 import { Crawls } from './collections/Crawls'
+import { Issues } from './collections/Issues'
+import { AuditLog, withAudit } from './collections/AuditLog'
+import { healthReportEndpoint, healthRunEndpoint } from './health/endpoints'
 import { isSuperAdmin, superAdminFieldOnly } from './access'
 import { touchPageSeo } from './jobs/touchPageSeo'
 import { publishSiteTask } from './jobs/publishSite'
@@ -39,12 +42,17 @@ export default buildConfig({
     components: {
       providers: ['/admin/UploadShrinker#UploadShrinker'],
       // Fact review screen (Phase 3): /admin/review/<siteId>.
-      views: { review: { Component: '/admin/ReviewView#ReviewView', path: '/review/:siteId', exact: true } },
+      views: {
+        // Admin home: the hotel's website state, or the fleet for our team (Phase 4).
+        dashboard: { Component: '/admin/Dashboard#Dashboard' },
+        review: { Component: '/admin/ReviewView#ReviewView', path: '/review/:siteId', exact: true },
+      },
     },
   },
   // A clear error instead of the edge's 413 for anything that still exceeds the body limit.
   upload: { limits: { fileSize: 5 * 1024 * 1024 } },
-  collections: [Users, Tenants, Sites, makePages(packBlocks), Media, Domains, Releases, Facts, Crawls, ...packCollections],
+  // Content collections carry the action log hooks (src/collections/AuditLog.ts).
+  collections: [Users, Tenants, ...[Sites, makePages(packBlocks), Media, Domains, Releases, Facts, Crawls, Issues, AuditLog, ...packCollections].map(withAudit)],
   // Outgoing email (contact forms) through SMTP when configured (EU provider, docs/12 §7);
   // otherwise Payload logs the message. Credentials live in environment variables only.
   email: process.env.SMTP_HOST
@@ -66,7 +74,8 @@ export default buildConfig({
   },
   editor: lexicalEditor(),
   // Public contact-form submissions (src/forms/contactEndpoint.ts).
-  endpoints: [contactEndpoint],
+  // Public contact form, and the nightly health run/report behind a service token (src/health).
+  endpoints: [contactEndpoint, healthRunEndpoint, healthReportEndpoint],
   // Background jobs carry their tenant in the input and scope every query by it (see src/jobs).
   jobs: { tasks: [touchPageSeo, publishSiteTask] },
   secret: process.env.PAYLOAD_SECRET || '',
@@ -129,6 +138,8 @@ export default buildConfig({
         releases: {},
         facts: {},
         crawls: {},
+        issues: {},
+        'audit-log': {},
         redirects: {},
         forms: {},
         'form-submissions': {},
