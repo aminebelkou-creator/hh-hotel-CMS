@@ -18,7 +18,7 @@
 html { scroll-behavior: smooth; }
 body.hh-site { margin: 0; }
 .hh-theme { font-family: var(--hh-sans); color: var(--hh-ink); background: var(--hh-paper); line-height: 1.65; font-size: 17px; -webkit-font-smoothing: antialiased; }
-.hh-theme img { max-width: 100%; display: block; }
+.hh-theme img { max-width: 100%; height: auto; display: block; } /* height:auto — the width/height attributes (no layout shift) must never fix the rendered height */
 .hh-theme a { color: inherit; }
 .hh-theme h1, .hh-theme h2, .hh-theme h3, .hh-theme h4 { font-family: var(--hh-serif); font-weight: var(--hh-heading-weight); line-height: 1.15; margin: 0 0 .5em; letter-spacing: var(--hh-heading-tracking); }
 .hh-theme p { margin: 0 0 1em; }
@@ -93,6 +93,9 @@ body.hh-site { margin: 0; }
 .hh-gallery figure { margin: 0; }
 .hh-gallery img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--hh-radius-media); display: block; }
 .hh-gallery-link { display: block; border-radius: var(--hh-radius-media); }
+/* Any photo that opens in the lightbox (text-and-image, room photos and thumbnails). */
+.hh-photo-link { display: block; cursor: zoom-in; border-radius: var(--hh-radius-media); }
+.hh-gallery-link { cursor: zoom-in; }
 .hh-gallery-link img { transition: transform .3s ease; }
 .hh-gallery-link:hover img { transform: scale(1.02); }
 /* Lightbox: a native dialog, dark, the photo fitted to the screen, caption from the alt text. */
@@ -107,6 +110,7 @@ body.hh-site { margin: 0; }
 .hh-lightbox .hh-lb-close { top: 12px; right: 12px; transform: none; font-size: 28px; }
 .hh-lightbox .hh-lb-prev { left: 12px; }
 .hh-lightbox .hh-lb-next { right: 12px; }
+.hh-lightbox button[hidden] { display: none; }
 @media (max-width: 700px) { .hh-lightbox .hh-lb-prev, .hh-lightbox .hh-lb-next { display: none; } } /* swipe */
 @media (prefers-reduced-motion: reduce) { .hh-gallery-link img { transition: none; } .hh-gallery-link:hover img { transform: none; } }
 
@@ -131,13 +135,14 @@ body.hh-site { margin: 0; }
 .hh-room-meta { color: var(--hh-muted); font-size: .9rem; }
 .hh-room-list { display: grid; gap: 40px; margin-top: 36px; }
 .hh-room--detailed { display: grid; grid-template-columns: 1.1fr 1fr; }
+.hh-room--detailed .hh-room-media > .hh-photo-link { height: 100%; }
 .hh-room--detailed .hh-room-media img { height: 100%; aspect-ratio: auto; min-height: 340px; }
 .hh-room--detailed .hh-room-body { padding: 34px 38px; }
-@media (max-width: 860px) { .hh-room--detailed { grid-template-columns: 1fr; } .hh-room--detailed .hh-room-media img { min-height: 0; aspect-ratio: 3 / 2; } }
+@media (max-width: 860px) { .hh-room--detailed { grid-template-columns: 1fr; } .hh-room--detailed .hh-room-media > .hh-photo-link { height: auto; } .hh-room--detailed .hh-room-media img { height: auto; min-height: 0; aspect-ratio: 3 / 2; } }
 .hh-room-features-title { font-family: var(--hh-sans); font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; color: var(--hh-muted); margin-top: 1.4em; }
 .hh-room-features { columns: 2; padding-left: 1.1em; margin: 0 0 1em; font-size: .95rem; }
 .hh-room-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
-.hh-room-thumbs img { aspect-ratio: 1; object-fit: cover; border-radius: calc(var(--hh-radius-media) * .8); }
+.hh-room-thumbs img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: calc(var(--hh-radius-media) * .8); }
 
 /* Contact & map */
 .hh-contact { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }

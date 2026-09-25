@@ -10,7 +10,7 @@ import type { Labels } from './i18n'
 import { FormBlock } from './FormBlock'
 import { Icon, isIconId } from './icons'
 import { Img as SharedImg, fullSizeOf, SIZES } from './Img'
-import { Gallery } from './Gallery'
+import { Lightbox } from './Lightbox'
 
 type Ctx = { snapshot: SiteSnapshot; locale: string; t: Labels }
 
@@ -118,7 +118,9 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                   </div>
                   {b.imageUrl ? (
                     <div className="hh-split-media">
-                      <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} sizes="half" />
+                      <a className="hh-photo-link" href={fullSizeOf(snapshot, b.imageUrl as string)} data-lightbox={key}>
+                        <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} sizes="half" />
+                      </a>
                     </div>
                   ) : null}
                 </div>
@@ -199,13 +201,16 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
               <section key={key} className="hh-section">
                 <div className="hh-wrap">
                   {p<string>(b.heading) && <h2 className="hh-section-title">{p<string>(b.heading)}</h2>}
-                  <Gallery
-                    labels={{ close: t.close, previous: t.previous, next: t.next }}
-                    photos={images.map((im) => {
-                      const meta = snapshot.images?.[im.url]
-                      return { src: im.url, full: fullSizeOf(snapshot, im.url), alt: p<string>(im.alt) ?? '', srcset: meta?.srcset, sizes: meta ? SIZES.third : undefined, w: meta?.w, h: meta?.h }
-                    })}
-                  />
+                  {/* Plain links to the full-size file (work without JS); the page's Lightbox opens them. */}
+                  <div className="hh-gallery">
+                    {images.map((im, k) => (
+                      <figure key={k}>
+                        <a className="hh-gallery-link" href={fullSizeOf(snapshot, im.url)} data-lightbox={key}>
+                          <Img src={im.url} alt={p<string>(im.alt)} sizes="third" />
+                        </a>
+                      </figure>
+                    ))}
+                  </div>
                 </div>
               </section>
             )
@@ -421,6 +426,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
             return null
         }
       })}
+      <Lightbox labels={{ close: t.close, previous: t.previous, next: t.next }} />
     </>
   )
 }

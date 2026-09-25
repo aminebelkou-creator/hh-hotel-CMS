@@ -10,6 +10,7 @@ const pages = [
   ['home', '', 1280],
   ['home-mobile', '', 390],
   ['rooms', '/chambres', 1280],
+  ['rooms-mobile', '/chambres', 390],
   ['contact', '/contact', 1280],
 ]
 const login = await (await fetch(`${base}/api/users/login`, {
@@ -55,6 +56,14 @@ try {
       await page.waitForTimeout(600)
       const fonts = await page.evaluate(() => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family))
       const tpl = await page.evaluate(() => document.body.dataset.template)
+      // Photos drawn as slivers or towers (the width/height attributes deciding the height): a regression.
+      // Banners and bands are wide on purpose; content photos (split, rooms, offers, gallery) are not.
+      const distorted = await page.evaluate(() => [...document.querySelectorAll('#main img')]
+        .filter((i) => !i.closest('.hh-banner, .hh-media-band, .hh-hero, .hh-cta, .hh-map'))
+        .map((i) => ({ c: i.parentElement.className, r: i.getBoundingClientRect() }))
+        .filter(({ r }) => r.width > 40 && (r.height / r.width > 2.2 || r.height / r.width < 0.25))
+        .map(({ c, r }) => `${c} ${Math.round(r.width)}x${Math.round(r.height)}`))
+      for (const d of distorted) errors.push(`distorted photo: ${d}`)
       await page.screenshot({ path: `${out}/${template}-${name}.png`, fullPage: true })
       report.push({ template, version, name, tpl, fonts: [...new Set(fonts)], errors })
       await page.close()

@@ -193,11 +193,14 @@ describe('public hotel site', () => {
     expect(home).toContain('<nav class="hh-sticky-bar" aria-label="Quick actions">')
     expect(home).toMatch(/<a class="hh-sticky-call" href="tel:\+?\d+">Call<\/a>/)
     expect(home).toMatch(/<a class="hh-btn hh-sticky-book" href="[^"]*\/s\/site-5\/contact">Book<\/a>/)
-    // Gallery: plain links to the full-size file (work without JS) + the inline lightbox script; the dialog is created on the client.
+    // Gallery: plain links to the full-size file (work without JS); one page Lightbox opens every
+    // `data-lightbox` link (gallery, text-and-image, room photos), grouped by the value.
     expect(home).toContain('<div class="hh-gallery">')
-    expect(home).toMatch(/<a class="hh-gallery-link" href="[^"]+"><img /)
+    expect(home).toMatch(/<a class="hh-gallery-link" href="[^"]+" data-lightbox="[^"]+"><img /)
     expect(home).toMatch(/<dialog class="hh-lightbox"><button class="hh-lb-close" type="button" aria-label="Close">/)
+    expect(home.match(/<dialog class="hh-lightbox"/g)).toHaveLength(1)
     const rooms = await (await fetch(`${BASE}/s/${A.slug}/rooms`)).text()
+    for (const page of [home, rooms]) for (const a of page.match(/<a class="hh-photo-link"[^>]*>/g) ?? []) expect(a).toMatch(/ href="[^"]+" data-lightbox="[^"]+"/)
     expect(rooms).toContain('<section class="hh-media-band"><img src="data:image/webp;base64,')
     expect(rooms).toContain('alt="The courtyard at dusk"')
     expect(rooms).not.toContain('hh-booking-bar') // only where the hotel switched it on

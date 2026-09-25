@@ -1,6 +1,6 @@
 import React from 'react'
 import { pick, type HotelSnapshot, type Localized } from '../types'
-import { imgAttrs, SIZES, type ImageIndex } from './img'
+import { fullOf, imgAttrs, SIZES, type ImageIndex } from './img'
 
 type Props = {
   block: { heading?: Localized<string>; intro?: Localized<string>; limit?: number | null; layout?: string | null; linkLabel?: Localized<string>; linkHref?: string | null }
@@ -70,8 +70,16 @@ export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, hea
               <article key={r.id} id={`room-${r.slug}`} className={detailed ? 'hh-room hh-room--detailed' : 'hh-room'}>
                 {img && (
                   <div className="hh-room-media">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.url} alt={p(img.alt) || p(r.name) || ''} loading="lazy" decoding="async" {...imgAttrs(images, img.url, detailed ? SIZES.half : SIZES.card)} />
+                    {detailed ? (
+                      // Room page: the photos open in the page's lightbox, browsed per room.
+                      <a className="hh-photo-link" href={fullOf(images, img.url)} data-lightbox={`room-${r.slug}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img.url} alt={p(img.alt) || p(r.name) || ''} loading="lazy" decoding="async" {...imgAttrs(images, img.url, SIZES.half)} />
+                      </a>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={img.url} alt={p(img.alt) || p(r.name) || ''} loading="lazy" decoding="async" {...imgAttrs(images, img.url, SIZES.card)} />
+                    )}
                     {!detailed && r.category && <span className="hh-room-tag">{r.category}</span>}
                   </div>
                 )}
@@ -115,8 +123,10 @@ export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, hea
                   {detailed && r.images.length > 1 && (
                     <div className="hh-room-thumbs">
                       {r.images.slice(1, 5).map((im, i) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img key={i} src={im.url} alt={p(im.alt) || ''} loading="lazy" decoding="async" {...imgAttrs(images, im.url, SIZES.thumb)} />
+                        <a key={i} className="hh-photo-link" href={fullOf(images, im.url)} data-lightbox={`room-${r.slug}`}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={im.url} alt={p(im.alt) || p(r.name) || ''} loading="lazy" decoding="async" {...imgAttrs(images, im.url, SIZES.thumb)} />
+                        </a>
                       ))}
                     </div>
                   )}

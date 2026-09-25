@@ -159,6 +159,11 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 ### 2026-09-25 · session 15 · fix-later batch 1 (contact and Book on phones, legal set, offers on home) and batch 2 (gallery, lighter images)
 
+**Changed (batch 3: photos on phones, lightbox everywhere it helps)**
+- Regression from batch 2 fixed: the new `width`/`height` attributes fixed the rendered height wherever the CSS set `width` + `aspect-ratio` but no `height` (text-and-image photo drawn full height on phones, room thumbnails squeezed into strips). Base rule `.hh-theme img { height: auto }`; room photo and thumbnails rules reviewed.
+- One page viewer `src/site/Lightbox.tsx` (client component, rendered once by `Blocks`) replaces `Gallery.tsx`: any `<a data-lightbox="group" href="full">` opens in it, photos of a group browse together. Wired on the gallery, text-and-image photos, and on the rooms page the room photo + thumbnails (grouped per room). Hero, banners, photo band, CTA and room cards stay as they are (backgrounds or links). The full-size file is fetched only on tap: no page-weight cost. Unused `lightbox.ts` (inline-script attempt) removed.
+- `tests/visual/templates.mjs` also captures the rooms page at 390 px.
+
 **Changed (batch 2)**
 - Release snapshot carries `images`: every platform photo of the tenant keyed by each URL variant → srcset (400/960/1920 WebP + original), intrinsic size, full-size file. `upgradeSnapshot` fills `{}` for older releases.
 - `src/site/Img.tsx`: one image element for every core block (srcset, `sizes` per context, width/height, eager + high priority for the first hero); the hotel pack's rooms and offers renderers take the same index.
