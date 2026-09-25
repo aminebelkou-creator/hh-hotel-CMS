@@ -79,8 +79,13 @@ export async function findIssues(payload: Payload, args: { tenantId: number; sit
       const r = await checkUrl(l.href)
       if (!r.ok) findings.push({ kind: 'broken-link', severity: 'error', title: `A link does not answer (${r.status || 'timeout'})`, detail: `${l.where} on page "${l.page}": ${l.href}`, url: l.href, fingerprint: `link:${l.href}` })
     } else {
-      const slug = l.href.replace(/^\/+/, '').split(/[?#]/)[0]
-      if (slug && slug !== 'home' && !pageSlugs.has(slug)) findings.push({ kind: 'broken-link', severity: 'error', title: `A link points to a page that is not published: "${slug}"`, detail: `${l.where} on page "${l.page}"`, fingerprint: `slug:${l.page}:${slug}` })
+      // A page slug, possibly under a locale prefix. Platform assets (/media/…) are served by the
+      // media pipeline and are not pages; anything deeper than one segment is not a page either.
+      let path = l.href.replace(/^\/+/, '').split(/[?#]/)[0]
+      if (path.startsWith('media/')) continue
+      path = path.replace(/^(en|fr|de|es|it)(\/|$)/, '')
+      if (!path || path === 'home' || path.includes('/')) continue
+      if (!pageSlugs.has(path)) findings.push({ kind: 'broken-link', severity: 'error', title: `A link points to a page that is not published: "${path}"`, detail: `${l.where} on page "${l.page}"`, fingerprint: `slug:${l.page}:${path}` })
     }
   }
 

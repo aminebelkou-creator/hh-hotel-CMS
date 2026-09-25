@@ -39,7 +39,7 @@ const reset = async (t: T) => {
   await payload.delete({ collection: 'releases', where: { site: { equals: t.siteId } }, overrideAccess: true })
   const contact = (await payload.find({ collection: 'pages', where: { and: [{ tenant: { equals: t.tenantId } }, { site: { equals: t.siteId } }, { slug: { equals: 'contact' } }] }, limit: 1, overrideAccess: true })).docs[0]
   if (contact) {
-    const blocks = ((contact.blocks as { blockType: string }[]) ?? []).filter((b) => b.blockType !== 'gallery')
+    const blocks = ((contact.blocks as { blockType: string }[]) ?? []).filter((b) => b.blockType !== 'gallery' && !/"spa"|abc-photo/.test(JSON.stringify(b)))
     await payload.update({ collection: 'pages', id: contact.id, data: { blocks, _status: 'published' } as never, overrideAccess: true })
   }
 }
@@ -78,6 +78,7 @@ describe('checks', () => {
       ...((contact.blocks as Record<string, unknown>[]) ?? []),
       { blockType: 'gallery', heading: 'Photos', images: [{ url: 'https://example.invalid/a.jpg', alt: '' }] },
       { blockType: 'cta', heading: 'Spa', buttonLabel: 'See the spa', buttonHref: 'spa' },
+      { blockType: 'hero', heading: 'Photo', imageUrl: '/media/abc-photo.webp', imageAlt: 'A photo', ctaLabel: 'Rooms', ctaHref: '/fr/rooms' },
     ]
     await payload.update({ collection: 'pages', id: contact.id, data: { blocks, _status: 'published' } as never, overrideAccess: true })
     await payload.create({ collection: 'offers', data: { tenant: A.tenantId, slug: 'old-summer', title: 'Old summer', summary: 'Gone', active: true, validFrom: '2026-06-01', validTo: '2026-08-31' } as never, overrideAccess: true })
@@ -85,7 +86,7 @@ describe('checks', () => {
     const { findings } = await findIssues(payload, { tenantId: A.tenantId, siteId: A.siteId, fetchLinks: false })
     const kinds = findings.map((f) => f.kind)
     expect(kinds).toContain('broken-link')
-    expect(findings.find((f) => f.kind === 'broken-link')?.title).toContain('"spa"')
+    expect(findings.filter((f) => f.kind === 'broken-link').map((f) => f.title)).toEqual([expect.stringContaining('"spa"')]) // /media/… and /fr/rooms are fine
     expect(kinds).toContain('missing-alt')
     expect(kinds).toContain('missing-meta')
     expect(kinds).toContain('expired-offer')
