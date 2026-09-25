@@ -133,6 +133,21 @@ describe('public hotel site', () => {
     expect(robots).toContain(`/s/${A.slug}/sitemap.xml`)
   })
 
+  it('the map is a static image made at publish, never a third-party embed', async (ctx) => {
+    if (!reachable) ctx.skip()
+    const html = await (await fetch(`${BASE}/s/${A.slug}/contact`)).text()
+    expect(html).not.toContain('<iframe')
+    // Customer zero (present locally, not in CI) has coordinates and a map block.
+    const cz = await fetch(`${BASE}/s/hotel-herse-dor/contact`)
+    if (cz.status === 200) {
+      const h = await cz.text()
+      expect(h).not.toContain('<iframe')
+      expect(h).not.toContain('openstreetmap.org/export/embed')
+      expect(h).toContain('openstreetmap.org/?mlat=')
+      expect(h).toMatch(/src="\/media\/maps\/osm-[0-9.-]+-z16\.webp"/)
+    }
+  })
+
   it('no booking step is served: the platform has no booking logic', async (ctx) => {
     if (!reachable) ctx.skip()
     expect((await fetch(`${BASE}/s/${A.slug}/book`)).status).toBe(404)

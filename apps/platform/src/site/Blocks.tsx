@@ -268,12 +268,9 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
             const info = practicalInfo(snapshot)
             if (!Number.isFinite(info.lat) || !Number.isFinite(info.lon) || !info.lat) return null
             const z = Number(b.zoom) || 16
-            // Half-extent of the embedded map around the marker, halving with each zoom level.
-            const dx = 0.0045 * Math.pow(2, 16 - z)
-            const dy = 0.0022 * Math.pow(2, 16 - z)
-            const bbox = [info.lon - dx, info.lat - dy, info.lon + dx, info.lat + dy].map((n) => n.toFixed(5)).join('%2C')
-            const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${info.lat}%2C${info.lon}`
             const open = `https://www.openstreetmap.org/?mlat=${info.lat}&mlon=${info.lon}#map=${z}/${info.lat}/${info.lon}`
+            // A static image made at publish time (no third-party request from the visitor's browser).
+            const img = snapshot.mapImage
             return (
               <section key={key} className="hh-section">
                 <div className="hh-wrap">
@@ -283,9 +280,12 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                       {para}
                     </p>
                   ))}
-                  <div className="hh-map">
-                    <iframe title={p<string>(b.heading) || t.address} src={src} loading="lazy" referrerPolicy="no-referrer" />
-                  </div>
+                  {img && (
+                    <a className="hh-map" href={open} rel="noopener">
+                      <img src={img} alt={`${t.address}: ${info.address ?? ''}`.trim()} width={1200} height={640} loading="lazy" decoding="async" />
+                      <span className="hh-map-credit">© OpenStreetMap contributors</span>
+                    </a>
+                  )}
                   <p>
                     <a className="hh-link-arrow" href={open} rel="noopener">
                       {t.openMap}

@@ -609,6 +609,8 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * JPEG, PNG or WebP. Large phone photos are shrunk automatically before upload (max 5 MB after shrinking).
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */

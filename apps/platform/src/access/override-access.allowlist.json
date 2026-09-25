@@ -27,7 +27,7 @@
     },
     {
       "file": "src/releases/resolve.ts",
-      "reason": "Public renderer lookup: returns only the immutable snapshot of the release a site points at, and refuses a release whose tenant differs from the site's. Published sites are public by nature."
+      "reason": "Public renderer lookup (raw SQL through the pool, the same trust as overrideAccess): returns only the immutable snapshot of the release a site points at, and refuses a release whose tenant differs from the site's. Published sites are public by nature."
     },
     {
       "file": "src/releases/time-release.ts",

@@ -1,5 +1,6 @@
 import type { Payload } from 'payload'
 import { packs } from '../packs'
+import { ensureStaticMap } from '../media/static-map'
 
 /**
  * A release snapshot holds everything the renderer needs for one site, so serving a release
@@ -43,6 +44,8 @@ export type SiteSnapshot = {
     /** Render-time only, never stored: '' when served on the hotel's own domain, else /s/<slug>. */
     basePath?: string
   }
+  /** Static map image for the map block (made at publish from confirmed coordinates), or null. */
+  mapImage?: string | null
   pages: SnapshotPage[]
   facts: { key: string; value: string }[]
   packs: Record<string, unknown>
@@ -90,6 +93,14 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
   const packData: Record<string, unknown> = {}
   for (const p of packs) packData[p.name] = await p.snapshot(payload, tenantId)
 
+  // The map block shows a static image instead of a third-party embed: make it now if the
+  // release has confirmed coordinates and a map block anywhere.
+  const factValue = (key: string) => facts.docs.find((f) => f.key === key)?.value
+  const lat = Number(factValue('geo.lat'))
+  const lon = Number(factValue('geo.lon'))
+  const mapBlock = pages.docs.flatMap((pg) => ((pg as { blocks?: SnapshotBlock[] }).blocks ?? [])).find((b) => b.blockType === 'map')
+  const mapImage = mapBlock && Number.isFinite(lat) && Number.isFinite(lon) && lat ? await ensureStaticMap(payload, lat, lon, Number(mapBlock.zoom) || 16) : null
+
   const s = site as unknown as Record<string, unknown>
   const cta = (s.cta ?? {}) as { label?: Localized<string>; href?: string }
   // Localized fields come back as { en, fr } objects with locale 'all'; plain fields as values.
@@ -112,6 +123,7 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
       cta: { label: cta.label ?? null, href: cta.href ?? null },
     },
     pages: pages.docs.map(toSnapshotPage),
+    mapImage,
     facts: facts.docs
       .map((f) => ({ key: f.key, value: f.value }))
       .sort((a, b) => a.key.localeCompare(b.key) || a.value.localeCompare(b.value)),

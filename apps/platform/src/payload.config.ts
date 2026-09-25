@@ -29,7 +29,11 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
+    // Phone photos are shrunk in the browser before upload (functions accept 6 MB bodies).
+    components: { providers: ['/admin/UploadShrinker#UploadShrinker'] },
   },
+  // A clear error instead of the edge's 413 for anything that still exceeds the body limit.
+  upload: { limits: { fileSize: 5 * 1024 * 1024 } },
   collections: [Users, Tenants, Sites, makePages(packBlocks), Media, Domains, Releases, Facts, ...packCollections],
   localization: {
     locales: ['en', 'fr'],

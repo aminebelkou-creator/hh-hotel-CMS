@@ -9,7 +9,11 @@ import { authenticated } from '../access'
  */
 export const Media: CollectionConfig = {
   slug: 'media',
-  admin: { useAsTitle: 'filename', defaultColumns: ['filename', 'alt', 'rights', 'updatedAt'] },
+  admin: {
+    useAsTitle: 'filename',
+    defaultColumns: ['filename', 'alt', 'rights', 'updatedAt'],
+    description: 'JPEG, PNG or WebP. Large phone photos are shrunk automatically before upload (max 5 MB after shrinking).',
+  },
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
   hooks: {
     // Blob keys are global, but Payload's duplicate-filename check only sees the uploader's own
