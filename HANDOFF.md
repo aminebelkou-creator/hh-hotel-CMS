@@ -60,6 +60,8 @@ Read this first when you pick the project up, whether you are a person or an AI 
 - Photos live in Postgres (`media_blobs`); fine for tens of hotels. Moving to object storage replaces only the adapter (CLAUDE.md 27).
 - The legal pages are drafts: the owner must validate them before the site replaces the hotel's current one.
 - Never run `next dev` against `hh_platform` or `hh_check` for long: dev mode pushes schema. Use `next start` on port 3100 for local checks.
+- CI once ran `payload migrate` with no output and no migrations (run 36086946504, 25 Sep); the seed then failed on a missing table. A re-run passed. If it repeats, add a `migrate:status` check after the migrate step.
+- Dependabot: actions bumps and the Next group merge after CI; toolchain majors (TypeScript, @types/node, vitest, eslint, jsdom) and GraphQL/dotenv majors are ignored in `dependabot.yml` and taken by hand.
 - `edgeone makers link` overwrites `apps/platform/.env` with the project's variables (CLAUDE.md 31); restore the local one afterwards.
 - The Makers CDN ignores `Cache-Control` on function responses (finding 31): do not expect edge hits; speed work belongs at the origin or in the host's cache rules.
 - Anonymous writes through REST are refused by the multi-tenant plugin (finding 32): a visitor-facing write needs a custom endpoint that uses the Local API under the right tenant, as `/api/contact` does.
@@ -74,7 +76,7 @@ Engineering items of Phase 2 in [`docs/10-roadmap-phases.md`](docs/10-roadmap-ph
 | 1 | OWN | Send the Tencent email (updated draft); delete `hh-platform-poc`; validate the legal pages | Gate 1 answers by 9 Oct |
 | 2 | OWN | Our platform domain + a test subdomain (add it in the Makers console, then in the admin as a domain); an email provider account (Scaleway TEM proposed), SMTP values as Makers variables `SMTP_*` | A hotel site answers on its own domain with HTTPS; a contact message reaches an inbox |
 | 3 | ENG | Once the test domain exists: mark it `verified`, set `PLATFORM_HOSTS` on Makers, check redirects www/apex, canonical, sitemap live; then republish customer zero | Gate 1 evidence |
-| 4 | ENG | Review the Dependabot pull requests (actions, Next group) after CI; never a Payload major | Dependencies current |
+| 4 | ENG | Dependabot: #1, #3, #4 (Next 16.3.5, React 19.3), #6 merged 25 Sep; #2 rebasing; #5 (dev tools) waits for a hand-made TypeScript decision; #7/#8 majors ignored | Dependencies current |
 | 5 | ENG | Phase 3 preparation without the AI key: ingest v1 crawl scaffold, fact review screen design, generation prompts as skills | Ready to switch on with the key |
 | 6 | OWN | AI model key; shortlist of hotels; a designer later | Phase 3 |
 
