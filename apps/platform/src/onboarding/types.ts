@@ -3,15 +3,17 @@ export type L = { fr: string; en: string }
 export type Img = { url: string; alt: L }
 
 export type BlockInput =
-  | { blockType: 'hero'; heading: L; subheading?: L; image?: Img; cta?: { label: L; href: string } }
-  | { blockType: 'textImage'; eyebrow?: L; heading?: L; body: L; image?: Img; imagePosition?: 'left' | 'right'; link?: { label: L; href: string } }
-  | { blockType: 'features'; heading?: L; intro?: L; items: { title: L; text?: L }[] }
+  | { blockType: 'hero'; heading: L; subheading?: L; image?: Img; cta?: { label: L; href: string }; rating?: 'none' | 'classification'; bookingBar?: boolean }
+  | { blockType: 'textImage'; eyebrow?: L; heading?: L; body: L; image?: Img; imagePosition?: 'left' | 'right'; points?: L[]; link?: { label: L; href: string } }
+  | { blockType: 'features'; heading?: L; intro?: L; items: { icon?: string; title: L; text?: L }[] }
+  | { blockType: 'banners'; eyebrow?: L; heading?: L; items: { image: Img; title: L; href?: string }[] }
+  | { blockType: 'mediaBand'; image: Img }
   | { blockType: 'gallery'; heading?: L; images: Img[] }
   | { blockType: 'quote'; text: L; author?: L }
   | { blockType: 'cta'; heading?: L; text?: L; button?: { label: L; href: string }; image?: Img }
   | { blockType: 'contact'; heading?: L; intro?: L }
   | { blockType: 'map'; heading?: L; text?: L; zoom?: number }
-  | { blockType: 'rooms'; heading?: L; intro?: L; limit?: number; layout?: 'cards' | 'detailed' }
+  | { blockType: 'rooms'; heading?: L; intro?: L; limit?: number; layout?: 'cards' | 'detailed'; link?: { label: L; href: string } }
   | { blockType: 'text'; heading?: L; body: L }
   | { blockType: 'faq'; heading?: L; items: { question: L; answer: L }[] }
   | { blockType: 'offers'; heading?: L; intro?: L; limit?: number }

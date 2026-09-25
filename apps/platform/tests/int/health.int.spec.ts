@@ -179,7 +179,7 @@ describe('action log', () => {
     expect(log.docs[0].summary).not.toContain('currentRelease') // unchanged relationships are not reported
     // B sees none of A's log; A sees only their own.
     const userB = await payload.findByID({ collection: 'users', id: B.userId, overrideAccess: true })
-    const seenByB = await payload.find({ collection: 'audit-log', user: userB, overrideAccess: false, where: { docId: { equals: String(A.siteId) } }, limit: 10 })
+    const seenByB = await payload.find({ collection: 'audit-log', user: userB, overrideAccess: false, where: { and: [{ collectionSlug: { equals: 'sites' } }, { docId: { equals: String(A.siteId) } }] }, limit: 10 })
     expect(seenByB.totalDocs).toBe(0)
     const seenByA = await payload.find({ collection: 'audit-log', user, overrideAccess: false, limit: 500 })
     expect(seenByA.docs.every((d) => Number(typeof d.tenant === 'object' && d.tenant ? d.tenant.id : d.tenant) === A.tenantId)).toBe(true)

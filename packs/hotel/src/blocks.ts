@@ -22,6 +22,8 @@ export const roomsBlock: Block = {
     { name: 'heading', type: 'text', localized: true },
     { name: 'intro', type: 'textarea', localized: true },
     { name: 'limit', type: 'number', min: 1 },
+    { name: 'linkLabel', type: 'text', localized: true, admin: { description: 'Optional "See all rooms" link beside the title' } },
+    { name: 'linkHref', type: 'text', admin: { description: 'A page slug (e.g. rooms) or a URL' } },
     {
       name: 'layout',
       type: 'select',

@@ -26,11 +26,15 @@ export function blockData(b: BlockInput, l: Loc): Record<string, unknown> {
   const prov = { origin: 'human', sourceFact: 'onboarding' }
   switch (b.blockType) {
     case 'hero':
-      return { blockType: 'hero', heading: v(b.heading, l), subheading: v(b.subheading, l), imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l), ctaLabel: v(b.cta?.label, l), ctaHref: b.cta?.href, provenance: prov }
+      return { blockType: 'hero', heading: v(b.heading, l), subheading: v(b.subheading, l), imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l), ctaLabel: v(b.cta?.label, l), ctaHref: b.cta?.href, rating: b.rating ?? 'none', bookingBar: b.bookingBar ?? false, provenance: prov }
     case 'textImage':
-      return { blockType: 'textImage', eyebrow: v(b.eyebrow, l), heading: v(b.heading, l), body: v(b.body, l), imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l), imagePosition: b.imagePosition ?? 'right', linkLabel: v(b.link?.label, l), linkHref: b.link?.href, provenance: prov }
+      return { blockType: 'textImage', eyebrow: v(b.eyebrow, l), heading: v(b.heading, l), body: v(b.body, l), imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l), imagePosition: b.imagePosition ?? 'right', points: (b.points ?? []).map((t) => ({ text: v(t, l) })), linkLabel: v(b.link?.label, l), linkHref: b.link?.href, provenance: prov }
     case 'features':
-      return { blockType: 'features', heading: v(b.heading, l), intro: v(b.intro, l), items: b.items.map((i) => ({ title: v(i.title, l), text: v(i.text, l) })), provenance: prov }
+      return { blockType: 'features', heading: v(b.heading, l), intro: v(b.intro, l), items: b.items.map((i) => ({ icon: i.icon, title: v(i.title, l), text: v(i.text, l) })), provenance: prov }
+    case 'banners':
+      return { blockType: 'banners', eyebrow: v(b.eyebrow, l), heading: v(b.heading, l), items: b.items.map((i) => ({ imageUrl: i.image.url, imageAlt: v(i.image.alt, l), title: v(i.title, l), href: i.href })), provenance: prov }
+    case 'mediaBand':
+      return { blockType: 'mediaBand', imageUrl: b.image.url, imageAlt: v(b.image.alt, l), provenance: prov }
     case 'gallery':
       return { blockType: 'gallery', heading: v(b.heading, l), images: b.images.map((i) => ({ url: i.url, alt: v(i.alt, l) })) }
     case 'quote':
@@ -42,7 +46,7 @@ export function blockData(b: BlockInput, l: Loc): Record<string, unknown> {
     case 'map':
       return { blockType: 'map', heading: v(b.heading, l), text: v(b.text, l), zoom: b.zoom ?? 16 }
     case 'rooms':
-      return { blockType: 'rooms', heading: v(b.heading, l), intro: v(b.intro, l), limit: b.limit, layout: b.layout ?? 'cards' }
+      return { blockType: 'rooms', heading: v(b.heading, l), intro: v(b.intro, l), limit: b.limit, layout: b.layout ?? 'cards', linkLabel: v(b.link?.label, l), linkHref: b.link?.href }
     case 'text':
       return { blockType: 'text', heading: v(b.heading, l), body: v(b.body, l), provenance: prov }
     case 'faq':

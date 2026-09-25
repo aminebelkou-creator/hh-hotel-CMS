@@ -14,6 +14,7 @@ const LABELS: Record<string, string> = {
   'geo.lat': 'Latitude',
   'geo.lon': 'Longitude',
   'rating.stars': 'Stars',
+  'hotel.stars': 'Stars',
   'policy.checkin': 'Check-in time',
   'policy.checkout': 'Check-out time',
   'policy.pets': 'Pets',

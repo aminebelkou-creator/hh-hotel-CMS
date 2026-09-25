@@ -265,9 +265,9 @@ export interface Site {
     | boolean
     | null;
   /**
-   * Maison: Classic and warm: serif headings, cream background, full-width photos. Suits heritage and boutique hotels. · Atelier: Modern and minimal: sans-serif type, white space, square corners, photo beside the headline. Suits design and city hotels. · Soirée: Dark and elegant: night palette, gold accent, centred headlines. Suits luxury and evening-led hotels.
+   * Maison: Classic and warm: serif headings, cream background, full-width photos. Suits heritage and boutique hotels. · Atelier: Modern and minimal: sans-serif type, white space, square corners, photo beside the headline. Suits design and city hotels. · Soirée: Dark and elegant: night palette, gold accent, centred headlines. Suits luxury and evening-led hotels. · Lumière: Luxurious and bright: ivory pages, a full-screen photo hero with a glass booking bar, navy bands and cards, champagne-gold buttons, large serif headlines. Suits upscale boutique and resort hotels.
    */
-  template?: ('maison' | 'atelier' | 'soiree') | null;
+  template?: ('maison' | 'atelier' | 'soiree' | 'lumiere') | null;
   /**
    * Template upgrades reach canary sites first (customer zero, our demo sites), then everyone. Render-time only: not part of releases.
    */
@@ -418,6 +418,14 @@ export interface Page {
              */
             ctaHref?: string | null;
             /**
+             * Stars above the headline. Read from the fact base, never typed here.
+             */
+            rating?: ('none' | 'classification') | null;
+            /**
+             * Arrival, departure and guests fields that open the site’s Book link with those dates. No availability or prices: the platform runs no booking logic.
+             */
+            bookingBar?: boolean | null;
+            /**
              * Who last shaped this content. Regeneration never overwrites human edits.
              */
             provenance?: {
@@ -477,6 +485,15 @@ export interface Page {
              */
             imageAlt?: string | null;
             imagePosition?: ('left' | 'right') | null;
+            /**
+             * Optional checklist under the text
+             */
+            points?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
             linkLabel?: string | null;
             /**
              * A page slug (e.g. contact), a full URL, tel: or mailto:
@@ -501,6 +518,33 @@ export interface Page {
             intro?: string | null;
             items?:
               | {
+                  /**
+                   * Optional line icon (built-in set)
+                   */
+                  icon?:
+                    | (
+                        | 'clock'
+                        | 'phone'
+                        | 'coffee'
+                        | 'tablet'
+                        | 'wifi'
+                        | 'paw'
+                        | 'bed'
+                        | 'user'
+                        | 'key'
+                        | 'car'
+                        | 'lift'
+                        | 'leaf'
+                        | 'star'
+                        | 'pin'
+                        | 'sun'
+                        | 'shield'
+                        | 'sparkle'
+                        | 'utensils'
+                        | 'bath'
+                        | 'snowflake'
+                      )
+                    | null;
                   title: string;
                   text?: string | null;
                   id?: string | null;
@@ -520,6 +564,8 @@ export interface Page {
             blockName?: string | null;
             blockType: 'features';
           }
+        | BannersBlock
+        | MediaBandBlock
         | {
             heading?: string | null;
             images?:
@@ -734,6 +780,69 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BannersBlock".
+ */
+export interface BannersBlock {
+  eyebrow?: string | null;
+  heading?: string | null;
+  items?:
+    | {
+        /**
+         * Image URL (https or /media/…)
+         */
+        imageUrl: string;
+        imageAlt?: string | null;
+        title: string;
+        /**
+         * A page slug, a URL, tel: or mailto: (optional)
+         */
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Who last shaped this content. Regeneration never overwrites human edits.
+   */
+  provenance?: {
+    origin?: ('generated' | 'human' | 'locked') | null;
+    /**
+     * Fact-base reference for generated content
+     */
+    sourceFact?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'banners';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBandBlock".
+ */
+export interface MediaBandBlock {
+  /**
+   * Image URL (https or /media/…)
+   */
+  imageUrl: string;
+  /**
+   * What the photo shows
+   */
+  imageAlt: string;
+  /**
+   * Who last shaped this content. Regeneration never overwrites human edits.
+   */
+  provenance?: {
+    origin?: ('generated' | 'human' | 'locked') | null;
+    /**
+     * Fact-base reference for generated content
+     */
+    sourceFact?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBand';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FormBlock".
  */
 export interface FormBlock {
@@ -903,6 +1012,14 @@ export interface RoomsBlock {
   heading?: string | null;
   intro?: string | null;
   limit?: number | null;
+  /**
+   * Optional "See all rooms" link beside the title
+   */
+  linkLabel?: string | null;
+  /**
+   * A page slug (e.g. rooms) or a URL
+   */
+  linkHref?: string | null;
   layout?: ('cards' | 'detailed') | null;
   /**
    * Who last shaped this content. Regeneration never overwrites human edits.
@@ -1730,6 +1847,8 @@ export interface PagesSelect<T extends boolean = true> {
               imageAlt?: T;
               ctaLabel?: T;
               ctaHref?: T;
+              rating?: T;
+              bookingBar?: T;
               provenance?:
                 | T
                 | {
@@ -1761,6 +1880,12 @@ export interface PagesSelect<T extends boolean = true> {
               imageUrl?: T;
               imageAlt?: T;
               imagePosition?: T;
+              points?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
               linkLabel?: T;
               linkHref?: T;
               provenance?:
@@ -1780,6 +1905,7 @@ export interface PagesSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
+                    icon?: T;
                     title?: T;
                     text?: T;
                     id?: T;
@@ -1793,6 +1919,8 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        banners?: T | BannersBlockSelect<T>;
+        mediaBand?: T | MediaBandBlockSelect<T>;
         gallery?:
           | T
           | {
@@ -1914,6 +2042,47 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BannersBlock_select".
+ */
+export interface BannersBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        imageUrl?: T;
+        imageAlt?: T;
+        title?: T;
+        href?: T;
+        id?: T;
+      };
+  provenance?:
+    | T
+    | {
+        origin?: T;
+        sourceFact?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBandBlock_select".
+ */
+export interface MediaBandBlockSelect<T extends boolean = true> {
+  imageUrl?: T;
+  imageAlt?: T;
+  provenance?:
+    | T
+    | {
+        origin?: T;
+        sourceFact?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FormBlock_select".
  */
 export interface FormBlockSelect<T extends boolean = true> {
@@ -1931,6 +2100,8 @@ export interface RoomsBlockSelect<T extends boolean = true> {
   heading?: T;
   intro?: T;
   limit?: T;
+  linkLabel?: T;
+  linkHref?: T;
   layout?: T;
   provenance?:
     | T

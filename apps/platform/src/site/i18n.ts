@@ -22,6 +22,11 @@ const LABELS = {
     sent: 'Merci, votre message a bien été envoyé.',
     sendFailed: 'Le message n’a pas pu être envoyé. Réessayez ou appelez-nous.',
     required: 'obligatoire',
+    arrival: 'Arrivée',
+    departure: 'Départ',
+    guests: 'Personnes',
+    guestsN: '{n} personne(s)',
+    checkAvailability: 'Vérifier les disponibilités',
   },
   en: {
     menu: 'Menu',
@@ -46,6 +51,11 @@ const LABELS = {
     sent: 'Thank you, your message has been sent.',
     sendFailed: 'The message could not be sent. Try again or call us.',
     required: 'required',
+    arrival: 'Arrival',
+    departure: 'Departure',
+    guests: 'Guests',
+    guestsN: '{n} guest(s)',
+    checkAvailability: 'Check availability',
   },
 } as const
 export type Labels = Record<keyof (typeof LABELS)['en'], string>

@@ -41,6 +41,10 @@ export function linksOf(snapshot: SiteSnapshot): { href: string; where: string; 
     for (const b of p.blocks as Record<string, unknown>[]) {
       for (const k of ['ctaHref', 'buttonHref', 'linkHref', 'imageUrl']) push(b[k], `${b.blockType} block`, p.slug)
       for (const img of (b.images as { url?: string }[] | undefined) ?? []) push(img.url, 'gallery photo', p.slug)
+      for (const it of (b.items as { imageUrl?: string; href?: string }[] | undefined) ?? []) {
+        push(it.imageUrl, 'banner photo', p.slug)
+        push(it.href, 'banner link', p.slug)
+      }
     }
   }
   return out
@@ -96,6 +100,8 @@ export async function findIssues(payload: Payload, args: { tenantId: number; sit
       const missing = imgs.filter((img) => img.url && !strOf(img.alt)).length
       if (missing) findings.push({ kind: 'missing-alt', severity: 'warning', title: `${missing} photo${missing > 1 ? 's' : ''} without a description on "${p.slug}"`, detail: 'Add what each photo shows (gallery block, "alt").', fingerprint: `alt:${p.id}:${i}` })
       if (b.imageUrl && !strOf(b.imageAlt)) findings.push({ kind: 'missing-alt', severity: 'warning', title: `A photo without a description on "${p.slug}"`, detail: `${b.blockType} block`, fingerprint: `alt:${p.id}:${i}:image` })
+      const banners = ((b.items as { imageUrl?: string; imageAlt?: unknown }[] | undefined) ?? []).filter((it) => it.imageUrl && !strOf(it.imageAlt)).length
+      if (b.blockType === 'banners' && banners) findings.push({ kind: 'missing-alt', severity: 'warning', title: `${banners} banner photo${banners > 1 ? 's' : ''} without a description on "${p.slug}"`, detail: 'Add what each photo shows (banners block, "alt").', fingerprint: `alt:${p.id}:${i}:banners` })
     }
   }
 

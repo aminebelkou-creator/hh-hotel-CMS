@@ -37,7 +37,6 @@ const auth = (t: T) => ({ authorization: `JWT ${t.token}` })
 const seedFacts = async (t: T) => {
   const facts: [string, string][] = [
     ['business.name', 'Hôtel Génération'],
-    ['rating.stars', '3'],
     ['address', '12 rue des Tests, 75003 Paris, FR'],
     ['contact.phone', '+33123456789'],
     ['policy.checkin', '15:00'],

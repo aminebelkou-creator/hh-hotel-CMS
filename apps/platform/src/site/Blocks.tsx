@@ -1,13 +1,14 @@
 import React from 'react'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
-import { OffersBlock, PoliciesBlock, RoomsBlock } from '@hh/pack-hotel/render'
+import { HeroRating, OffersBlock, PoliciesBlock, RoomsBlock } from '@hh/pack-hotel/render'
 import type { HotelSnapshot } from '@hh/pack-hotel'
 import { pick, type Localized, type SiteSnapshot, type SnapshotBlock } from '@/releases/snapshot'
 import { linkHref, pageHref } from './routing'
 import { practicalInfo } from './load'
 import type { Labels } from './i18n'
 import { FormBlock } from './FormBlock'
+import { Icon, isIconId } from './icons'
 
 type Ctx = { snapshot: SiteSnapshot; locale: string; t: Labels }
 
@@ -30,6 +31,8 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
   const hasHero = blocks[0]?.blockType === 'hero'
   // The page that lists room types in detail, if any: room cards elsewhere link to it.
   const roomsPage = snapshot.pages.find((pg) => pg.blocks.some((bb) => bb.blockType === 'rooms' && bb.layout === 'detailed'))
+  // The site's Book link (header button); the hero booking bar submits to it.
+  const book = linkHref(snapshot, locale, snapshot.site.cta?.href ?? undefined)
   return (
     <>
       {blocks.map((b, i) => {
@@ -42,6 +45,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
               <section key={key} className={b.imageUrl ? 'hh-hero hh-hero--image' : 'hh-hero'}>
                 {b.imageUrl ? <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} eager={i === 0} /> : null}
                 <div className="hh-hero-inner hh-wrap">
+                  {b.rating === 'classification' && <HeroRating facts={snapshot.facts} locale={locale} />}
                   <Tag>{p<string>(b.heading)}</Tag>
                   {p<string>(b.subheading) && <p className="hh-hero-sub">{p<string>(b.subheading)}</p>}
                   {cta && p<string>(b.ctaLabel) && (
@@ -50,6 +54,32 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                     </a>
                   )}
                 </div>
+                {b.bookingBar && book ? (
+                  <div className="hh-wrap">
+                    {/* Opens the site's Book link with the chosen dates: no availability, no prices (owner decision, 24 Sep). */}
+                    <form className="hh-booking-bar" action={book} method="get" aria-label={t.checkAvailability}>
+                      <p className="hh-booking-field">
+                        <label htmlFor={`${key}-in`}>{t.arrival}</label>
+                        <input id={`${key}-in`} name="arrival" type="date" />
+                      </p>
+                      <p className="hh-booking-field">
+                        <label htmlFor={`${key}-out`}>{t.departure}</label>
+                        <input id={`${key}-out`} name="departure" type="date" />
+                      </p>
+                      <p className="hh-booking-field">
+                        <label htmlFor={`${key}-n`}>{t.guests}</label>
+                        <select id={`${key}-n`} name="guests" defaultValue="2">
+                          {[1, 2, 3, 4].map((n) => (
+                            <option key={n} value={n}>
+                              {t.guestsN.replace('{n}', String(n)).replace('(s)', n > 1 ? 's' : '')}
+                            </option>
+                          ))}
+                        </select>
+                      </p>
+                      <button type="submit">{t.book}</button>
+                    </form>
+                  </div>
+                ) : null}
               </section>
             )
           }
@@ -75,6 +105,13 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                     {paragraphs(p<string>(b.body)).map((para, k) => (
                       <p key={k}>{para}</p>
                     ))}
+                    {((b.points as { text: unknown }[] | undefined) ?? []).length > 0 && (
+                      <ul className="hh-checklist">
+                        {(b.points as { text: unknown }[]).map((pt, k) => (
+                          <li key={k}>{p<string>(pt.text)}</li>
+                        ))}
+                      </ul>
+                    )}
                     {href && p<string>(b.linkLabel) && (
                       <a className="hh-link-arrow" href={href}>
                         {p<string>(b.linkLabel)}
@@ -91,7 +128,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
             )
           }
           case 'features': {
-            const items = (b.items as { title: unknown; text?: unknown }[]) ?? []
+            const items = (b.items as { title: unknown; text?: unknown; icon?: unknown }[]) ?? []
             return (
               <section key={key} className="hh-section hh-section--tint">
                 <div className="hh-wrap">
@@ -100,6 +137,11 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                   <ul className="hh-features">
                     {items.map((it, k) => (
                       <li key={k}>
+                        {isIconId(it.icon) && (
+                          <span className="hh-feature-icon">
+                            <Icon id={it.icon} />
+                          </span>
+                        )}
                         <h3>{p<string>(it.title)}</h3>
                         {p<string>(it.text) && <p>{p<string>(it.text)}</p>}
                       </li>
@@ -109,6 +151,50 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
               </section>
             )
           }
+          case 'banners': {
+            const items = (b.items as { imageUrl: string; imageAlt?: unknown; title: unknown; href?: string | null }[]) ?? []
+            if (!items.length) return null
+            return (
+              <section key={key} className="hh-section hh-banners">
+                <div className="hh-wrap">
+                  {(p<string>(b.eyebrow) || p<string>(b.heading)) && (
+                    <div className="hh-section-head hh-section-head--center">
+                      {p<string>(b.eyebrow) && <p className="hh-eyebrow">{p<string>(b.eyebrow)}</p>}
+                      {p<string>(b.heading) && <h2 className="hh-section-title">{p<string>(b.heading)}</h2>}
+                    </div>
+                  )}
+                  <ul className="hh-banners-list">
+                    {items.map((it, k) => {
+                      const href = linkHref(snapshot, locale, it.href ?? undefined)
+                      const inner = (
+                        <>
+                          <Img src={it.imageUrl} alt={p<string>(it.imageAlt)} />
+                          <h3>{p<string>(it.title)}</h3>
+                        </>
+                      )
+                      return (
+                        <li key={k} className="hh-banner">
+                          {href ? (
+                            <a className="hh-banner-inner" href={href}>
+                              {inner}
+                            </a>
+                          ) : (
+                            <div className="hh-banner-inner">{inner}</div>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              </section>
+            )
+          }
+          case 'mediaBand':
+            return b.imageUrl ? (
+              <section key={key} className="hh-media-band">
+                <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} />
+              </section>
+            ) : null
           case 'gallery': {
             const images = (b.images as { url: string; alt?: unknown }[]) ?? []
             return (
@@ -327,6 +413,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                 locale={locale}
                 defaultLocale={d}
                 roomsHref={roomsPage ? pageHref(snapshot, locale, roomsPage.slug) : undefined}
+                linkHref={linkHref(snapshot, locale, b.linkHref as string) ?? undefined}
                 headingLevel={!hasHero && i === 0 ? 'h1' : 'h2'}
               />
             )

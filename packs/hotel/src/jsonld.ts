@@ -22,7 +22,7 @@ export function hotelJsonLd(site: SiteInfo, facts: Fact[], hotel: HotelSnapshot 
   const d = site.defaultLocale
   const lat = Number(first(facts, 'geo.lat'))
   const lon = Number(first(facts, 'geo.lon'))
-  const stars = Number(first(facts, 'hotel.stars'))
+  const stars = Number(first(facts, 'rating.stars') ?? first(facts, 'hotel.stars'))
   const rooms = Number(first(facts, 'hotel.rooms'))
   const amenities = all(facts, 'amenity')
   const data: Record<string, unknown> = {

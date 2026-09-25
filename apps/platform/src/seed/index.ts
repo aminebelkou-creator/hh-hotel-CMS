@@ -13,6 +13,8 @@ import type { Page } from '@/payload-types'
 import { SEED_PASSWORD, SUPER_ADMIN_EMAIL, TENANT_COUNT, tenantEmail, tenantSlug } from './constants'
 
 const seedProvenance = { origin: 'generated' as const, sourceFact: 'seed' }
+/** A tiny inline photo (1×1 WebP), so seeded pages carry images without network or storage. */
+const PHOTO = 'data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA'
 
 /**
  * Every core block on the three seeded pages, so the quality gates (tests/quality/gates.mjs)
@@ -20,11 +22,12 @@ const seedProvenance = { origin: 'generated' as const, sourceFact: 'seed' }
  */
 type SeedBlocks = NonNullable<Page['blocks']>
 const seedBlocks = (slug: string, n: number): SeedBlocks => {
-  const hero: SeedBlocks[number] = { blockType: 'hero', heading: `Welcome to tenant ${n}`, subheading: `${slug} page of a seeded hotel`, ctaLabel: 'Contact us', ctaHref: 'contact', provenance: seedProvenance }
+  const hero: SeedBlocks[number] = { blockType: 'hero', heading: `Welcome to tenant ${n}`, subheading: `${slug} page of a seeded hotel`, ctaLabel: 'Contact us', ctaHref: 'contact', rating: 'classification', bookingBar: slug === 'home', provenance: seedProvenance }
   if (slug === 'rooms') {
     return [
       hero,
       { blockType: 'rooms', heading: 'Our rooms', intro: 'Each room type, described from the confirmed facts.', layout: 'detailed' },
+      { blockType: 'mediaBand', imageUrl: PHOTO, imageAlt: 'The courtyard at dusk', provenance: seedProvenance },
       { blockType: 'offers', heading: 'Offers', intro: 'Current offers appear here while they run.' },
       { blockType: 'policies', heading: 'Good to know', showTimes: true, items: [{ title: 'Pets', text: 'Small pets are welcome on request.' }, { title: 'Children', text: 'Cots are available for children under two.' }] },
       { blockType: 'cta', heading: 'Ready to book?', text: 'Book directly for the best rate.', buttonLabel: 'Contact us', buttonHref: 'contact' },
@@ -41,9 +44,10 @@ const seedBlocks = (slug: string, n: number): SeedBlocks => {
   return [
     hero,
     { blockType: 'text', heading: `About tenant ${n}`, body: 'A small independent hotel, seeded for tests.\n\nTwo paragraphs of plain text.', provenance: seedProvenance },
-    { blockType: 'features', heading: 'Why stay with us', intro: 'Three reasons.', items: [{ title: 'Quiet rooms', text: 'Double glazing on every window.' }, { title: 'Breakfast', text: 'Fresh bread every morning.' }, { title: 'Central', text: 'Walk everywhere.' }], provenance: seedProvenance },
-    { blockType: 'textImage', eyebrow: 'The house', heading: 'A family home since 1952', body: 'Restored room by room.', imagePosition: 'right', provenance: seedProvenance },
-    { blockType: 'rooms', heading: 'Rooms', intro: 'From the standard room to the suite.', layout: 'cards', limit: 3 },
+    { blockType: 'banners', eyebrow: 'The house', heading: 'Rooms, breakfast, courtyard', items: [{ imageUrl: PHOTO, imageAlt: 'A bright room', title: 'Rooms', href: 'rooms' }, { imageUrl: PHOTO, imageAlt: 'The breakfast buffet', title: 'Breakfast' }], provenance: seedProvenance },
+    { blockType: 'features', heading: 'Why stay with us', intro: 'Three reasons.', items: [{ icon: 'bed', title: 'Quiet rooms', text: 'Double glazing on every window.' }, { icon: 'coffee', title: 'Breakfast', text: 'Fresh bread every morning.' }, { icon: 'pin', title: 'Central', text: 'Walk everywhere.' }], provenance: seedProvenance },
+    { blockType: 'textImage', eyebrow: 'The house', heading: 'A family home since 1952', body: 'Restored room by room.', imagePosition: 'right', points: [{ text: 'Free luggage room' }, { text: 'Lift to every floor' }], provenance: seedProvenance },
+    { blockType: 'rooms', heading: 'Rooms', intro: 'From the standard room to the suite.', layout: 'cards', limit: 3, linkLabel: 'See all rooms', linkHref: 'rooms' },
     { blockType: 'quote', text: 'Perfect stay, we will be back.', author: 'A guest' },
     { blockType: 'cta', heading: 'Book direct', text: 'Best rate guaranteed.', buttonLabel: 'Contact us', buttonHref: 'contact' },
   ]
@@ -90,7 +94,13 @@ const run = async () => {
     })
     const site = await payload.create({
       collection: 'sites',
-      data: { name: `Site ${n}`, slug: `site-${n}`, enabledLocales: ['en', 'fr'], defaultLocale: 'en', status: 'draft', tenant: tenant.id },
+      data: { name: `Site ${n}`, slug: `site-${n}`, enabledLocales: ['en', 'fr'], defaultLocale: 'en', status: 'draft', tenant: tenant.id, cta: { label: 'Book', href: 'contact' } },
+      overrideAccess: true,
+    })
+    // A confirmed classification, so the hero's stars (read from facts) render on seeded sites.
+    await payload.create({
+      collection: 'facts',
+      data: { tenant: tenant.id, site: site.id, key: 'rating.stars', value: '3', method: 'manual', confidence: 1, status: 'confirmed', decisionNote: 'seed' },
       overrideAccess: true,
     })
     for (const slug of ['home', 'rooms', 'contact']) {

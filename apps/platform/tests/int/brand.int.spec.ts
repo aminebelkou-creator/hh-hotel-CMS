@@ -36,7 +36,7 @@ const auth = (t: T) => ({ authorization: `JWT ${t.token}`, 'content-type': 'appl
 const solid = (rgb: [number, number, number], w = 64, h = 64) => sharp({ create: { width: w, height: h, channels: 3, background: { r: rgb[0], g: rgb[1], b: rgb[2] } } }).png().toBuffer()
 const reset = async (t: T) => {
   await payload.update({ collection: 'sites', id: t.siteId, data: { brandProposal: null, template: 'maison', brand: { accent: null } } as never, overrideAccess: true })
-  await payload.delete({ collection: 'facts', where: { and: [{ tenant: { equals: t.tenantId } }, { decisionNote: { equals: 'brandtest' } }] }, overrideAccess: true })
+  await payload.update({ collection: 'facts', where: { and: [{ tenant: { equals: t.tenantId } }, { key: { equals: 'rating.stars' } }] }, data: { value: '3' }, overrideAccess: true })
 }
 
 beforeAll(async () => {
@@ -90,13 +90,13 @@ describe('proposeBrand and apply', () => {
     const png = await solid([30, 90, 160], 300, 200)
     const m = await payload.create({ collection: 'media', data: { tenant: A.tenantId, alt: 'blue wall' } as never, file: { data: png, mimetype: 'image/png', name: 'blue.png', size: png.length }, overrideAccess: true })
     mediaIds.push(Number(m.id))
-    const f = await payload.create({ collection: 'facts', data: { tenant: A.tenantId, site: A.siteId, key: 'rating.stars', value: '4', method: 'manual', confidence: 1, decisionNote: 'brandtest' } as never, overrideAccess: true })
-    await payload.update({ collection: 'facts', id: f.id, data: { status: 'confirmed' }, overrideAccess: true })
+    // The seeded classification is 3 stars; make it 4 for this test (reset puts it back).
+    await payload.update({ collection: 'facts', where: { and: [{ tenant: { equals: A.tenantId } }, { key: { equals: 'rating.stars' } }] }, data: { value: '4' }, overrideAccess: true })
     const p = await proposeBrand(payload, { tenantId: A.tenantId, siteId: A.siteId })
     expect(p.status).toBe('proposed')
     expect(p.sources.accent).toBe('photos')
     expect(p.template).toBe('soiree')
-    expect(p.alternatives.map((a) => a.template).sort()).toEqual(['atelier', 'maison'])
+    expect(p.alternatives.map((a) => a.template).sort()).toEqual(['atelier', 'lumiere', 'maison'])
     expect(p.rationale).toBeUndefined()
     const before = await payload.findByID({ collection: 'sites', id: A.siteId, depth: 0, overrideAccess: true })
     expect(before.template).toBe('maison') // nothing applied yet

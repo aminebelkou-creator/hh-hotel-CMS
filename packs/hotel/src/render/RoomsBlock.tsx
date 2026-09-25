@@ -2,7 +2,9 @@ import React from 'react'
 import { pick, type HotelSnapshot, type Localized } from '../types'
 
 type Props = {
-  block: { heading?: Localized<string>; intro?: Localized<string>; limit?: number | null; layout?: string | null }
+  block: { heading?: Localized<string>; intro?: Localized<string>; limit?: number | null; layout?: string | null; linkLabel?: Localized<string>; linkHref?: string | null }
+  /** Resolved "see all" address (the site's routing turns a slug into a path); undefined hides the link. */
+  linkHref?: string
   hotel: HotelSnapshot | undefined
   locale: string
   defaultLocale: string
@@ -16,7 +18,17 @@ const T = {
   en: { guests: (n: number) => `${n} guest${n > 1 ? 's' : ''}`, size: 'm²', details: 'View room', features: 'In the room' },
 }
 
-export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, headingLevel = 'h2' }: Props) {
+// Small line icons for the card facts (24-box, 1.5 stroke, currentColor), our own paths.
+const ICON = {
+  user: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a6.5 6.5 0 0 1 11 0"/>',
+  bed: '<path d="M3 18v-7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7"/><path d="M3 15h18"/><path d="M6 9V6.5A1.5 1.5 0 0 1 7.5 5h9A1.5 1.5 0 0 1 18 6.5V9"/><path d="M3 18v2M21 18v2"/>',
+  size: '<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M8 4v4M4 8h4M16 20v-4M20 16h-4"/>',
+}
+const Ico = ({ d }: { d: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" dangerouslySetInnerHTML={{ __html: d }} />
+)
+
+export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, headingLevel = 'h2', linkHref }: Props) {
   const t = locale === 'fr' ? T.fr : T.en
   const p = <V,>(v: Localized<V> | null | undefined) => pick(v, locale, defaultLocale)
   const rooms = (hotel?.rooms ?? []).slice(0, block.limit || undefined)
@@ -26,8 +38,22 @@ export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, hea
   return (
     <section className="hh-section hh-rooms">
       <div className="hh-wrap">
-        {p(block.heading) && <Heading className="hh-section-title">{p(block.heading)}</Heading>}
-        {p(block.intro) && <p className="hh-lead">{p(block.intro)}</p>}
+        {linkHref && p(block.linkLabel) ? (
+          <div className="hh-section-head hh-section-head--split">
+            <div>
+              {p(block.heading) && <Heading className="hh-section-title">{p(block.heading)}</Heading>}
+              {p(block.intro) && <p className="hh-lead">{p(block.intro)}</p>}
+            </div>
+            <a className="hh-link-arrow" href={linkHref}>
+              {p(block.linkLabel)}
+            </a>
+          </div>
+        ) : (
+          <>
+            {p(block.heading) && <Heading className="hh-section-title">{p(block.heading)}</Heading>}
+            {p(block.intro) && <p className="hh-lead">{p(block.intro)}</p>}
+          </>
+        )}
         <div className={detailed ? 'hh-room-list' : 'hh-room-grid'}>
           {rooms.map((r) => {
             const img = r.images[0]
@@ -43,12 +69,35 @@ export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, hea
                   <div className="hh-room-media">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={img.url} alt={p(img.alt) || p(r.name) || ''} loading="lazy" decoding="async" />
+                    {!detailed && r.category && <span className="hh-room-tag">{r.category}</span>}
                   </div>
                 )}
                 <div className="hh-room-body">
                   {r.category && <p className="hh-eyebrow">{r.category}</p>}
                   <h3>{p(r.name)}</h3>
                   {meta.length > 0 && <p className="hh-room-meta">{meta.join(' · ')}</p>}
+                  {!detailed && (r.maxOccupancy || p(r.bed) || r.sizeSqm) ? (
+                    <ul className="hh-room-facts">
+                      {r.maxOccupancy ? (
+                        <li>
+                          <Ico d={ICON.user} />
+                          {t.guests(r.maxOccupancy)}
+                        </li>
+                      ) : null}
+                      {p(r.bed) ? (
+                        <li>
+                          <Ico d={ICON.bed} />
+                          {p(r.bed)}
+                        </li>
+                      ) : null}
+                      {r.sizeSqm ? (
+                        <li>
+                          <Ico d={ICON.size} />
+                          {r.sizeSqm} {t.size}
+                        </li>
+                      ) : null}
+                    </ul>
+                  ) : null}
                   <p>{detailed ? p(r.description) || p(r.summary) : p(r.summary)}</p>
                   {detailed && r.features.length > 0 && (
                     <>

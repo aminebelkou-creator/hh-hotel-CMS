@@ -164,4 +164,33 @@ describe('public hotel site', () => {
     if (!reachable) ctx.skip()
     expect((await fetch(`${BASE}/s/${A.slug}/book`)).status).toBe(404)
   })
+
+  it('renders the structural blocks the templates need (Lumière handoff): stars, booking bar, banners, icons, checklist, band, room facts', async (ctx) => {
+    if (!reachable) ctx.skip()
+    const home = await (await fetch(`${BASE}/s/${A.slug}`)).text()
+    // Stars come from the confirmed classification fact, never from the block.
+    expect(home).toContain('<p class="hh-hero-rating"><span class="hh-stars" aria-hidden="true">★★★</span><span>3-star hotel</span></p>')
+    // The booking bar is a plain GET form to the site's Book link, with visible labels.
+    const form = home.match(/<form class="hh-booking-bar"[^>]*>/)?.[0] ?? ''
+    expect(form).toMatch(/action="[^"]*\/s\/site-5\/contact"/)
+    expect(form).toContain('method="get"')
+    expect(form).toContain('aria-label="Check availability"')
+    expect(home).toMatch(/<input id="[^"]+-in" type="date" name="arrival"\/>/)
+    expect(home).toMatch(/<select id="[^"]+-n" name="guests">/)
+    expect(home).toContain('<section class="hh-section hh-banners">')
+    expect(home).toContain('<div class="hh-section-head hh-section-head--center">')
+    expect(home).toMatch(/<li class="hh-banner"><a class="hh-banner-inner" href="[^"]*\/s\/site-5\/rooms"><img [^>]+><h3>Rooms<\/h3><\/a><\/li>/)
+    expect(home).toContain('<span class="hh-feature-icon"><svg viewBox="0 0 24 24"')
+    expect(home).toContain('<ul class="hh-checklist"><li>Free luggage room</li><li>Lift to every floor</li></ul>')
+    expect(home).toContain('<div class="hh-section-head hh-section-head--split">')
+    expect(home).toMatch(/<a class="hh-link-arrow" href="[^"]*\/s\/site-5\/rooms">See all rooms<\/a>/)
+    expect(home).toContain('<ul class="hh-room-facts"><li><svg')
+    const fr = await (await fetch(`${BASE}/s/${A.slug}/fr`)).text()
+    expect(fr).toContain('Hôtel 3 étoiles')
+    expect(fr).toMatch(/<label for="[^"]+-in">Arrivée<\/label>/)
+    const rooms = await (await fetch(`${BASE}/s/${A.slug}/rooms`)).text()
+    expect(rooms).toContain('<section class="hh-media-band"><img src="data:image/webp;base64,')
+    expect(rooms).toContain('alt="The courtyard at dusk"')
+    expect(rooms).not.toContain('hh-booking-bar') // only where the hotel switched it on
+  })
 })

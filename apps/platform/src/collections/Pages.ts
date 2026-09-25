@@ -3,6 +3,7 @@ import { authenticated } from '../access'
 
 import { provenance } from './provenance'
 import { protectHumanEdits } from '../generate/protect'
+import { ICON_IDS } from '../site/icons'
 
 /** Remote image until the media pipeline exists (plan week 5): a URL plus localized alt text. */
 const remoteImage = (name = 'image'): Field[] => [
@@ -25,6 +26,22 @@ export const coreBlocks: Block[] = [
       { name: 'image', type: 'upload', relationTo: 'media' },
       ...remoteImage(),
       ...link('cta'),
+      {
+        name: 'rating',
+        type: 'select',
+        defaultValue: 'none',
+        options: [
+          { label: 'None', value: 'none' },
+          { label: 'Official classification (from the confirmed facts)', value: 'classification' },
+        ],
+        admin: { description: 'Stars above the headline. Read from the fact base, never typed here.' },
+      },
+      {
+        name: 'bookingBar',
+        type: 'checkbox',
+        defaultValue: false,
+        admin: { description: 'Arrival, departure and guests fields that open the site’s Book link with those dates. No availability or prices: the platform runs no booking logic.' },
+      },
       provenance,
     ],
   },
@@ -38,6 +55,12 @@ export const coreBlocks: Block[] = [
       { name: 'body', type: 'textarea', localized: true, admin: { description: 'Blank lines separate paragraphs' } },
       ...remoteImage(),
       { name: 'imagePosition', type: 'select', defaultValue: 'right', options: ['left', 'right'] },
+      {
+        name: 'points',
+        type: 'array',
+        admin: { description: 'Optional checklist under the text' },
+        fields: [{ name: 'text', type: 'text', required: true, localized: true }],
+      },
       ...link('link'),
       provenance,
     ],
@@ -52,10 +75,45 @@ export const coreBlocks: Block[] = [
         name: 'items',
         type: 'array',
         fields: [
+          { name: 'icon', type: 'select', options: ICON_IDS.map((i) => ({ label: i, value: i })), admin: { description: 'Optional line icon (built-in set)' } },
           { name: 'title', type: 'text', required: true, localized: true },
           { name: 'text', type: 'textarea', localized: true },
         ],
       },
+      provenance,
+    ],
+  },
+  {
+    slug: 'banners',
+    interfaceName: 'BannersBlock',
+    graphQL: { singularName: 'BannersBlock' },
+    labels: { singular: 'Banners', plural: 'Banners' },
+    // Full-width photo strips with a title (spaces, rooms, moments); the title shows on hover and always on phones.
+    fields: [
+      { name: 'eyebrow', type: 'text', localized: true },
+      { name: 'heading', type: 'text', localized: true },
+      {
+        name: 'items',
+        type: 'array',
+        fields: [
+          { name: 'imageUrl', type: 'text', required: true, admin: { description: 'Image URL (https or /media/…)' } },
+          { name: 'imageAlt', type: 'text', localized: true },
+          { name: 'title', type: 'text', required: true, localized: true },
+          { name: 'href', type: 'text', admin: { description: 'A page slug, a URL, tel: or mailto: (optional)' } },
+        ],
+      },
+      provenance,
+    ],
+  },
+  {
+    slug: 'mediaBand',
+    interfaceName: 'MediaBandBlock',
+    graphQL: { singularName: 'MediaBandBlock' },
+    labels: { singular: 'Photo band', plural: 'Photo bands' },
+    // One full-width photo between sections.
+    fields: [
+      { name: 'imageUrl', type: 'text', required: true, admin: { description: 'Image URL (https or /media/…)' } },
+      { name: 'imageAlt', type: 'text', required: true, localized: true, admin: { description: 'What the photo shows' } },
       provenance,
     ],
   },

@@ -49,7 +49,10 @@ const load = async (n: number): Promise<T> => {
 const auth = (t: T) => ({ authorization: `JWT ${t.token}`, 'content-type': 'application/json' })
 const cleanup = async (t: T) => {
   await payload.delete({ collection: 'crawls', where: { tenant: { equals: t.tenantId } }, overrideAccess: true })
-  await payload.delete({ collection: 'facts', where: { and: [{ tenant: { equals: t.tenantId } }, { source: { like: 'hotel.example.test' } }] }, overrideAccess: true })
+  // The seeded classification (rating.stars = 3, confirmed) also appears in the fake site's JSON-LD: a
+  // re-import merges into it. Put it back as seeded; delete everything else the import created.
+  await payload.update({ collection: 'facts', where: { and: [{ tenant: { equals: t.tenantId } }, { decisionNote: { equals: 'seed' } }] }, data: { source: null, occurrences: 1, evidence: [] } as never, overrideAccess: true })
+  await payload.delete({ collection: 'facts', where: { and: [{ tenant: { equals: t.tenantId } }, { source: { like: 'hotel.example.test' } }, { decisionNote: { not_equals: 'seed' } }] }, overrideAccess: true })
 }
 
 beforeAll(async () => {
@@ -152,7 +155,9 @@ describe('in-product pipeline', () => {
     setFetcherForTests(undefined)
     const facts = await payload.find({ collection: 'facts', where: { and: [{ tenant: { equals: A.tenantId } }, { source: { like: 'hotel.example.test' } }] }, limit: 200, overrideAccess: true })
     expect(facts.docs.length).toBeGreaterThan(8)
-    expect(facts.docs.every((f) => f.status === 'unconfirmed')).toBe(true)
+    // Everything new is unconfirmed; the seeded classification the site also states keeps its decision.
+    expect(facts.docs.filter((f) => f.decisionNote !== 'seed').every((f) => f.status === 'unconfirmed')).toBe(true)
+    expect(facts.docs.find((f) => f.key === 'rating.stars')?.status).toBe('confirmed')
     expect(facts.docs.find((f) => f.key === 'contact.phone')?.value).toBe('+33123456789') // normalised to E.164
     expect(facts.docs.find((f) => f.key === 'policy.checkout')?.value).toBe('11:00')
     const phone = facts.docs.find((f) => f.key === 'contact.phone')
