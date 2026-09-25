@@ -140,6 +140,7 @@ export function upgradeSnapshot(raw: unknown): SiteSnapshot {
     },
     mapImage: s.mapImage ?? null,
     images: s.images ?? {},
+    posts: s.posts ?? [],
     redirects: s.redirects ?? [],
     forms: s.forms ?? [],
     pages: (s.pages ?? []).map((p) => ({

@@ -1,7 +1,10 @@
 /**
  * Build (or rebuild) a hotel's site from its onboarding content, then optionally publish it.
  *
- *   pnpm exec tsx src/onboarding/apply.ts hotel-herse-dor [--publish]
+ *   pnpm exec tsx src/onboarding/apply.ts hotel-herse-dor [--publish] [--only=posts]
+ *
+ * --only=posts writes the blog alone: the posts, the blog page, and a news block on the home
+ * page when it has none (inserted in place, every other block and the owner's edits kept).
  *
  * Upserts the site settings, the room types and the pages listed in
  * src/onboarding/sites/<slug>.ts, in every locale. Pages and rooms not listed there are left
@@ -13,7 +16,7 @@ import 'dotenv/config'
 import { getPayload, type Payload } from 'payload'
 import config from '@payload-config'
 import { nextPublishSeq, publishSite } from '../releases/publish'
-import type { BlockInput, L, OfferInput, PageInput, RoomInput, SiteContent } from './types'
+import type { BlockInput, L, OfferInput, PageInput, PostInput, RoomInput, SiteContent } from './types'
 import { hotelHerseDor } from './sites/hotel-herse-dor'
 import { mediaMap } from './import-images'
 
@@ -53,6 +56,8 @@ export function blockData(b: BlockInput, l: Loc): Record<string, unknown> {
       return { blockType: 'faq', heading: v(b.heading, l), items: b.items.map((i) => ({ question: v(i.question, l), answer: v(i.answer, l) })), provenance: prov }
     case 'offers':
       return { blockType: 'offers', heading: v(b.heading, l), intro: v(b.intro, l), limit: b.limit }
+    case 'news':
+      return { blockType: 'news', heading: v(b.heading, l), intro: v(b.intro, l), layout: b.layout ?? 'latest', limit: b.limit ?? 3, linkLabel: v(b.link?.label, l), linkHref: b.link?.href, provenance: prov }
     case 'policies':
       return { blockType: 'policies', heading: v(b.heading, l), showTimes: b.showTimes ?? true, items: b.items.map((i) => ({ title: v(i.title, l), text: v(i.text, l) })) }
   }
@@ -126,10 +131,25 @@ const offerData = (o: OfferInput, l: Loc, tenantId: number) => ({
   ctaHref: o.cta?.href,
 })
 
+const postData = (p: PostInput, l: Loc, siteId: number, tenantId: number) => ({
+  tenant: tenantId,
+  site: siteId,
+  slug: p.slug,
+  status: 'published',
+  publishedAt: p.publishedAt,
+  title: v(p.title, l),
+  excerpt: v(p.excerpt, l),
+  body: v(p.body, l),
+  imageUrl: p.image?.url,
+  imageAlt: v(p.image?.alt, l),
+  // Written by us from checked sources; an edit by the owner turns it `human` (Posts hook).
+  provenance: { origin: 'generated', sourceFact: 'onboarding:blog' },
+})
+
 /** Writes a document in the first locale (replacing its structure), then fills the others. */
 async function upsertLocalized(
   payload: Payload,
-  collection: 'pages' | 'rooms' | 'offers',
+  collection: 'pages' | 'rooms' | 'offers' | 'posts',
   existingId: number | undefined,
   locales: Loc[],
   build: (l: Loc) => Record<string, unknown>,
@@ -155,6 +175,67 @@ function localizeImages<T>(value: T, map: Map<string, { full: string; card: stri
     ) as T
   }
   return value
+}
+
+/** Blog posts of the site, upserted by slug (a post the owner edited is left alone). */
+async function applyPosts(payload: Payload, content: SiteContent, siteId: number, tenantId: number, locales: Loc[], photos: Map<string, { full: string; card: string }>) {
+  for (const p of content.posts ?? []) {
+    const existing = (await payload.find({ collection: 'posts', where: { and: [{ tenant: { equals: tenantId } }, { site: { equals: siteId } }, { slug: { equals: p.slug } }] }, limit: 1, overrideAccess: true })).docs[0] as { id: number; provenance?: { origin?: string } } | undefined
+    if (existing && existing.provenance?.origin === 'human') continue
+    await upsertLocalized(payload, 'posts', existing ? Number(existing.id) : undefined, locales, (l) => localizeImages(postData(p, l, siteId, tenantId), photos))
+  }
+}
+
+/**
+ * Adds the home page's news block when it has none, right after the offers block (else before
+ * the closing call to action), keeping every other block, its ids and the owner's edits.
+ */
+async function ensureHomeNews(payload: Payload, content: SiteContent, siteId: number, tenantId: number, locales: Loc[]) {
+  const block = content.pages.find((p) => p.slug === 'home')?.blocks.find((b) => b.blockType === 'news')
+  if (!block) return false
+  const home = (await payload.find({ collection: 'pages', where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { slug: { equals: 'home' } }] }, limit: 1, overrideAccess: true, draft: true, depth: 0 })).docs[0]
+  if (!home) return false
+  const [first, ...rest] = locales
+  // No locale fallback: writing back a fallback value would copy one language into the other.
+  const stored = (l: Loc) => payload.findByID({ collection: 'pages', id: home.id, locale: l, fallbackLocale: false, depth: 0, overrideAccess: true, draft: false }) as Promise<{ blocks?: Record<string, unknown>[] }>
+  const blocks0 = (await stored(first)).blocks ?? []
+  if (blocks0.some((b) => b.blockType === 'news')) return false
+  const after = blocks0.findIndex((b) => b.blockType === 'offers')
+  const cta = blocks0.findIndex((b) => b.blockType === 'cta')
+  const at = after >= 0 ? after + 1 : cta >= 0 ? cta : blocks0.length
+  const insert = (list: Record<string, unknown>[], l: Loc) => [...list.slice(0, at), blockData(block, l), ...list.slice(at)]
+  await payload.update({ collection: 'pages', id: home.id, locale: first, data: { blocks: insert(blocks0, first), _status: 'published' } as never, overrideAccess: true, depth: 0, context: { generation: true } })
+  const newId = ((await stored(first)).blocks ?? [])[at]?.id
+  for (const l of rest) {
+    const list = (await stored(l)).blocks ?? []
+    const withNew = insert(list.filter((b) => b.id !== newId), l)
+    withNew[at] = { ...withNew[at], id: newId }
+    await payload.update({ collection: 'pages', id: home.id, locale: l, data: { blocks: withNew, _status: 'published' } as never, overrideAccess: true, depth: 0, context: { generation: true } })
+  }
+  return true
+}
+
+/** The blog alone: posts, the blog page, the home page's news block. */
+export async function applyBlog(payload: Payload, content: SiteContent) {
+  const { tenantId, siteId, locales, photos } = await siteOf(payload, content)
+  await applyPosts(payload, content, siteId, tenantId, locales, photos)
+  const blogPages = content.pages.filter((p) => p.blocks.some((b) => b.blockType === 'news' && b.layout === 'list'))
+  for (const p of blogPages) {
+    const existing = (await payload.find({ collection: 'pages', where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { slug: { equals: p.slug } }] }, limit: 1, overrideAccess: true, draft: true })).docs[0]
+    if (!existing) await upsertLocalized(payload, 'pages', undefined, locales, (l) => localizeImages(pageData(p, l, siteId, tenantId), photos))
+  }
+  const home = await ensureHomeNews(payload, content, siteId, tenantId, locales)
+  return { tenantId, siteId, posts: (content.posts ?? []).length, blogPages: blogPages.length, homeNewsAdded: home }
+}
+
+async function siteOf(payload: Payload, content: SiteContent) {
+  const tenant = (await payload.find({ collection: 'tenants', where: { slug: { equals: content.tenant.slug } }, limit: 1, overrideAccess: true })).docs[0]
+  if (!tenant) throw new Error(`Tenant ${content.tenant.slug} not found: run src/ingest/import-facts.ts first`)
+  const tenantId = Number(tenant.id)
+  const site = (await payload.find({ collection: 'sites', where: { and: [{ slug: { equals: content.site.slug } }, { tenant: { equals: tenantId } }] }, limit: 1, overrideAccess: true })).docs[0]
+  if (!site) throw new Error(`Site ${content.site.slug} not found in tenant ${content.tenant.slug}`)
+  const locales = [content.site.defaultLocale, ...content.site.enabledLocales.filter((l) => l !== content.site.defaultLocale)] as Loc[]
+  return { tenantId, siteId: Number(site.id), locales, photos: await mediaMap(payload, tenantId) }
 }
 
 export async function applySite(payload: Payload, content: SiteContent) {
@@ -195,6 +276,8 @@ export async function applySite(payload: Payload, content: SiteContent) {
     await upsertLocalized(payload, 'offers', existing ? Number(existing.id) : undefined, locales, (l) => localizeImages(offerData(o, l, tenantId), photos))
   }
 
+  await applyPosts(payload, content, siteId, tenantId, locales, photos)
+
   for (const p of content.pages) {
     const existing = (await payload.find({ collection: 'pages', where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { slug: { equals: p.slug } }] }, limit: 1, overrideAccess: true, draft: true })).docs[0]
     await upsertLocalized(payload, 'pages', existing ? Number(existing.id) : undefined, locales, (l) => localizeImages(pageData(p, l, siteId, tenantId), photos))
@@ -210,8 +293,8 @@ if (isMain) {
     if (!content) throw new Error(`Usage: apply.ts <${Object.keys(SITES).join('|')}> [--publish]`)
     const payload = await getPayload({ config })
     const t0 = Date.now()
-    const r = await applySite(payload, content)
-    console.log(`applied ${slug}: ${r.pages} pages, ${r.rooms} rooms, ${r.photos} platform photos in ${Date.now() - t0} ms`)
+    const r = process.argv.includes('--only=posts') ? await applyBlog(payload, content) : await applySite(payload, content)
+    console.log(`applied ${slug}: ${JSON.stringify(r)} in ${Date.now() - t0} ms`)
     if (process.argv.includes('--publish')) {
       const seq = await nextPublishSeq(payload, r.tenantId, r.siteId)
       console.log(`publish: ${JSON.stringify(await publishSite(payload, { tenantId: r.tenantId, siteId: r.siteId, seq, by: 'onboarding' }))}`)

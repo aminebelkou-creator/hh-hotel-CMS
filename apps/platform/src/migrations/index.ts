@@ -16,6 +16,7 @@ import * as migration_20260925_050923_phase5_design_channel from './20260925_050
 import * as migration_20260925_061743_lumiere_blocks from './20260925_061743_lumiere_blocks';
 import * as migration_20260925_062437_lumiere_template from './20260925_062437_lumiere_template';
 import * as migration_20260925_125537_butler_font from './20260925_125537_butler_font';
+import * as migration_20260925_193747_blog_posts from './20260925_193747_blog_posts';
 
 export const migrations = [
   {
@@ -106,6 +107,11 @@ export const migrations = [
   {
     up: migration_20260925_125537_butler_font.up,
     down: migration_20260925_125537_butler_font.down,
-    name: '20260925_125537_butler_font'
+    name: '20260925_125537_butler_font',
+  },
+  {
+    up: migration_20260925_193747_blog_posts.up,
+    down: migration_20260925_193747_blog_posts.down,
+    name: '20260925_193747_blog_posts'
   },
 ];

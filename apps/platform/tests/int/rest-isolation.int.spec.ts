@@ -47,7 +47,7 @@ describe('tenant isolation over REST', () => {
     const b = api(tb)
 
     const listA = (await (await a.get('/pages?limit=1000')).json()) as { totalDocs: number; docs: { tenant: unknown }[] }
-    expect(listA.totalDocs).toBe(3)
+    expect(listA.totalDocs).toBe(4) // home, rooms, contact, blog
 
     const listB = (await (await b.get('/pages?limit=1')).json()) as { docs: { id: number | string; tenant: unknown }[] }
     const pageB = listB.docs[0]

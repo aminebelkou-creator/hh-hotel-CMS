@@ -43,7 +43,7 @@ describe('tenant isolation (Local API, overrideAccess: false)', () => {
     const userA = await login(tenantEmail(A))
     const tenantA = await tenantByEmailN(A)
     const res = await payload.find({ collection: 'pages', user: userA, overrideAccess: false, limit: 1000 })
-    expect(res.totalDocs).toBe(3)
+    expect(res.totalDocs).toBe(4) // home, rooms, contact, blog
     for (const d of res.docs) expect(idOf(d.tenant)).toBe(tenantA.id)
   })
 

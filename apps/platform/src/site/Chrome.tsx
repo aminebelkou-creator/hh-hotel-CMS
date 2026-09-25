@@ -7,7 +7,9 @@ import { LOCALE_NAMES, type Labels } from './i18n'
 type Props = { snapshot: SiteSnapshot; locale: string; t: Labels; current: string }
 
 export function navPages(snapshot: SiteSnapshot) {
-  return [...snapshot.pages].filter((p) => p.showInNav).sort((a, b) => a.navOrder - b.navOrder || a.slug.localeCompare(b.slug))
+  // The blog page stays out of the menu until it has a post to show.
+  const emptyBlog = (p: SiteSnapshot['pages'][number]) => !(snapshot.posts ?? []).length && p.blocks.some((b) => b.blockType === 'news' && b.layout === 'list')
+  return [...snapshot.pages].filter((p) => p.showInNav && !emptyBlog(p)).sort((a, b) => a.navOrder - b.navOrder || a.slug.localeCompare(b.slug))
 }
 
 export function SiteHeader({ snapshot, locale, t, current }: Props) {

@@ -17,6 +17,7 @@ export type BlockInput =
   | { blockType: 'text'; heading?: L; body: L }
   | { blockType: 'faq'; heading?: L; items: { question: L; answer: L }[] }
   | { blockType: 'offers'; heading?: L; intro?: L; limit?: number }
+  | { blockType: 'news'; heading?: L; intro?: L; layout?: 'latest' | 'list'; limit?: number; link?: { label: L; href: string } }
   | { blockType: 'policies'; heading?: L; showTimes?: boolean; items: { title: L; text: L }[] }
 
 export type PageInput = { slug: string; title: L; navLabel?: L; navOrder: number; showInNav?: boolean; showInFooter?: boolean; seo?: { title?: L; description?: L }; blocks: BlockInput[] }
@@ -49,6 +50,16 @@ export type OfferInput = {
   cta?: { label: L; href: string }
 }
 
+/** A blog post. Written from confirmed facts and checked public sources (rule 9): no prices, no invented claims. */
+export type PostInput = {
+  slug: string
+  publishedAt: string
+  title: L
+  excerpt: L
+  body: L
+  image?: Img
+}
+
 export type SiteContent = {
   tenant: { slug: string; name: string }
   site: {
@@ -63,5 +74,6 @@ export type SiteContent = {
   }
   rooms: RoomInput[]
   offers?: OfferInput[]
+  posts?: PostInput[]
   pages: PageInput[]
 }

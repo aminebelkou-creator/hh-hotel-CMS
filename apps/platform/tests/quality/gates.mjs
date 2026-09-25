@@ -16,6 +16,8 @@ const pages = [
   ['home', ''],
   ['rooms', '/rooms'],
   ['contact', '/contact'],
+  ['blog', '/blog'],
+  ['post', '/blog/garden-open'],
 ]
 // Budgets per page, in bytes as sent over the wire (text gzipped, fonts as-is), excluding photos,
 // which come from the hotel's own uploads. Roughly what a 3G connection loads in three seconds.
@@ -106,6 +108,7 @@ try {
       }
       if (name === 'home' && !types.includes('Hotel')) failures.push(`${label}: home without schema.org Hotel`)
       if (name === 'contact' && !types.includes('FAQPage')) failures.push(`${label}: FAQ block without FAQPage data`)
+      if (name === 'post' && !types.includes('BlogPosting')) failures.push(`${label}: post without BlogPosting data`)
 
       // 3. Basics the contract promises: one h1, a lang attribute, a canonical link, a viewport meta.
       const basics = await page.evaluate(() => ({

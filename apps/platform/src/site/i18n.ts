@@ -32,6 +32,10 @@ const LABELS = {
     close: 'Fermer',
     previous: 'Photo précédente',
     next: 'Photo suivante',
+    readMore: 'Lire l’article',
+    allPosts: 'Tous les articles',
+    backToBlog: 'Retour au blog',
+    morePosts: 'À lire aussi',
   },
   en: {
     menu: 'Menu',
@@ -66,6 +70,10 @@ const LABELS = {
     close: 'Close',
     previous: 'Previous photo',
     next: 'Next photo',
+    readMore: 'Read the post',
+    allPosts: 'All posts',
+    backToBlog: 'Back to the blog',
+    morePosts: 'More to read',
   },
 } as const
 export type Labels = Record<keyof (typeof LABELS)['en'], string>

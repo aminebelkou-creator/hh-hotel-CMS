@@ -129,7 +129,7 @@ describe('generateSite', () => {
     const r = await generateSite(payload, { tenantId: A.tenantId, siteId: A.siteId, by: 'test' })
     expect(r.model).toBeNull()
     expect(r.rooms).toEqual({ created: 2, kept: 0 })
-    expect(r.pages.map((p) => p.slug)).toEqual(['home', 'rooms', 'services', 'contact', 'legal-notice', 'privacy', 'house-rules-and-terms'])
+    expect(r.pages.map((p) => p.slug)).toEqual(['home', 'rooms', 'services', 'contact', 'legal-notice', 'privacy', 'house-rules-and-terms', 'blog'])
     expect(r.pages.find((p) => p.slug === 'services')?.created).toBe(true)
     const rooms = await payload.find({ collection: 'rooms', where: { and: [{ tenant: { equals: A.tenantId } }, { slug: { in: ['chambre-double', 'suite-familiale'] } }] }, overrideAccess: true })
     const dbl = rooms.docs.find((x) => x.slug === 'chambre-double')
@@ -212,7 +212,8 @@ describe('generateSite', () => {
     const own = await fetch(`${BASE}/api/sites/${A.siteId}/generate`, { method: 'POST', headers: auth(A) })
     expect(own.status).toBe(200)
     const body = (await own.json()) as { pages: { slug: string }[] }
-    expect(body.pages).toHaveLength(7)
+    expect(body.pages).toHaveLength(8) // 4 pages, 3 legal pages, the blog page
+    expect(body.pages.map((p) => p.slug)).toContain('blog')
   })
 })
 

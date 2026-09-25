@@ -1,6 +1,7 @@
 import type { SiteContent } from '../types'
 import { IMG } from './hotel-herse-dor.images'
 import { pages } from './hotel-herse-dor.pages'
+import { posts } from './hotel-herse-dor.posts'
 
 /**
  * Customer zero: Hôtel de la Herse d'Or, 20 rue Saint-Antoine, Paris 4e.
@@ -85,5 +86,6 @@ export const hotelHerseDor: SiteContent = {
       cta: { label: { fr: 'Nous contacter', en: 'Contact us' }, href: 'contact' },
     },
   ],
+  posts,
   pages,
 }

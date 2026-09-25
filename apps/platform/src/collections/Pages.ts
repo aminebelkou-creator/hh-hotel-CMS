@@ -159,6 +159,29 @@ export const coreBlocks: Block[] = [
     ],
   },
   {
+    // Blog posts (collection `posts`): the latest few as cards, or every post on the blog page.
+    slug: 'news',
+    interfaceName: 'NewsBlock',
+    graphQL: { singularName: 'NewsBlock' },
+    labels: { singular: 'Blog posts', plural: 'Blog posts' },
+    fields: [
+      { name: 'heading', type: 'text', localized: true },
+      { name: 'intro', type: 'textarea', localized: true },
+      {
+        name: 'layout',
+        type: 'select',
+        defaultValue: 'latest',
+        options: [
+          { label: 'The latest posts (cards)', value: 'latest' },
+          { label: 'Every post: this page is the blog, posts live under its address', value: 'list' },
+        ],
+      },
+      { name: 'limit', type: 'number', defaultValue: 3, min: 1, max: 12, admin: { condition: (_, s) => s?.layout !== 'list' } },
+      ...link('link'),
+      provenance,
+    ],
+  },
+  {
     slug: 'faq',
     labels: { singular: 'Questions and answers', plural: 'Questions and answers' },
     fields: [

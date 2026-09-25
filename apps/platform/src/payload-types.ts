@@ -72,6 +72,7 @@ export interface Config {
     tenants: Tenant;
     sites: Site;
     pages: Page;
+    posts: Post;
     media: Media;
     domains: Domain;
     releases: Release;
@@ -97,6 +98,7 @@ export interface Config {
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     sites: SitesSelect<false> | SitesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     domains: DomainsSelect<false> | DomainsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
@@ -636,6 +638,7 @@ export interface Page {
             blockName?: string | null;
             blockType: 'text';
           }
+        | NewsBlock
         | {
             heading?: string | null;
             items?:
@@ -840,6 +843,34 @@ export interface MediaBandBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBand';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsBlock".
+ */
+export interface NewsBlock {
+  heading?: string | null;
+  intro?: string | null;
+  layout?: ('latest' | 'list') | null;
+  limit?: number | null;
+  linkLabel?: string | null;
+  /**
+   * A page slug (e.g. contact), a full URL, tel: or mailto:
+   */
+  linkHref?: string | null;
+  /**
+   * Who last shaped this content. Regeneration never overwrites human edits.
+   */
+  provenance?: {
+    origin?: ('generated' | 'human' | 'locked') | null;
+    /**
+     * Fact-base reference for generated content
+     */
+    sourceFact?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'news';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1078,6 +1109,56 @@ export interface PoliciesBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'policies';
+}
+/**
+ * Blog articles. A post shows on the site once it is Published and the site is published again.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  /**
+   * Web address of the post, e.g. place-des-vosges
+   */
+  slug: string;
+  site: number | Site;
+  status: 'draft' | 'published';
+  publishedAt: string;
+  /**
+   * One or two sentences shown on the cards and in search results
+   */
+  excerpt: string;
+  /**
+   * Blank lines separate paragraphs; "## " starts a subheading; lines starting with "- " make a list
+   */
+  body: string;
+  /**
+   * Cover photo
+   */
+  image?: (number | null) | Media;
+  /**
+   * Or a photo address (used when no cover photo is chosen)
+   */
+  imageUrl?: string | null;
+  /**
+   * Alternative text for screen readers
+   */
+  imageAlt?: string | null;
+  /**
+   * Who last shaped this content. Regeneration never overwrites human edits.
+   */
+  provenance?: {
+    origin?: ('generated' | 'human' | 'locked') | null;
+    /**
+     * Fact-base reference for generated content
+     */
+    sourceFact?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1630,6 +1711,10 @@ export interface PayloadLockedDocument {
         value: number | Page;
       } | null)
     | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -1975,6 +2060,7 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        news?: T | NewsBlockSelect<T>;
         faq?:
           | T
           | {
@@ -2083,6 +2169,26 @@ export interface MediaBandBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsBlock_select".
+ */
+export interface NewsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  intro?: T;
+  layout?: T;
+  limit?: T;
+  linkLabel?: T;
+  linkHref?: T;
+  provenance?:
+    | T
+    | {
+        origin?: T;
+        sourceFact?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FormBlock_select".
  */
 export interface FormBlockSelect<T extends boolean = true> {
@@ -2151,6 +2257,31 @@ export interface PoliciesBlockSelect<T extends boolean = true> {
       };
   id?: T;
   blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  slug?: T;
+  site?: T;
+  status?: T;
+  publishedAt?: T;
+  excerpt?: T;
+  body?: T;
+  image?: T;
+  imageUrl?: T;
+  imageAlt?: T;
+  provenance?:
+    | T
+    | {
+        origin?: T;
+        sourceFact?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -1,5 +1,6 @@
 /**
- * Seed: 50 tenants, one user each, one site, three pages, one room type, one domain, plus one super-admin.
+ * Seed: 50 tenants, one user each, one site, four pages (home, rooms, contact, blog), one room type,
+ * two published blog posts and one draft, one domain, plus one super-admin.
  * Run with: pnpm seed   (payload run src/seed/index.ts)
  *
  * This is a system operation and uses overrideAccess: true on purpose. It is listed in
@@ -33,6 +34,9 @@ const seedBlocks = (slug: string, n: number): SeedBlocks => {
       { blockType: 'cta', heading: 'Ready to book?', text: 'Book directly for the best rate.', buttonLabel: 'Contact us', buttonHref: 'contact' },
     ]
   }
+  if (slug === 'blog') {
+    return [{ blockType: 'news', heading: 'News from the hotel', intro: 'Stories from the house and the neighbourhood.', layout: 'list', provenance: seedProvenance }]
+  }
   if (slug === 'contact') {
     return [
       hero,
@@ -49,6 +53,7 @@ const seedBlocks = (slug: string, n: number): SeedBlocks => {
     { blockType: 'textImage', eyebrow: 'The house', heading: 'A family home since 1952', body: 'Restored room by room.', imagePosition: 'right', points: [{ text: 'Free luggage room' }, { text: 'Lift to every floor' }], provenance: seedProvenance },
     { blockType: 'rooms', heading: 'Rooms', intro: 'From the standard room to the suite.', layout: 'cards', limit: 3, linkLabel: 'See all rooms', linkHref: 'rooms' },
     { blockType: 'gallery', heading: 'In pictures', images: [{ url: PHOTO, alt: 'The courtyard' }, { url: PHOTO, alt: 'A room' }] },
+    { blockType: 'news', heading: 'Latest news', layout: 'latest', limit: 3, linkLabel: 'All news', linkHref: 'blog', provenance: seedProvenance },
     { blockType: 'quote', text: 'Perfect stay, we will be back.', author: 'A guest' },
     { blockType: 'cta', heading: 'Book direct', text: 'Best rate guaranteed.', buttonLabel: 'Contact us', buttonHref: 'contact' },
   ]
@@ -64,7 +69,7 @@ const run = async () => {
   const seededIds = seeded.docs.map((t) => t.id)
   if (seededIds.length) {
     await payload.update({ collection: 'sites', where: { tenant: { in: seededIds } }, data: { currentRelease: null }, overrideAccess: true })
-    for (const collection of ['issues', 'crawls', 'releases', 'facts', 'rooms', 'offers', 'redirects', 'forms', 'domains', 'pages', 'sites', 'audit-log'] as const) {
+    for (const collection of ['issues', 'crawls', 'releases', 'facts', 'rooms', 'offers', 'posts', 'redirects', 'forms', 'domains', 'pages', 'sites', 'audit-log'] as const) {
       await payload.delete({ collection, where: { tenant: { in: seededIds } }, overrideAccess: true })
     }
   }
@@ -106,17 +111,30 @@ const run = async () => {
         overrideAccess: true,
       })
     }
-    for (const slug of ['home', 'rooms', 'contact']) {
+    for (const slug of ['home', 'rooms', 'contact', 'blog']) {
       await payload.create({
         collection: 'pages',
         data: {
-          title: `${slug} of tenant ${n}`,
+          title: slug === 'blog' ? 'News' : `${slug} of tenant ${n}`,
           slug,
           site: site.id,
           tenant: tenant.id,
           _status: 'published',
           blocks: seedBlocks(slug, n),
         },
+        overrideAccess: true,
+      })
+    }
+    // Blog: two published posts (the newer one first on the site) and a draft that must never show.
+    const posts = [
+      { slug: 'garden-open', title: 'The garden is open again', status: 'published', publishedAt: '2026-09-01', excerpt: 'Breakfast outside from May to September.', body: 'The courtyard garden reopens for the season.\n\n## Breakfast outside\n\n- Served until 10:30\n- Weather permitting' },
+      { slug: 'walks-nearby', title: 'Three walks from the door', status: 'published', publishedAt: '2026-08-15', excerpt: 'The river, the old town and the market, all on foot.', body: 'Three short walks, each under an hour.' },
+      { slug: 'draft-post', title: 'Unpublished draft post', status: 'draft', publishedAt: '2026-09-10', excerpt: 'Not yet.', body: 'Not yet.' },
+    ] as const
+    for (const p of posts) {
+      await payload.create({
+        collection: 'posts',
+        data: { ...p, site: site.id, tenant: tenant.id, imageUrl: PHOTO, imageAlt: 'A seeded photo', provenance: seedProvenance },
         overrideAccess: true,
       })
     }

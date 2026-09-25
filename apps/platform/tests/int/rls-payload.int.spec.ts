@@ -42,7 +42,7 @@ const scoped = async <T>(tenant: number, fn: (req: Partial<PayloadRequest>) => P
 describe('RLS under Payload, with access control bypassed', () => {
   it('find() returns only the scoped tenant pages', async () => {
     const res = await scoped(A, (req) => payload.find({ collection: 'pages', depth: 0, limit: 500, overrideAccess: true, req }))
-    expect(res.totalDocs).toBe(3)
+    expect(res.totalDocs).toBe(4) // home, rooms, contact, blog
     for (const d of res.docs) expect(Number(typeof d.tenant === 'object' ? d.tenant?.id : d.tenant)).toBe(A)
   })
 

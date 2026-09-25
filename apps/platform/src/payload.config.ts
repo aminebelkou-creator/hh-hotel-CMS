@@ -24,6 +24,7 @@ import { Releases } from './collections/Releases'
 import { Facts } from './collections/Facts'
 import { Crawls } from './collections/Crawls'
 import { Issues } from './collections/Issues'
+import { Posts } from './collections/Posts'
 import { AuditLog, withAudit } from './collections/AuditLog'
 import { healthReportEndpoint, healthRunEndpoint } from './health/endpoints'
 import { isSuperAdmin, superAdminFieldOnly } from './access'
@@ -52,7 +53,7 @@ export default buildConfig({
   // A clear error instead of the edge's 413 for anything that still exceeds the body limit.
   upload: { limits: { fileSize: 5 * 1024 * 1024 } },
   // Content collections carry the action log hooks (src/collections/AuditLog.ts).
-  collections: [Users, Tenants, ...[Sites, makePages(packBlocks), Media, Domains, Releases, Facts, Crawls, Issues, AuditLog, ...packCollections].map(withAudit)],
+  collections: [Users, Tenants, ...[Sites, makePages(packBlocks), Posts, Media, Domains, Releases, Facts, Crawls, Issues, AuditLog, ...packCollections].map(withAudit)],
   // Outgoing email (contact forms) through SMTP when configured (EU provider, docs/12 §7);
   // otherwise Payload logs the message. Credentials live in environment variables only.
   email: process.env.SMTP_HOST
@@ -133,6 +134,7 @@ export default buildConfig({
       collections: {
         sites: {},
         pages: {},
+        posts: {},
         media: {},
         domains: {},
         releases: {},

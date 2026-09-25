@@ -81,6 +81,15 @@ const home: PageInput = {
     { blockType: 'mediaBand', image: IMG.view },
     // Shown only while an offer is active (dated offers, hotel pack).
     { blockType: 'offers', heading: { fr: 'Offres du moment', en: 'Special offers' }, limit: 3 },
+    // The latest blog posts (hidden while there is none).
+    {
+      blockType: 'news',
+      heading: { fr: 'Le carnet du Marais', en: 'Marais notebook' },
+      intro: { fr: 'Nos idées de balades et de visites autour de l’hôtel.', en: 'Our ideas for walks and visits around the hotel.' },
+      layout: 'latest',
+      limit: 3,
+      link: { label: { fr: 'Tous les articles', en: 'All posts' }, href: 'blog' },
+    },
     {
       blockType: 'gallery',
       heading: { fr: 'En images', en: 'In pictures' },
@@ -308,4 +317,30 @@ const contact: PageInput = {
   ],
 }
 
-export const pages: PageInput[] = [home, rooms, services, area, gallery, contact, legalNotice, privacy, houseRulesAndTerms, accessibility]
+// The blog: its news block lists every post; posts live at /blog/<post> (hotel-herse-dor.posts.ts).
+const blog: PageInput = {
+  slug: 'blog',
+  navOrder: 3.5,
+  title: { fr: 'Le carnet du Marais', en: 'Marais notebook' },
+  navLabel: { fr: 'Blog', en: 'Blog' },
+  seo: {
+    title: { fr: 'Blog : le Marais et Paris à pied', en: 'Blog: the Marais and Paris on foot' },
+    description: {
+      fr: 'Balades, musées et adresses autour de l’Hôtel de la Herse d’Or, entre la place des Vosges et la Bastille.',
+      en: 'Walks, museums and places around the Hôtel de la Herse d’Or, between Place des Vosges and Bastille.',
+    },
+  },
+  blocks: [
+    {
+      blockType: 'news',
+      heading: { fr: 'Le carnet du Marais', en: 'Marais notebook' },
+      intro: {
+        fr: 'Depuis la rue Saint-Antoine, Paris se découvre à pied. Nos balades, nos musées et nos adresses préférées, vérifiés avant publication.',
+        en: 'From rue Saint-Antoine, Paris is best seen on foot. Our favourite walks, museums and places, checked before we publish.',
+      },
+      layout: 'list',
+    },
+  ],
+}
+
+export const pages: PageInput[] = [home, rooms, services, area, blog, gallery, contact, legalNotice, privacy, houseRulesAndTerms, accessibility]

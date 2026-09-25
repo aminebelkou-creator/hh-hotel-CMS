@@ -78,8 +78,10 @@ describe('publish', () => {
     expect(rel.checksum).toMatch(/^[0-9a-f]{64}$/)
     expect(checksumOf(rel.snapshot)).toBe(rel.checksum)
     const snap = rel.snapshot as unknown as SiteSnapshot
-    expect(snap.pages.map((p) => p.slug)).toEqual(['contact', 'home', 'rooms'])
-    expect(rel.pageCount).toBe(3)
+    expect(snap.pages.map((p) => p.slug)).toEqual(['blog', 'contact', 'home', 'rooms'])
+    // Published posts only, newest first (the seeded draft never enters a release).
+    expect((snap.posts ?? []).map((p) => p.slug)).toEqual(['garden-open', 'walks-nearby'])
+    expect(rel.pageCount).toBe(4)
   })
 
   it('snapshots only confirmed facts, and only the tenant\'s own', async () => {

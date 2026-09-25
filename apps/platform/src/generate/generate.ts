@@ -102,6 +102,8 @@ function pageBlocks(kind: keyof typeof PAGE_SLUGS, copy: SiteCopy, f: FactMap, l
       gen('gen:home:rooms', { blockType: 'rooms', heading: copy.rooms.heading, layout: 'cards', limit: 3, linkLabel: fr ? 'Toutes les chambres' : 'All the rooms', linkHref: roomsSlug }),
       // Offers on the home page: the block renders nothing while the hotel has no active offer.
       gen('gen:home:offers', { blockType: 'offers', heading: fr ? 'Offres du moment' : 'Special offers', limit: 3 }),
+      // The latest blog posts: renders nothing until the hotel publishes its first post.
+      gen('gen:home:news', { blockType: 'news', heading: fr ? 'Actualités' : 'News', layout: 'latest', limit: 3, linkLabel: fr ? 'Tous les articles' : 'All posts', linkHref: 'blog' }),
       gen('gen:home:cta', { blockType: 'cta', heading: copy.home.cta, text: fr ? 'Le meilleur tarif est ici, en direct.' : 'The best rate is here, direct.', buttonLabel: copy.home.cta, buttonHref: booking ?? contactSlug }),
     ]
   }
@@ -279,5 +281,21 @@ export async function generateSite(payload: Payload, args: { tenantId: number; s
     })
     pages.push({ slug, created: true, generated: generated.length, kept: 0 })
   }
+  // The blog page, once: it lists every post. The menu hides it while there is no post (Chrome.tsx).
+  const blogExists = await payload.count({ collection: 'pages', where: { and: [{ tenant: { equals: args.tenantId } }, { site: { equals: args.siteId } }, { slug: { equals: 'blog' } }] }, overrideAccess: true })
+  if (!blogExists.totalDocs) {
+    const blocks = [gen('gen:blog:list', { blockType: 'news', heading: isFr(locale) ? 'Actualités' : 'News', layout: 'list' })]
+    await payload.create({
+      collection: 'pages',
+      locale: loc,
+      draft: true,
+      context: GEN,
+      data: { tenant: args.tenantId, site: args.siteId, slug: 'blog', title: isFr(locale) ? 'Actualités' : 'News', navLabel: 'Blog', navOrder: 4, showInNav: true, _status: 'draft', blocks } as never,
+      overrideAccess: true,
+    })
+    pages.push({ slug: 'blog', created: true, generated: blocks.length, kept: 0 })
+  } else pages.push({ slug: 'blog', created: false, generated: 0, kept: 1 }) // the owner's blog page is theirs
   return { locale, facts: [...f.values()].flat().length, rooms, pages, model }
 }
+
+const isFr = (l: Locale) => l === 'fr'

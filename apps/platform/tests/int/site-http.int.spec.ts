@@ -205,4 +205,35 @@ describe('public hotel site', () => {
     expect(rooms).toContain('alt="The courtyard at dusk"')
     expect(rooms).not.toContain('hh-booking-bar') // only where the hotel switched it on
   })
+
+  it('serves the blog: latest posts on home, the list page, each post with BlogPosting data, drafts never', async (ctx) => {
+    if (!reachable) ctx.skip()
+    const base = `${BASE}/s/${A.slug}`
+    const home = await (await fetch(base)).text()
+    // Newest first, the card's one link is the title; the draft post never leaves the CMS.
+    const cards = home.slice(home.indexOf('<section class="hh-section hh-news">'))
+    expect(cards).toMatch(/<a class="hh-link-arrow" href="[^"]*\/s\/site-5\/blog">All news<\/a>/)
+    expect(cards.indexOf('The garden is open again')).toBeLessThan(cards.indexOf('Three walks from the door'))
+    expect(cards).toMatch(/<h3 class="hh-news-title"><a class="hh-news-link" href="[^"]*\/s\/site-5\/blog\/garden-open">The garden is open again<\/a><\/h3>/)
+    expect(cards).toContain('<time dateTime="2026-09-01">1 September 2026</time>')
+    expect(home).not.toContain('Unpublished draft post')
+    expect(home).toMatch(/<a [^>]*href="[^"]*\/s\/site-5\/blog"[^>]*>News<\/a>/) // in the menu once it has posts
+    const list = await (await fetch(`${base}/blog`)).text()
+    expect(list).toContain('<h1 class="hh-section-title">News from the hotel</h1>')
+    expect(list.match(/class="hh-news-card"/g)).toHaveLength(2)
+    const res = await fetch(`${base}/blog/garden-open`)
+    expect(res.status).toBe(200)
+    const post = await res.text()
+    expect(post).toContain('<h1>The garden is open again</h1>')
+    expect(post).toContain('<h2>Breakfast outside</h2>')
+    expect(post).toContain('<ul><li>Served until 10:30</li><li>Weather permitting</li></ul>')
+    expect(post).toMatch(/"@type":"BlogPosting","headline":"The garden is open again"/)
+    expect(post).toMatch(/<link rel="canonical" href="[^"]*\/s\/site-5\/blog\/garden-open"/)
+    expect(post).toContain('Three walks from the door') // "more to read"
+    expect((await fetch(`${base}/fr/blog/garden-open`)).status).toBe(200)
+    expect((await fetch(`${base}/blog/draft-post`)).status).toBe(404)
+    expect((await fetch(`${base}/blog/nope`)).status).toBe(404)
+    const sitemap = await (await fetch(`${base}/sitemap.xml`)).text()
+    expect(sitemap).toMatch(/<loc>[^<]*\/s\/site-5\/blog\/walks-nearby<\/loc>/)
+  })
 })

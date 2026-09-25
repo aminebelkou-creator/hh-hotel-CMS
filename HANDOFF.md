@@ -159,6 +159,13 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 ### 2026-09-25 · session 15 · fix-later batch 1 (contact and Book on phones, legal set, offers on home) and batch 2 (gallery, lighter images)
 
+**Changed (batch 4: the blog)**
+- `posts` collection (core, `src/collections/Posts.ts`): per site, localized title/excerpt/body (plain text: blank line, `## `, `- `), draft/published, date, cover (upload or URL), provenance (an owner's edit turns a post `human`). Tenant table + RLS row, migration `blog_posts`.
+- `news` block (`src/site/News.tsx`): `latest` (cards, hidden while empty) or `list` (that page is the blog; posts at `/<blog>/<post>`). Post page: back link, h1, date, cover in the lightbox, text, three more posts; BlogPosting JSON-LD, canonical/hreflang, in the sitemap. Menu hides a blog page with no post. Styles in the base and Lumière; gates cover `/blog` and one post.
+- Generator: news block on the generated home, a `blog` page (8 generated pages). Seed: blog page + two posts + a draft per tenant (page counts in tests 3 → 4).
+- Customer zero: `hotel-herse-dor.posts.ts`, four posts FR/EN (Marais on foot, place des Vosges and museums, Bastille, Notre-Dame on foot), blog page *Le carnet du Marais*, news block on home after the offers. `apply.ts --only=posts` writes the blog alone (posts, blog page, home block inserted in place, other blocks and edits kept).
+- Found while checking sources, for the owner: the neighbourhood page says Victor Hugo's house "is free to visit" (the museum currently charges during its temporary exhibition) and "the Louvre under 20 minutes on foot" (about 2.4 km, closer to 30–35 min). Not changed: owner-approved text.
+
 **Changed (batch 3: photos on phones, lightbox everywhere it helps)**
 - Regression from batch 2 fixed: the new `width`/`height` attributes fixed the rendered height wherever the CSS set `width` + `aspect-ratio` but no `height` (text-and-image photo drawn full height on phones, room thumbnails squeezed into strips). Base rule `.hh-theme img { height: auto }`; room photo and thumbnails rules reviewed.
 - One page viewer `src/site/Lightbox.tsx` (client component, rendered once by `Blocks`) replaces `Gallery.tsx`: any `<a data-lightbox="group" href="full">` opens in it, photos of a group browse together. Wired on the gallery, text-and-image photos, and on the rooms page the room photo + thumbnails (grouped per room). Hero, banners, photo band, CTA and room cards stay as they are (backgrounds or links). The full-size file is fetched only on tap: no page-weight cost. Unused `lightbox.ts` (inline-script attempt) removed.

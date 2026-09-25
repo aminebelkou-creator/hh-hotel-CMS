@@ -62,7 +62,7 @@ describe('row-level security (database-enforced tenant boundary)', () => {
 
   it('tenant A context sees only A pages', async () => {
     const rows = await asTenant([A], (c) => c.query('select tenant_id from pages'))
-    expect(rows.rows.length).toBe(3)
+    expect(rows.rows.length).toBe(4) // home, rooms, contact, blog
     for (const r of rows.rows) expect(Number(r.tenant_id)).toBe(A)
   })
 

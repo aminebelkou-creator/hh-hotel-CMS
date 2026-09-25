@@ -2,7 +2,7 @@
 
 Living checklist for the 90-day plan (28 September to 25 December 2026). Tick items in the commit that completes them, with a link to the evidence. Owner codes: **ENG** engineering, **BIZ** sales and partnerships, **OWN** project owner, **XT** another xedge team.
 
-Last updated: 25 September 2026, session 14 (Phases 3–5 engineering deployed; Lumière 2.0 from the licensed Luxorefi template, Butler font; customer zero live on Lumière; a "Fix later" list started). The next phases and their deliverables: [`10-roadmap-phases.md`](10-roadmap-phases.md). Evidence: [`screenshots/`](screenshots/README.md). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
+Last updated: 25 September 2026, session 15 (fix-later batches 1–4: contact and Book on phones, legal set, offers on home, lightbox and lighter photos, photos on phones, the blog with four posts on customer zero). The next phases and their deliverables: [`10-roadmap-phases.md`](10-roadmap-phases.md). Evidence: [`screenshots/`](screenshots/README.md). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
 
 ## At a glance
 
@@ -13,8 +13,8 @@ Last updated: 25 September 2026, session 14 (Phases 3–5 engineering deployed; 
 | Week 2 | 8 | 6 | Proof items and the fact flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a test domain), hotel pack types on paper, generation measured with the AI key, and BIZ items open |
 | Weeks 3–13 | 2 | 44 | The weekly list still counts by calendar; most engineering rows are built already (see the phase view) — they are ticked when their gate evidence exists (domain, Tencent, real hotels) |
 | Phase 1–5 (new list) | 25 | 11 | Engineering of Phases 1–4 and the Phase 5 mechanisms built by 25 Sep; open items are owner/BIZ (key, lawyer, audit, designer, hotels), RLS enforcing, the visual studio |
-| Fix later | 5 | 6 | Small product gaps noticed in use, in a table at the end; started 25 Sep: legal set, offers on home, contact in header, Book button on phones done the same day |
-| **Total** | **53** | **74** | |
+| Fix later | 6 | 5 | Small product gaps noticed in use, in a table at the end; started 25 Sep: legal set, offers on home, contact in header, Book button on phones, gallery and lighter photos, blog done the same day |
+| **Total** | **54** | **73** | |
 
 ## Phase view (added 24 September)
 
@@ -203,7 +203,7 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 | ~~Every hotel site needs the three French legal pages~~ **Done 25 Sep** | Customer zero now has *Règlement intérieur et CGV* (`reglement-cgv`, from the hotel's own page, every amount and time theirs) beside *Mentions légales*, *Confidentialité & cookies* and *Accessibilité*. The generator drafts the three legal pages for every new site from the facts (`src/generate/legal.ts`; unknowns shown as "[à compléter]", never guessed) | — | 25 Sep |
 | Guest reviews and testimonials | No reviews block; the quote block carries one Victor Hugo line. Real reviews only (rule 9) | `testimonials` block fed by real guest reviews (imported with permission from Google/Booking with their source shown, or entered by the hotel) — PROPOSAL.md §8 of the Lumière handoff | 25 Sep |
 | ~~Special offers and deals in view~~ **Done 25 Sep** (home block) | An offers block sits on customer zero's home and on every generated home page; it renders nothing while no offer is active | Still open: an "Offres" nav entry when at least one offer is active | 25 Sep |
-| Blog / news | No posts collection | `posts` collection + `news` block (PROPOSAL.md §8); generated home page shows the latest three | 25 Sep |
+| ~~Blog / news~~ **Done 25 Sep** | `posts` collection (per site, FR/EN, draft/published, cover photo, provenance; RLS row) + `news` block (latest cards, or every post on the blog page) → posts at `/<blog>/<post>` with BlogPosting data, in the sitemap; menu hides an empty blog. Generated sites get the home block and a blog page. Customer zero: *Le carnet du Marais*, four posts on the neighbourhood written from the hotel's confirmed page and checked public sources (museum and cathedral sites, Paris city), no prices. Still open: AI post drafts from the facts (own row) | 25 Sep |
 | ~~Easy-to-find contact information~~ **Done 25 Sep** | The first confirmed phone is a `tel:` link in the header (desktop) and in a sticky **Call · Book** bar at the bottom of the screen on phones (`.hh-sticky-bar`, every template; Lumière styles it navy) | — | 25 Sep |
 | Irresistible calls to action | One `cta` block per page at most; wording is the hotel's | Generator writes a CTA block on every page (home, rooms, services, neighbourhood) with a benefit line ("best rate, direct contact"); templates give it more presence | 25 Sep |
 | Animated hero: static photo, video, or a slideshow | The hero is one static photo (Lumière adds the stars and booking bar); the licensed originals use video or sliding photos | A `media` option on the hero: `image` (today), `video` (self-hosted MP4/WebM ≤ 3 MB, muted, loops, poster = the photo, plays only when `prefers-reduced-motion` allows, with a pause button — WCAG 2.2.2) or `slideshow` (2–5 photos, CSS crossfade every 6 s, no JS beyond a few lines, paused on reduced motion). Lightweight: the page-weight gate stays; the video never counts on phones (poster only below 768 px) | 25 Sep |

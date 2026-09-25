@@ -24,6 +24,19 @@ export type SnapshotPage = {
   seo?: { title?: Localized<string>; description?: Localized<string>; image?: Localized<string> | null } | null
 }
 
+/** A published blog post, all locales (collection `posts`). Rendered by the news block and at /<blog>/<slug>. */
+export type SnapshotPost = {
+  id: number
+  slug: string
+  title: Localized<string>
+  excerpt: Localized<string>
+  body: Localized<string>
+  /** ISO date (day precision is what the site shows). */
+  publishedAt: string
+  imageUrl: string | null
+  imageAlt: Localized<string> | null
+}
+
 export type SnapshotRedirect = { from: string; to: string; permanent: boolean }
 export type SnapshotImage = { w: number; h: number; srcset: string; full: string }
 export type SnapshotFormField = { blockType: string; name: string; label?: string | null; required?: boolean | null; width?: number | null; defaultValue?: unknown; options?: { label: string; value: string }[]; message?: unknown }
@@ -68,6 +81,8 @@ export type SiteSnapshot = {
   /** Form definitions referenced by form blocks, so the site renders them without the CMS. */
   forms?: SnapshotForm[]
   pages: SnapshotPage[]
+  /** Published blog posts, newest first. */
+  posts?: SnapshotPost[]
   facts: { key: string; value: string }[]
   packs: Record<string, unknown>
 }
@@ -173,6 +188,31 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
     for (const v of variants) imageIndex[v.url] = { w: m.width, h: m.height, srcset, full }
   }
 
+  // Blog: published posts of this site, newest first; a chosen cover photo wins over a photo address.
+  const postDocs = await payload.find({
+    collection: 'posts',
+    where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { status: { equals: 'published' } }] },
+    locale: 'all',
+    depth: 0,
+    pagination: false,
+    sort: '-publishedAt',
+    overrideAccess: true,
+  })
+  const mediaUrl = new Map((allMedia as unknown as { id: number; url?: string | null; sizes?: { hero?: { url?: string | null } } }[]).map((m) => [Number(m.id), m.sizes?.hero?.url || m.url || null]))
+  const posts: SnapshotPost[] = (postDocs.docs as unknown as Record<string, unknown>[]).map((d) => {
+    const cover = d.image && typeof d.image === 'object' ? Number((d.image as { id: number }).id) : Number(d.image)
+    return {
+      id: Number(d.id),
+      slug: String(d.slug),
+      title: d.title as Localized<string>,
+      excerpt: d.excerpt as Localized<string>,
+      body: d.body as Localized<string>,
+      publishedAt: String(d.publishedAt ?? d.createdAt ?? ''),
+      imageUrl: (Number.isFinite(cover) && cover > 0 ? mediaUrl.get(cover) : null) || (d.imageUrl as string) || null,
+      imageAlt: (d.imageAlt as Localized<string>) ?? null,
+    }
+  })
+
   return {
     schema: 2,
     site: {
@@ -191,6 +231,7 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
       cta: { label: cta.label ?? null, href: cta.href ?? null },
     },
     pages: pages.docs.map((p) => toSnapshotPage(p, imageUrl)),
+    posts,
     mapImage,
     images: imageIndex,
     redirects,
