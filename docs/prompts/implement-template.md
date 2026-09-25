@@ -1,6 +1,6 @@
 # Implement a designer's template
 
-**For:** a coding agent in this repository, once a designer has delivered a template (see [`../14-designer-brief.md`](../14-designer-brief.md) §4 for what they deliver).
+**For:** a coding agent in this repository, once a designer has delivered a template (see [`../14-designer-brief.md`](../14-designer-brief.md) §4 for what they deliver). For a **licensed third-party template** (Luxorefi, Hotelza), the design session first makes a handoff folder in `Documents\hh-template-handoffs\<name>-lab` (NOTES, PROPOSAL, AGENT-PROMPT, CSS, preview with the exact markup, side-by-side shots); the agent follows that folder's AGENT-PROMPT instead. Worked example: Lumière 2.0, 25 Sep 2026.
 
 ```text
 Read CLAUDE.md, docs/13-how-it-works.md and docs/11-design-contract.md first, and follow them.
@@ -24,6 +24,8 @@ Do:
 5. Regenerate docs/design-tokens/ (src/design/export-tokens.ts); update
    docs/11-design-contract.md §6, docs/screenshots/README.md, docs/CHECKLIST.md and HANDOFF.md.
 
-Stop and ask if the design needs markup changes, a block that does not exist, or a font
-without an open licence.
+Before asking for a new block, check docs/11-design-contract.md §5: the hero stars and booking
+bar, banners, photo band, checklist, feature icons, room tag/facts and section-head link already
+exist (added for Lumière 2.0). Stop and ask if the design still needs markup changes, a block that
+does not exist, or a font without an open licence.
 ```

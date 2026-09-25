@@ -5,7 +5,7 @@ Ready-to-use prompts for the recurring jobs on this project. Copy one, replace t
 | Prompt | For | Use it when |
 | --- | --- | --- |
 | [start-session.md](start-session.md) | A coding agent in this repository | Starting a working session: pick up the next action, finish with docs updated |
-| [implement-template.md](implement-template.md) | A coding agent | A designer has delivered a template and it must be built |
+| [implement-template.md](implement-template.md) | A coding agent | A designer (or the design session, for a licensed template) has delivered a template and it must be built |
 | [propose-template.md](propose-template.md) | An AI design assistant | You need a new template and have no designer |
 | [designer-brief-email.md](designer-brief-email.md) | A freelance designer (by email) | Commissioning a template |
 | [brand-proposal.md](brand-proposal.md) | An AI assistant, or a coding agent with admin access | Choosing a template and brand for a new hotel |

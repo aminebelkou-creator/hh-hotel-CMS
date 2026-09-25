@@ -26,19 +26,21 @@ Existing templates, to be different from: **Maison** (classic, cream, serif), **
 
 ## 3. The blocks to design
 
-Real content for every block is visible in the screenshots of customer zero (Hôtel de la Herse d'Or). Design each block with short and long content and with and without a photo.
+Real content for every block is visible in the screenshots of customer zero (Hôtel de la Herse d'Or). Design each block with short and long content and with and without a photo. The elements added on 25 September for the licensed Lumière template (stars, booking bar, banners, photo band, checklist, feature icons, room tag and facts, section link) are optional: a template may leave them plain, but must not break when a hotel uses them.
 
 | Block | Content it carries |
 | --- | --- |
 | Header | Hotel name (and optional logo), tagline, 4–6 menu links, language switch, "Book" button; mobile menu |
-| Hero | Headline (up to ~60 characters), sub-headline, optional button, optional full-width photo |
-| Text and image | Eyebrow label, heading, 1–3 paragraphs, photo left or right, optional link |
+| Hero | Headline (up to ~60 characters), sub-headline, optional button, optional full-width photo; optional star classification line above the headline; optional booking bar (arrival, departure, guests, button) at the bottom of the photo |
+| Text and image | Eyebrow label, heading, 1–3 paragraphs, optional checklist (3–6 short lines), photo left or right, optional link |
 | Text | Heading, paragraphs with sub-headings (legal pages) |
-| Features | Heading, 3–9 items each with a title and optional one-line text |
+| Features | Heading, 3–9 items each with an optional line icon, a title and optional one-line text |
+| Banners | Eyebrow, heading, 2–6 full-width photo strips each with a title (shown on hover on desktop, always on phones) and an optional link |
+| Photo band | One full-width photo between sections |
 | Gallery | Heading, 3–12 photos |
 | Quote | One quotation and its author |
 | Call to action | Heading, text, button, optional background photo |
-| Rooms (hotel pack) | Cards (photo, category, name, capacity/bed/view, summary, link) or detailed list (large photo, description, amenities, thumbnails) |
+| Rooms (hotel pack) | Section title with an optional "see all" link; cards (photo with a category tag, name, facts line with icons: guests / bed / size, summary, link) or detailed list (large photo, description, amenities, thumbnails) |
 | Offers (hotel pack) | Cards: photo, badge, title, summary, conditions, link |
 | House rules (hotel pack) | Check-in/out times and 3–8 short rules |
 | FAQ | 3–10 questions that open to answers |
