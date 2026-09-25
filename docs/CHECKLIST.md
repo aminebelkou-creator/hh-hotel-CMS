@@ -195,6 +195,12 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 | Postgres RLS as defence in depth: on or off in production | Week 4 | Evaluated, works under Payload. Proposed: on, via a restricted app role and a per-request `SET LOCAL` hook, then deny-by-default (see docs/05) |
 | Proof-of-concept deployment: keep public with rotated credentials, or take offline | Now | Kept public, credentials rotated |
 
+## Fix later (small things noticed in use, not blocking)
+
+| Noticed | What happens | Fix | Added |
+| --- | --- | --- | --- |
+| Template changed in the admin, then "Publish site" → the old look goes live | The sidebar's Publish reads the **stored** site; an unsaved form change is ignored (owner hit this on 25 Sep: r7 shipped Maison after choosing Lumière). Workaround: Save, then Publish | Website panel: disable "Publish site" while the form has unsaved changes and say "Save first", or save automatically before publishing | 25 Sep |
+
 ## Metrics tracked from day one
 
 | Metric | Target by day 90 | Current |
