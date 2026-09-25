@@ -15,6 +15,7 @@
 import type { Payload, TypedLocale } from 'payload'
 import { getAi } from '../ai/provider'
 import { all, defaultCopy, first, PAGE_SLUGS, slugify, type FactMap, type Locale, type SiteCopy } from './copy'
+import { LEGAL_SLUGS, legalCopy, type LegalKind } from './legal'
 
 export type GenerateResult = {
   locale: Locale
@@ -98,7 +99,9 @@ function pageBlocks(kind: keyof typeof PAGE_SLUGS, copy: SiteCopy, f: FactMap, l
       ...(amenities.length
         ? [gen('gen:home:features', { blockType: 'features', heading: copy.home.featuresHeading, items: amenities.slice(0, 6).map((a) => ({ title: amenityTitle(a, locale) })) })]
         : []),
-      gen('gen:home:rooms', { blockType: 'rooms', heading: copy.rooms.heading, layout: 'cards', limit: 3 }),
+      gen('gen:home:rooms', { blockType: 'rooms', heading: copy.rooms.heading, layout: 'cards', limit: 3, linkLabel: fr ? 'Toutes les chambres' : 'All the rooms', linkHref: roomsSlug }),
+      // Offers on the home page: the block renders nothing while the hotel has no active offer.
+      gen('gen:home:offers', { blockType: 'offers', heading: fr ? 'Offres du moment' : 'Special offers', limit: 3 }),
       gen('gen:home:cta', { blockType: 'cta', heading: copy.home.cta, text: fr ? 'Le meilleur tarif est ici, en direct.' : 'The best rate is here, direct.', buttonLabel: copy.home.cta, buttonHref: booking ?? contactSlug }),
     ]
   }
@@ -250,6 +253,31 @@ export async function generateSite(payload: Payload, args: { tenantId: number; s
       overrideAccess: true,
     })
     pages.push({ slug, created: false, generated: merged.generated, kept: merged.kept })
+  }
+
+  // Legal set: three footer drafts from the facts (unknowns visibly marked), never overwriting a page that exists.
+  const legal = legalCopy(f, locale, hotelName)
+  for (const [i, kind] of (['legal', 'privacy', 'terms'] as LegalKind[]).entries()) {
+    const slug = LEGAL_SLUGS[kind][locale]
+    const generated: Block[] = legal[kind].blocks.map((b, k) => gen(`gen:${kind}:${k}`, { blockType: 'text', heading: b.heading, body: b.body }))
+    const existing = (
+      await payload.find({ collection: 'pages', where: { and: [{ tenant: { equals: args.tenantId } }, { site: { equals: args.siteId } }, { slug: { equals: slug } }] }, limit: 1, locale: loc, draft: true, overrideAccess: true })
+    ).docs[0]
+    if (existing) {
+      const merged = mergeBlocks(((existing.blocks as Block[] | undefined) ?? []), generated)
+      await payload.update({ collection: 'pages', id: existing.id, locale: loc, draft: true, context: GEN, data: { blocks: merged.blocks } as never, overrideAccess: true })
+      pages.push({ slug, created: false, generated: merged.generated, kept: merged.kept })
+      continue
+    }
+    await payload.create({
+      collection: 'pages',
+      locale: loc,
+      draft: true,
+      context: GEN,
+      data: { tenant: args.tenantId, site: args.siteId, slug, title: legal[kind].title, navLabel: legal[kind].navLabel, navOrder: 90 + i, showInNav: false, showInFooter: true, _status: 'draft', blocks: generated, meta: { description: legal[kind].description } } as never,
+      overrideAccess: true,
+    })
+    pages.push({ slug, created: true, generated: generated.length, kept: 0 })
   }
   return { locale, facts: [...f.values()].flat().length, rooms, pages, model }
 }

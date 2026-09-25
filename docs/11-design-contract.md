@@ -75,7 +75,7 @@ Blocks render the same markup in every template (`src/site/Blocks.tsx`, pack ren
 
 | Block | Classes a template must handle |
 | --- | --- |
-| Header | `.hh-header`, `.hh-brand-name`, `.hh-brand-tag`, `.hh-nav`, `.hh-burger`, `.hh-nav-mobile`, `.hh-btn.hh-header-cta` |
+| Header | `.hh-header`, `.hh-brand-name`, `.hh-brand-tag`, `.hh-nav`, `.hh-header-phone`, `.hh-burger`, `.hh-nav-mobile`, `.hh-btn.hh-header-cta`; on phones `.hh-sticky-bar` with `.hh-sticky-call` and `.hh-btn.hh-sticky-book` (fixed at the bottom; the body keeps 72 px of room) |
 | Hero | `.hh-hero`, `.hh-hero--image` (photo + `.hh-hero-inner`), heading, `.hh-hero-sub`, `.hh-btn--light`; optional `.hh-hero-rating` + `.hh-stars` (the official classification from the confirmed facts) and `.hh-booking-bar` / `.hh-booking-field` (a plain GET form to the site's Book link: dates and guests, no availability, no prices) |
 | Sections | `.hh-section`, `.hh-section--tint`, `.hh-section-title`, `.hh-eyebrow`, `.hh-lead`, `.hh-split`, `.hh-link-arrow`; `.hh-section-head` with `--center` or `--split` (title + "see all" link) |
 | Features, gallery, quote, text, FAQ | `.hh-features` (items may carry `.hh-feature-icon` with an inline SVG from the built-in set, `src/site/icons.tsx`), `.hh-gallery`, `.hh-quote`, `.hh-prose`, `.hh-faq`; `.hh-checklist` under text-and-image |

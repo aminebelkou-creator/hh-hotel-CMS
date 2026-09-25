@@ -63,7 +63,7 @@ const seedFacts = async (t: T) => {
 const cleanup = async (t: T) => {
   await payload.delete({ collection: 'facts', where: { and: [{ tenant: { equals: t.tenantId } }, { decisionNote: { equals: TAG } }] }, overrideAccess: true })
   await payload.delete({ collection: 'rooms', where: { and: [{ tenant: { equals: t.tenantId } }, { slug: { in: ['chambre-double', 'suite-familiale'] } }] }, overrideAccess: true })
-  await payload.delete({ collection: 'pages', where: { and: [{ tenant: { equals: t.tenantId } }, { slug: { equals: 'services' } }] }, overrideAccess: true })
+  await payload.delete({ collection: 'pages', where: { and: [{ tenant: { equals: t.tenantId } }, { slug: { in: ['services', 'legal-notice', 'privacy', 'house-rules-and-terms'] } }] }, overrideAccess: true })
   // Seeded home/rooms/contact pages: strip the generated slots we added, keep the seed blocks.
   const pages = await payload.find({ collection: 'pages', where: { and: [{ tenant: { equals: t.tenantId } }, { site: { equals: t.siteId } }] }, limit: 20, draft: true, overrideAccess: true })
   for (const p of pages.docs) {
@@ -129,7 +129,7 @@ describe('generateSite', () => {
     const r = await generateSite(payload, { tenantId: A.tenantId, siteId: A.siteId, by: 'test' })
     expect(r.model).toBeNull()
     expect(r.rooms).toEqual({ created: 2, kept: 0 })
-    expect(r.pages.map((p) => p.slug)).toEqual(['home', 'rooms', 'services', 'contact'])
+    expect(r.pages.map((p) => p.slug)).toEqual(['home', 'rooms', 'services', 'contact', 'legal-notice', 'privacy', 'house-rules-and-terms'])
     expect(r.pages.find((p) => p.slug === 'services')?.created).toBe(true)
     const rooms = await payload.find({ collection: 'rooms', where: { and: [{ tenant: { equals: A.tenantId } }, { slug: { in: ['chambre-double', 'suite-familiale'] } }] }, overrideAccess: true })
     const dbl = rooms.docs.find((x) => x.slug === 'chambre-double')
@@ -149,6 +149,20 @@ describe('generateSite', () => {
     expect(JSON.stringify(home.blocks)).toContain('gen:home:hero')
     const contact = (await payload.find({ collection: 'pages', where: { and: [{ tenant: { equals: A.tenantId } }, { site: { equals: A.siteId } }, { slug: { equals: 'contact' } }] }, draft: true, limit: 1, overrideAccess: true })).docs[0]
     expect((contact.blocks ?? []).some((b) => b.blockType === 'map')).toBe(true)
+    // The legal set: three footer drafts from the facts; unknowns are marked, never invented.
+    const terms = (await payload.find({ collection: 'pages', where: { and: [{ tenant: { equals: A.tenantId } }, { slug: { equals: 'house-rules-and-terms' } }] }, draft: true, limit: 1, overrideAccess: true })).docs[0]
+    expect(terms._status).toBe('draft')
+    expect(terms.showInFooter).toBe(true)
+    expect(terms.showInNav).toBe(false)
+    const termsText = JSON.stringify(terms.blocks)
+    expect(termsText).toContain('Rooms are available from 15:00 and must be vacated by 11:00')
+    expect(termsText).toContain('Small pets welcome')
+    expect(termsText).toContain('[to be completed by the hotel]') // no cancellation policy fact → no invented one
+    expect(termsText).toMatch(/\+33/) // a confirmed phone (the seeded one or the test's)
+    const legal = (await payload.find({ collection: 'pages', where: { and: [{ tenant: { equals: A.tenantId } }, { slug: { equals: 'legal-notice' } }] }, draft: true, limit: 1, overrideAccess: true })).docs[0]
+    expect(JSON.stringify(legal.blocks)).toContain('12 rue des Tests, 75003 Paris, FR')
+    // Offers on the generated home page (renders nothing while the hotel has no active offer).
+    expect(JSON.stringify(home.blocks)).toContain('gen:home:offers')
     // Nothing published: the site has no release.
     const site = await payload.findByID({ collection: 'sites', id: A.siteId, depth: 0, overrideAccess: true })
     expect(site.currentRelease ?? null).toBeNull()
@@ -198,7 +212,7 @@ describe('generateSite', () => {
     const own = await fetch(`${BASE}/api/sites/${A.siteId}/generate`, { method: 'POST', headers: auth(A) })
     expect(own.status).toBe(200)
     const body = (await own.json()) as { pages: { slug: string }[] }
-    expect(body.pages).toHaveLength(4)
+    expect(body.pages).toHaveLength(7)
   })
 })
 

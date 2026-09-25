@@ -13,8 +13,8 @@ Last updated: 25 September 2026, session 14 (Phases 3–5 engineering deployed; 
 | Week 2 | 8 | 6 | Proof items and the fact flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a test domain), hotel pack types on paper, generation measured with the AI key, and BIZ items open |
 | Weeks 3–13 | 2 | 44 | The weekly list still counts by calendar; most engineering rows are built already (see the phase view) — they are ticked when their gate evidence exists (domain, Tencent, real hotels) |
 | Phase 1–5 (new list) | 25 | 11 | Engineering of Phases 1–4 and the Phase 5 mechanisms built by 25 Sep; open items are owner/BIZ (key, lawyer, audit, designer, hotels), RLS enforcing, the visual studio |
-| Fix later | 0 | 9 | Small product gaps noticed in use, in a table at the end; started 25 Sep |
-| **Total** | **48** | **77** | |
+| Fix later | 4 | 5 | Small product gaps noticed in use, in a table at the end; started 25 Sep: legal set, offers on home, contact in header, Book button on phones done the same day |
+| **Total** | **52** | **73** | |
 
 ## Phase view (added 24 September)
 
@@ -200,14 +200,14 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 | Noticed | What happens | Fix | Added |
 | --- | --- | --- | --- |
 | Template changed in the admin, then "Publish site" → the old look goes live | The sidebar's Publish reads the **stored** site; an unsaved form change is ignored (owner hit this on 25 Sep: r7 shipped Maison after choosing Lumière). Workaround: Save, then Publish | Website panel: disable "Publish site" while the form has unsaved changes and say "Save first", or save automatically before publishing | 25 Sep |
-| Every hotel site needs the three French legal pages | Customer zero has *Mentions légales*, *Confidentialité & cookies* and *Accessibilité* (drafts). Missing: **Règlement intérieur et conditions générales de vente** (the hotel's current site has one) | Add a `reglement-cgv` legal page to the onboarding content (from the hotel's own text) and to the generator's page set, so every new hotel gets the three: cookies/privacy, mentions légales, règlement intérieur + CGV | 25 Sep |
+| ~~Every hotel site needs the three French legal pages~~ **Done 25 Sep** | Customer zero now has *Règlement intérieur et CGV* (`reglement-cgv`, from the hotel's own page, every amount and time theirs) beside *Mentions légales*, *Confidentialité & cookies* and *Accessibilité*. The generator drafts the three legal pages for every new site from the facts (`src/generate/legal.ts`; unknowns shown as "[à compléter]", never guessed) | — | 25 Sep |
 | Guest reviews and testimonials | No reviews block; the quote block carries one Victor Hugo line. Real reviews only (rule 9) | `testimonials` block fed by real guest reviews (imported with permission from Google/Booking with their source shown, or entered by the hotel) — PROPOSAL.md §8 of the Lumière handoff | 25 Sep |
-| Special offers and deals in view | The `offers` block and collection exist (hotel pack) but customer zero shows none on the home page | Put an offers block on the home page of every generated site (empty = hidden); an "Offres" nav entry when at least one is active | 25 Sep |
+| ~~Special offers and deals in view~~ **Done 25 Sep** (home block) | An offers block sits on customer zero's home and on every generated home page; it renders nothing while no offer is active | Still open: an "Offres" nav entry when at least one offer is active | 25 Sep |
 | Blog / news | No posts collection | `posts` collection + `news` block (PROPOSAL.md §8); generated home page shows the latest three | 25 Sep |
-| Easy-to-find contact information | Contact page and footer carry address, phones, email; the header has no phone | Phone number (tel: link) in the header on desktop and a sticky "Call / Book" bar on phones | 25 Sep |
+| ~~Easy-to-find contact information~~ **Done 25 Sep** | The first confirmed phone is a `tel:` link in the header (desktop) and in a sticky **Call · Book** bar at the bottom of the screen on phones (`.hh-sticky-bar`, every template; Lumière styles it navy) | — | 25 Sep |
 | Irresistible calls to action | One `cta` block per page at most; wording is the hotel's | Generator writes a CTA block on every page (home, rooms, services, neighbourhood) with a benefit line ("best rate, direct contact"); templates give it more presence | 25 Sep |
 | Animated hero: static photo, video, or a slideshow | The hero is one static photo (Lumière adds the stars and booking bar); the licensed originals use video or sliding photos | A `media` option on the hero: `image` (today), `video` (self-hosted MP4/WebM ≤ 3 MB, muted, loops, poster = the photo, plays only when `prefers-reduced-motion` allows, with a pause button — WCAG 2.2.2) or `slideshow` (2–5 photos, CSS crossfade every 6 s, no JS beyond a few lines, paused on reduced motion). Lightweight: the page-weight gate stays; the video never counts on phones (poster only below 768 px) | 25 Sep |
-| A "Book now" button impossible to miss | Header "Réserver" button exists; on phones it is inside the burger menu | Keep the Book button visible outside the burger on phones; sticky bottom bar (see contact row); the hero booking bar already helps on Lumière | 25 Sep |
+| ~~A "Book now" button impossible to miss~~ **Done 25 Sep** | On phones the Book button is now always on screen in the sticky bar (plus the hero booking bar on Lumière); on desktop it stays in the header | — | 25 Sep |
 
 ## Metrics tracked from day one
 

@@ -46,9 +46,18 @@ body.hh-site { margin: 0; }
 .hh-burger summary::-webkit-details-marker { display: none; }
 .hh-burger summary span { display: block; width: 22px; height: 2px; background: var(--hh-ink); }
 .hh-nav-mobile { position: absolute; right: 0; top: 52px; background: var(--hh-card); border: 1px solid var(--hh-line); border-radius: var(--hh-radius); padding: 16px 20px; display: grid; gap: 6px; min-width: 220px; box-shadow: 0 16px 40px rgba(0, 0, 0, .18); }
+.hh-header-phone { font-size: .93rem; font-weight: 600; text-decoration: none; color: var(--hh-ink); white-space: nowrap; }
+.hh-header-phone:hover { text-decoration: underline; }
+/* Phones: Call and Book stay one tap away at the bottom of the screen; the body keeps room for the bar. */
+.hh-sticky-bar { display: none; }
 @media (max-width: 920px) {
-  .hh-nav, .hh-header-cta { display: none; }
+  .hh-nav, .hh-header-cta, .hh-header-phone { display: none; }
   .hh-burger { display: block; }
+  .hh-sticky-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; padding: 10px max(12px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right)); background: color-mix(in srgb, var(--hh-paper) 94%, transparent); backdrop-filter: saturate(1.4) blur(10px); border-top: 1px solid var(--hh-line); }
+  .hh-sticky-bar a { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 600; }
+  .hh-sticky-call { border: 1px solid var(--hh-ink); border-radius: var(--hh-radius-button); color: var(--hh-ink); }
+  .hh-sticky-book { margin: 0; }
+  body.hh-site:has(.hh-sticky-bar) { padding-bottom: 72px; }
 }
 
 /* Hero */
@@ -319,6 +328,7 @@ body.hh-site { margin: 0; }
 [data-template='lumiere'] .hh-nav { font-size: 16px; gap: 50px; }
 [data-template='lumiere'] .hh-nav a { border: 0; }
 [data-template='lumiere'] .hh-nav a[aria-current='page'] { text-decoration: underline; text-underline-offset: 4px; }
+[data-template='lumiere'] .hh-header-phone { display: none; } /* Lumière's header grid has no fourth cell; the sticky bar covers phones */
 [data-template='lumiere'] .hh-header-cta { font-size: 16px; min-height: 48px; }
 [data-template='lumiere'] .hh-header-cta::after { width: 42px; height: 38px; }
 [data-template='lumiere'] .hh-nav-mobile { color: var(--hh-ink); }
@@ -503,6 +513,8 @@ body.hh-site { margin: 0; }
   [data-template='lumiere'] .hh-split, [data-template='lumiere'] .hh-split--left { flex-direction: column; align-items: stretch; gap: 40px; }
   [data-template='lumiere'] .hh-footer-grid { grid-template-columns: 1fr 1fr; }
   [data-template='lumiere'] .hh-header-cta { display: none; }
+  [data-template='lumiere'] .hh-sticky-bar { background: rgba(14, 24, 37, .92); border-top-color: rgba(252, 252, 252, .15); }
+  [data-template='lumiere'] .hh-sticky-call { color: #fcfcfc; border-color: #fcfcfc; }
 }
 @media (max-width: 767px) {
   [data-template='lumiere'] { --lx-gap: 64px; }

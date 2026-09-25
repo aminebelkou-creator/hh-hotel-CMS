@@ -30,7 +30,7 @@ Real content for every block is visible in the screenshots of customer zero (Hô
 
 | Block | Content it carries |
 | --- | --- |
-| Header | Hotel name (and optional logo), tagline, 4–6 menu links, language switch, "Book" button; mobile menu |
+| Header | Hotel name (and optional logo), tagline, 4–6 menu links, language switch, phone number, "Book" button; mobile menu. On phones a **sticky bottom bar** with Call and Book (every template must style `.hh-sticky-bar`) |
 | Hero | Headline (up to ~60 characters), sub-headline, optional button, optional full-width photo; optional star classification line above the headline; optional booking bar (arrival, departure, guests, button) at the bottom of the photo |
 | Text and image | Eyebrow label, heading, 1–3 paragraphs, optional checklist (3–6 short lines), photo left or right, optional link |
 | Text | Heading, paragraphs with sub-headings (legal pages) |

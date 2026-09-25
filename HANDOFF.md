@@ -157,6 +157,14 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 ## Delta log
 
+### 2026-09-25 · session 15 · fix-later batch 1 (contact and Book on phones, legal set, offers on home)
+
+**Changed**
+- Header: the first confirmed phone as a `tel:` link (desktop); a sticky bottom bar on phones with **Call** and **Book**, every template, Lumière styled navy (`src/site/Chrome.tsx`, base CSS). Labels in `i18n.ts`.
+- Legal set: customer zero gets *Règlement intérieur et CGV* (`reglement-cgv`, rewritten from the hotel's own page, every amount and time theirs). The generator now drafts three footer legal pages for every site (`src/generate/legal.ts`: mentions légales, confidentialité & cookies, règlement & CGV) from the facts, unknowns visibly marked.
+- Offers block on customer zero's home and on every generated home page (hidden while no offer is active); the generated rooms block links to the rooms page.
+- Seed: every seeded site carries a confirmed phone (sticky bar and header in tests).
+
 ### 2026-09-25 · session 14 · `fc0074a` → this commit (Lumière 2.0 from the licensed Luxorefi template)
 
 **Changed**

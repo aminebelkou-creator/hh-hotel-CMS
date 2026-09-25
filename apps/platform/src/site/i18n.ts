@@ -27,6 +27,8 @@ const LABELS = {
     guests: 'Personnes',
     guestsN: '{n} personne(s)',
     checkAvailability: 'Vérifier les disponibilités',
+    call: 'Appeler',
+    quickActions: 'Actions rapides',
   },
   en: {
     menu: 'Menu',
@@ -56,6 +58,8 @@ const LABELS = {
     guests: 'Guests',
     guestsN: '{n} guest(s)',
     checkAvailability: 'Check availability',
+    call: 'Call',
+    quickActions: 'Quick actions',
   },
 } as const
 export type Labels = Record<keyof (typeof LABELS)['en'], string>

@@ -188,6 +188,11 @@ describe('public hotel site', () => {
     const fr = await (await fetch(`${BASE}/s/${A.slug}/fr`)).text()
     expect(fr).toContain('Hôtel 3 étoiles')
     expect(fr).toMatch(/<label for="[^"]+-in">Arrivée<\/label>/)
+    // Contact one tap away: phone in the header (desktop), sticky Call + Book bar (phones; CSS decides).
+    expect(home).toMatch(/<a class="hh-header-phone" href="tel:\+?\d+">/)
+    expect(home).toContain('<nav class="hh-sticky-bar" aria-label="Quick actions">')
+    expect(home).toMatch(/<a class="hh-sticky-call" href="tel:\+?\d+">Call<\/a>/)
+    expect(home).toMatch(/<a class="hh-btn hh-sticky-book" href="[^"]*\/s\/site-5\/contact">Book<\/a>/)
     const rooms = await (await fetch(`${BASE}/s/${A.slug}/rooms`)).text()
     expect(rooms).toContain('<section class="hh-media-band"><img src="data:image/webp;base64,')
     expect(rooms).toContain('alt="The courtyard at dusk"')

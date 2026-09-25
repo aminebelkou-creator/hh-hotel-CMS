@@ -1,6 +1,6 @@
 import type { PageInput } from '../types'
 import { IMG } from './hotel-herse-dor.images'
-import { accessibility, legalNotice, privacy } from './hotel-herse-dor.legal'
+import { accessibility, houseRulesAndTerms, legalNotice, privacy } from './hotel-herse-dor.legal'
 
 const home: PageInput = {
   slug: 'home',
@@ -79,6 +79,8 @@ const home: PageInput = {
       ],
     },
     { blockType: 'mediaBand', image: IMG.view },
+    // Shown only while an offer is active (dated offers, hotel pack).
+    { blockType: 'offers', heading: { fr: 'Offres du moment', en: 'Special offers' }, limit: 3 },
     {
       blockType: 'gallery',
       heading: { fr: 'En images', en: 'In pictures' },
@@ -306,4 +308,4 @@ const contact: PageInput = {
   ],
 }
 
-export const pages: PageInput[] = [home, rooms, services, area, gallery, contact, legalNotice, privacy, accessibility]
+export const pages: PageInput[] = [home, rooms, services, area, gallery, contact, legalNotice, privacy, houseRulesAndTerms, accessibility]

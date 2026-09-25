@@ -18,6 +18,9 @@ export function SiteHeader({ snapshot, locale, t, current }: Props) {
   const cta = linkHref(snapshot, locale, s.cta.href)
   const nav = navPages(snapshot).filter((pg) => pg.slug !== 'home')
   const others = s.enabledLocales.filter((l) => l !== locale)
+  // The first confirmed phone number, as a tel: link: in the header on desktop, in the sticky bar on phones.
+  const phone = practicalInfo(snapshot).phones[0]
+  const tel = phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : null
   const links = (
     <>
       {nav.map((pg) => (
@@ -33,6 +36,7 @@ export function SiteHeader({ snapshot, locale, t, current }: Props) {
     </>
   )
   return (
+    <>
     <header className="hh-header">
       <a className="hh-skip" href="#main">
         {t.skip}
@@ -51,6 +55,11 @@ export function SiteHeader({ snapshot, locale, t, current }: Props) {
         <nav className="hh-nav" aria-label={t.menu}>
           {links}
         </nav>
+        {tel && (
+          <a className="hh-header-phone" href={tel}>
+            {phone}
+          </a>
+        )}
         {cta && (
           <a className="hh-btn hh-header-cta" href={cta}>
             {p(s.cta.label) || t.book}
@@ -73,6 +82,23 @@ export function SiteHeader({ snapshot, locale, t, current }: Props) {
         </details>
       </div>
     </header>
+      {(tel || cta) && (
+        // Phones only (CSS): Call and Book always one tap away, whatever the page or the scroll position.
+        // A sibling of the header, not a child: the header's backdrop-filter would otherwise contain the fixed bar.
+        <nav className="hh-sticky-bar" aria-label={t.quickActions}>
+          {tel && (
+            <a className="hh-sticky-call" href={tel}>
+              {t.call}
+            </a>
+          )}
+          {cta && (
+            <a className="hh-btn hh-sticky-book" href={cta}>
+              {p(s.cta.label) || t.book}
+            </a>
+          )}
+        </nav>
+      )}
+    </>
   )
 }
 

@@ -282,11 +282,11 @@ export interface Site {
     /**
      * Empty: the template font
      */
-    headingFont?: ('inter' | 'manrope' | 'playfair' | 'cormorant') | null;
+    headingFont?: ('inter' | 'manrope' | 'playfair' | 'cormorant' | 'butler') | null;
     /**
      * Empty: the template font
      */
-    bodyFont?: ('inter' | 'manrope' | 'playfair' | 'cormorant') | null;
+    bodyFont?: ('inter' | 'manrope' | 'playfair' | 'cormorant' | 'butler') | null;
     /**
      * Empty: the template corners
      */

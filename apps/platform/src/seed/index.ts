@@ -97,12 +97,14 @@ const run = async () => {
       data: { name: `Site ${n}`, slug: `site-${n}`, enabledLocales: ['en', 'fr'], defaultLocale: 'en', status: 'draft', tenant: tenant.id, cta: { label: 'Book', href: 'contact' } },
       overrideAccess: true,
     })
-    // A confirmed classification, so the hero's stars (read from facts) render on seeded sites.
-    await payload.create({
-      collection: 'facts',
-      data: { tenant: tenant.id, site: site.id, key: 'rating.stars', value: '3', method: 'manual', confidence: 1, status: 'confirmed', decisionNote: 'seed' },
-      overrideAccess: true,
-    })
+    // Confirmed facts every seeded site carries: the classification (hero stars) and a phone (header, sticky bar).
+    for (const [key, value] of [['rating.stars', '3'], ['contact.phone', `+33 1 00 00 00 ${String(n).padStart(2, '0')}`]] as const) {
+      await payload.create({
+        collection: 'facts',
+        data: { tenant: tenant.id, site: site.id, key, value, method: 'manual', confidence: 1, status: 'confirmed', decisionNote: 'seed' },
+        overrideAccess: true,
+      })
+    }
     for (const slug of ['home', 'rooms', 'contact']) {
       await payload.create({
         collection: 'pages',
