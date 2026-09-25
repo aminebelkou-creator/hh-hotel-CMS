@@ -161,6 +161,7 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 **Changed (batch 6: safe publishing)**
 - Website panel (`src/admin/PublishPanel.tsx`): on a site, unsaved settings are validated and saved before the publish (the r7 mistake: template chosen, not saved, old look published); "Unsaved changes" note while the form is modified; on a page with unsaved or draft changes it asks to publish the page first instead of publishing stale content. `tests/visual/publish-guard.mjs` drives it in a browser.
+- Measured: CI green (`96f3c62`), deploy green; customer zero published **r15** within the same minute the deploy finished (23:46 UTC), live on the first publish (r9 had failed in the same situation).
 - Verification (`src/releases/publish.ts`): `verifyPublicPage` retries 3 times (2, 4, 8 s) before failing and rolling back (the r9 404 while the edge warmed up after a deploy). Unit-tested against a stand-in edge.
 
 **Changed (batch 5: guest reviews, booking bar on phones)**
