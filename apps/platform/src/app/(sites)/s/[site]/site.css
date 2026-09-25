@@ -269,7 +269,7 @@ body.hh-site { margin: 0; }
    25 Sep 2026; handoff in Documents\hh-template-handoffs\luxorefi-lab). Values from the
    template's own stylesheet: 500-weight serif headings, 20px body, 1320px container, 16px
    radius, gold accent, navy bands, ivory paper. Tokens only, except white/black over photos and
-   the glass booking bar. Headings use Playfair Display until a web licence for Butler is on file. */
+   the glass booking bar. Headings in Butler (CC BY-SA 4.0, fonts/butler.LICENSE.txt: confirm before a client goes live). */
 [data-template='lumiere'] {
   --hh-heading-weight: 500; --hh-heading-tracking: 0;
   --hh-wrap: 1368px;                        /* 1320px content + 2 x 24px gutters */

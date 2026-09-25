@@ -7,13 +7,15 @@
     "inter: Inter (sans serif, neutral)",
     "manrope: Manrope (sans serif, geometric)",
     "playfair: Playfair Display (serif, high contrast)",
-    "cormorant: Cormorant Garamond (serif, classic)"
+    "cormorant: Cormorant Garamond (serif, classic)",
+    "butler: Butler"
   ],
   "bodyFont": [
     "inter: Inter (sans serif, neutral)",
     "manrope: Manrope (sans serif, geometric)",
     "playfair: Playfair Display (serif, high contrast)",
-    "cormorant: Cormorant Garamond (serif, classic)"
+    "cormorant: Cormorant Garamond (serif, classic)",
+    "butler: Butler"
   ],
   "corners": [
     "square",

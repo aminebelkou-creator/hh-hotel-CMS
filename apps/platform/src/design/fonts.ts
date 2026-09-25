@@ -1,8 +1,8 @@
 import localFont from 'next/font/local'
 
 /**
- * Self-hosted fonts (SIL Open Font License, files and licences in ./fonts, from Fontsource
- * 5.3.0, Latin subset: covers French, English, German, Spanish and Italian). Served from our
+ * Self-hosted fonts (SIL Open Font License except Butler, CC BY-SA 4.0; files and licences in
+ * ./fonts, from Fontsource 5.3.0, Latin subset: covers French, English, German, Spanish and Italian). Served from our
  * own domain: no request to Google or any font CDN. Declared for every template; browsers
  * download only the families a page actually uses.
  */
@@ -43,4 +43,16 @@ export const cormorant = localFont({
   preload: false,
 })
 
-export const fontVariables = [inter.variable, manrope.variable, playfair.variable, cormorant.variable].join(' ')
+/** Butler (CC BY-SA 4.0, see fonts/butler.LICENSE.txt): three static weights, Latin subset. */
+export const butler = localFont({
+  src: [
+    { path: './fonts/butler-latin-regular.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/butler-latin-medium.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/butler-latin-bold.woff2', weight: '700', style: 'normal' },
+  ],
+  variable: '--hh-f-butler',
+  display: 'swap',
+  preload: false,
+})
+
+export const fontVariables = [inter.variable, manrope.variable, playfair.variable, cormorant.variable, butler.variable].join(' ')

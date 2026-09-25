@@ -94,7 +94,7 @@ Accessibility rules every template keeps: one `h1` per page (first hero), visibl
 | `maison` | Maison | light | Cormorant Garamond / Inter | soft | Classic and warm: cream, serif headings, full-width photo hero. Default; customer zero's look |
 | `atelier` | Atelier | light | Manrope / Inter | square | Modern and minimal: white, sans-serif, photo beside the headline, uppercase labels, accent call-to-action band |
 | `soiree` | Soirée | dark | Playfair Display / Inter | soft | Dark and elegant: night palette, gold accent, centred italic headlines, outline buttons |
-| `lumiere` | Lumière 2.0 | light | Playfair Display (Butler once licensed) / Inter | soft | Luxurious and bright: ivory, full-screen photo hero with a glass booking bar, navy bands and cards, champagne-gold buttons. Faithful adaptation of the **licensed Luxorefi** Webflow template (owner's licence, 25 Sep); handoff in `Documents\hh-template-handoffs\luxorefi-lab` |
+| `lumiere` | Lumière 2.0 | light | Butler (CC BY-SA 4.0, testing until the owner confirms the terms) / Inter | soft | Luxurious and bright: ivory, full-screen photo hero with a glass booking bar, navy bands and cards, champagne-gold buttons. Faithful adaptation of the **licensed Luxorefi** Webflow template (owner's licence, 25 Sep); handoff in `Documents\hh-template-handoffs\luxorefi-lab` |
 
 Built by engineering on 24 September as the first set; Lumière added on 25 September from a licensed template. A template may hide an optional element that is also shown elsewhere (Lumière hides the one-line room meta when the facts list is present) but never content that exists only there.
 

@@ -57,7 +57,7 @@
   "font": {
     "heading": {
       "$type": "fontFamily",
-      "$value": "playfair"
+      "$value": "butler"
     },
     "body": {
       "$type": "fontFamily",

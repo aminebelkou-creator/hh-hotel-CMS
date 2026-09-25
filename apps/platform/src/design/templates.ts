@@ -6,7 +6,7 @@
  * Adding a template: add its definition here, its layout rules in site.css, and run the
  * design tests (every template must pass the contrast gates with its own defaults).
  */
-export const FONT_IDS = ['inter', 'manrope', 'playfair', 'cormorant'] as const
+export const FONT_IDS = ['inter', 'manrope', 'playfair', 'cormorant', 'butler'] as const
 export type FontId = (typeof FONT_IDS)[number]
 
 export const FONT_LABELS: Record<FontId, string> = {
@@ -14,6 +14,7 @@ export const FONT_LABELS: Record<FontId, string> = {
   manrope: 'Manrope (sans serif, geometric)',
   playfair: 'Playfair Display (serif, high contrast)',
   cormorant: 'Cormorant Garamond (serif, classic)',
+  butler: 'Butler',
 }
 
 export const CORNERS = ['square', 'soft', 'round'] as const
@@ -137,9 +138,9 @@ export const TEMPLATES = {
       inverseInk: '#fcfcfc',
       inverseMuted: '#c7ccd4',
     },
-    // Luxorefi's heading font is Butler; no web-font licence file was shipped with the handoff, so
-    // Playfair Display (OFL, installed) stands in until one is on file (docs/11 §4).
-    fonts: { heading: 'playfair', body: 'inter' },
+    // Luxorefi's heading font, Butler (CC BY-SA 4.0 per the font's own metadata; fonts/butler.LICENSE.txt).
+    // Installed for testing on 25 Sep; the owner confirms the terms before a client goes live on it.
+    fonts: { heading: 'butler', body: 'inter' },
     corners: 'soft',
   },
 } as const satisfies Record<string, TemplateDef>

@@ -66,7 +66,7 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 - [ ] **OWN** Delete the old Makers project `hh-platform-poc` in the console
 - [ ] **OWN** Our platform domain and a test subdomain; email provider account
 - [x] **ENG** Lumière 2.0: faithful adaptation of the licensed Luxorefi template, with the seven structural additions it needed (hero stars from facts + booking bar to the Book link, banners block, section head with link, room tag + facts with icons, feature icons, photo band, checklist) — handoff `Documents\hh-template-handoffs\luxorefi-lab`, CSS in `site.css`, gates on four templates
-- [ ] **OWN** Butler web-font licence file (Luxorefi's heading font) → then convert to WOFF2 and switch Lumière's heading font from Playfair Display
+- [ ] **OWN** Butler licence confirmation **before a client goes live on Lumière**: the font files declare CC BY-SA 4.0 (installed for testing 25 Sep, `apps/platform/src/design/fonts/butler.LICENSE.txt`); confirm on the designer's page, put the attribution line in the legal notice, record the confirmation here
 - [ ] **OWN** Hotelza ZIP from ThemeForest → same method (handoff by the design session, PR by the repo agent)
 - [ ] **OWN** A designer to add and refine templates within the contract
 - [ ] **OWN** Sentry (EU) account if error alerts beyond uptime are wanted; AI model key to switch on extraction, copy, translation

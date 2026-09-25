@@ -15,6 +15,7 @@ import * as migration_20260925_050204_phase4_issues_audit_log from './20260925_0
 import * as migration_20260925_050923_phase5_design_channel from './20260925_050923_phase5_design_channel';
 import * as migration_20260925_061743_lumiere_blocks from './20260925_061743_lumiere_blocks';
 import * as migration_20260925_062437_lumiere_template from './20260925_062437_lumiere_template';
+import * as migration_20260925_125537_butler_font from './20260925_125537_butler_font';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20260925_062437_lumiere_template.up,
     down: migration_20260925_062437_lumiere_template.down,
-    name: '20260925_062437_lumiere_template'
+    name: '20260925_062437_lumiere_template',
+  },
+  {
+    up: migration_20260925_125537_butler_font.up,
+    down: migration_20260925_125537_butler_font.down,
+    name: '20260925_125537_butler_font'
   },
 ];

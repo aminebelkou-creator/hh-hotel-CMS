@@ -105,6 +105,7 @@ const FALLBACK: Record<FontId, string> = {
   manrope: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
   playfair: "Georgia, 'Times New Roman', serif",
   cormorant: "Georgia, 'Times New Roman', serif",
+  butler: "Georgia, 'Times New Roman', serif",
 }
 export const fontStack = (f: FontId) => `var(--hh-f-${f}), ${FALLBACK[f]}`
 

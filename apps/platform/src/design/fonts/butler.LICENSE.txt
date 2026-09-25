@@ -1,0 +1,17 @@
+Butler — by Fabian De Smet
+Source files: Butler_Regular.otf, Butler_Medium.otf, Butler_Bold.otf, as shipped with the
+Luxorefi Webflow template bought by the owner on 25 September 2026.
+
+Licence as declared inside the font files themselves (OpenType name table, licence URL):
+  Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+  https://creativecommons.org/licenses/by-sa/4.0/
+The designer describes Butler as free for personal and commercial use. Embedding permissions
+(OS/2 fsType = 8): editable embedding allowed.
+
+What we do with it: a Latin subset converted to WOFF2 (this folder), self-hosted, used for
+headings of the Lumière template. Attribution: "Butler by Fabian De Smet, CC BY-SA 4.0".
+
+STATUS (25 Sep 2026): installed for TESTING. Before any client site goes live on Lumière,
+the owner confirms the licence terms with the designer's own page (attribution text on the
+site's legal notice; share-alike scope for the subset) and records the confirmation in
+docs/CHECKLIST.md. Every other font in this folder is SIL Open Font License.
