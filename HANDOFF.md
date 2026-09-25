@@ -10,7 +10,7 @@ Read this first when you pick the project up, whether you are a person or an AI 
 
 ---
 
-## Current state — 25 September 2026, end of session 13 (overnight autonomous run)
+## Current state — 25 September 2026, end of session 14 (Lumière live, Butler, fix-later list; work on the list starts next)
 
 ### Where we are
 

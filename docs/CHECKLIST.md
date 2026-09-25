@@ -2,7 +2,7 @@
 
 Living checklist for the 90-day plan (28 September to 25 December 2026). Tick items in the commit that completes them, with a link to the evidence. Owner codes: **ENG** engineering, **BIZ** sales and partnerships, **OWN** project owner, **XT** another xedge team.
 
-Last updated: 24 September 2026, session 11 (how-it-works guide, designer brief with example prompts, template tokens exported; before that: strategy decisions, design contract and three templates, platform moved to a Makers project where custom domains work). The next phases and their deliverables: [`10-roadmap-phases.md`](10-roadmap-phases.md). Evidence: [`screenshots/`](screenshots/README.md). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
+Last updated: 25 September 2026, session 14 (Phases 3–5 engineering deployed; Lumière 2.0 from the licensed Luxorefi template, Butler font; customer zero live on Lumière; a "Fix later" list started). The next phases and their deliverables: [`10-roadmap-phases.md`](10-roadmap-phases.md). Evidence: [`screenshots/`](screenshots/README.md). For the current state, plan deltas and ordered next actions, read [`../HANDOFF.md`](../HANDOFF.md) first.
 
 ## At a glance
 
@@ -10,11 +10,11 @@ Last updated: 24 September 2026, session 11 (how-it-works guide, designer brief 
 | --- | --- | --- | --- |
 | Owner actions before week 1 | 4 | 3 | Send the Tencent email, revoke the CAM key, share the repo |
 | Week 1 | 9 | 4 | Engineering done early; BIZ and XT items not started |
-| Week 2 | 8 | 6 | All six proof items and the fact confirmation flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a fresh key and a test domain), hotel pack types, fact flow and BIZ items open |
-| Weeks 3–13 | 2 | 44 | Content release pipeline v0 done early (week 4 item); the four gates open; Gate 1 on 12 October |
-| Phase 1 (new list) | 7 | 1 | Done 24 Sep except amenities as a type; see the phase view |
-| Phase 2 and beyond (new list) | 11 | 10 | From the 24 Sep strategy session ([`12-strategy-decisions.md`](12-strategy-decisions.md)) |
-| **Total** | **41** | **68** | |
+| Week 2 | 8 | 6 | Proof items and the fact flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a test domain), hotel pack types on paper, generation measured with the AI key, and BIZ items open |
+| Weeks 3–13 | 2 | 44 | The weekly list still counts by calendar; most engineering rows are built already (see the phase view) — they are ticked when their gate evidence exists (domain, Tencent, real hotels) |
+| Phase 1–5 (new list) | 25 | 11 | Engineering of Phases 1–4 and the Phase 5 mechanisms built by 25 Sep; open items are owner/BIZ (key, lawyer, audit, designer, hotels), RLS enforcing, the visual studio |
+| Fix later | 0 | 9 | Small product gaps noticed in use, in a table at the end; started 25 Sep |
+| **Total** | **48** | **77** | |
 
 ## Phase view (added 24 September)
 
@@ -25,9 +25,9 @@ The weekly items below map onto five phases, detailed in [`10-roadmap-phases.md`
 | 0 — Proof and first site | 22–27 Sep | Isolation, hosting, CI, releases, customer zero's site | **Done**: site live and approved ([screenshots](screenshots/README.md)) |
 | 1 — Hotelier self-service | 28 Sep – 11 Oct | Publish and preview from the admin, photo uploads, hotel pack v1, legal pages | **Done early (24 Sep)** except amenities as a type ([screenshots](screenshots/README.md)) |
 | 2 — Own domain, templates, quality gates | 12 Oct – 1 Nov | Gate 1, custom domain, two templates, accessibility/performance in CI | **Engineering done 25 Sep** (own-domain serving, speed, phone photos, static map, plugins, contact form, security basics, quality gates); custom domains possible (project area overseas), waiting for a test domain and Tencent's answer for Gate 1 |
-| 3 — Generate from a URL | 2 – 22 Nov | AI ingest, fact review, generation, translation; design partners | Needs the AI key |
-| 4 — Operated service | 23 Nov – 13 Dec | Scheduled checks, one-tap fixes, monthly report, RLS enforcing | — |
-| 5 — Five paying hotels | 14 – 25 Dec | Gate 4 | — |
+| 3 — Generate from a URL | 2 – 22 Nov | AI ingest, fact review, generation, translation; design partners | **Engineering done 25 Sep** (works without a model; the model features and the 80 % measure wait for the AI key); design partners: BIZ |
+| 4 — Operated service | 23 Nov – 13 Dec | Scheduled checks, one-tap fixes, monthly report, RLS enforcing | **Engineering done 25 Sep** except RLS enforcing (after Gate 1) and Sentry (owner) |
+| 5 — Five paying hotels | 14 – 25 Dec | Gate 4 | Mechanisms done (canary upgrades, backups, compliance drafts); hotels, lawyer, audit, pen test: BIZ/OWN |
 
 Phase 1 items, tracked here until they land in the weekly list:
 

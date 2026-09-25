@@ -16,19 +16,19 @@
 
 ## What it looks like
 
-Customer zero, Hôtel de la Herse d'Or, live on the proof of concept (24 September 2026, content approved by the owner). More in [`docs/screenshots/`](docs/screenshots/README.md).
+Customer zero, Hôtel de la Herse d'Or, live on the platform on the **Lumière** template (25 September 2026; content approved by the owner on 24 September). More in [`docs/screenshots/`](docs/screenshots/README.md).
 
 <p>
-<img src="docs/screenshots/2026-09-24/site-home-fr-top.jpg" alt="Home page of the hotel site: hero photo of the lounge, headline 'Au cœur du Marais, depuis 1790'" width="560">
-<img src="docs/screenshots/2026-09-24/site-home-mobile-top.jpg" alt="The same home page on a phone" width="190">
+<img src="docs/screenshots/2026-09-25/site-home-fr-top.jpg" alt="Home page of the hotel site on Lumière: full-screen photo of the lounge, three stars, headline 'Au cœur du Marais, depuis 1790', booking bar with arrival, departure and guests" width="560">
+<img src="docs/screenshots/2026-09-25/site-home-mobile-top.jpg" alt="The same home page on a phone" width="190">
 </p>
-<img src="docs/screenshots/2026-09-24/site-rooms-fr-detail.jpg" alt="Rooms page: Superior room with description, amenities and photos" width="560">
+<img src="docs/screenshots/2026-09-25/site-rooms-fr-detail.jpg" alt="Rooms page: full-screen photo hero 'Nos chambres', then the Superior room with its description" width="560">
 
 **Phase 1, hotelier self-service, is done** (24 September): the owner signs in to `/admin`, edits a page, previews the draft, and publishes or undoes a publish from the site's Website panel.
 
 <img src="docs/screenshots/phase-1/live-owner-publish.jpg" alt="Admin, signed in as the hotel owner: the site with the Website panel, Publish site, Undo last publish, View site and the list of releases" width="560">
 
-**Three templates** (24 September), same content, switched in the admin: Maison (classic), Atelier (modern) and Soirée (dark). A hotel picks one and sets its brand colour; readability is guaranteed by the design contract ([`docs/11-design-contract.md`](docs/11-design-contract.md)).
+**Four templates**, same content, switched in the admin: Maison (classic), Atelier (modern), Soirée (dark) — built in-house on 24 September — and Lumière (luxurious, bright), a faithful adaptation of the licensed Luxorefi template added on 25 September. A hotel picks one and sets its brand colour; readability is guaranteed by the design contract ([`docs/11-design-contract.md`](docs/11-design-contract.md)).
 
 <p>
 <img src="docs/screenshots/templates/atelier-home-mobile.jpg" alt="Customer zero in the Atelier template on a phone: split layout, sans-serif headline, green button" width="190">

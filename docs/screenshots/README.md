@@ -7,16 +7,33 @@ cd apps/platform
 node tests/visual/screenshots.mjs https://hh-platform.edgeone.dev <output-folder>
 ```
 
+## 25 September 2026: customer zero live on Lumière (licensed Luxorefi adaptation), Phases 3–5 deployed
+
+Taken on the **public platform** (https://hh-platform.edgeone.dev, release r8, code `b830ad2`). The home page carries the elements added for Lumière: stars from the confirmed classification, the booking bar (opens the Book link with the dates), photo banners, the photo band, feature icons, room tags and facts. Headings in Butler.
+
+| What | Screenshot |
+| --- | --- |
+| Home (FR) | [site-home-fr.jpg](2026-09-25/site-home-fr.jpg) |
+| Home on a phone | [site-home-mobile.jpg](2026-09-25/site-home-mobile.jpg) |
+| Rooms (FR) | [site-rooms-fr.jpg](2026-09-25/site-rooms-fr.jpg) |
+| Services (EN) | [site-services-en.jpg](2026-09-25/site-services-en.jpg) |
+| Neighbourhood (FR) | [site-neighbourhood-fr.jpg](2026-09-25/site-neighbourhood-fr.jpg) |
+| Contact (FR) | [site-contact-fr.jpg](2026-09-25/site-contact-fr.jpg) |
+| Legal notice (FR) | [site-legal-notice-fr.jpg](2026-09-25/site-legal-notice-fr.jpg) |
+| Crops used in the README | [site-home-fr-top.jpg](2026-09-25/site-home-fr-top.jpg), [site-home-mobile-top.jpg](2026-09-25/site-home-mobile-top.jpg), [site-rooms-fr-detail.jpg](2026-09-25/site-rooms-fr-detail.jpg) |
+
+The admin after Phases 3 and 4 (dashboard, fact review, site panels, issues): [phase-3-4/](phase-3-4/README.md). The four templates side by side on the same content: [templates/](templates/) (`lumiere-*.jpg` added 25 Sep).
+
 ## 24 September 2026, evening: three templates (design contract)
 
 The same content (customer zero) in the three templates built in-house, switched in the admin and published with no content change. Local test server; taken with `apps/platform/tests/visual/templates.mjs`. Contract: [`../11-design-contract.md`](../11-design-contract.md).
 
-| | Maison (classic) | Atelier (modern) | Soirée (dark) |
-| --- | --- | --- | --- |
-| Home | [maison-home.jpg](templates/maison-home.jpg) | [atelier-home.jpg](templates/atelier-home.jpg) | [soiree-home.jpg](templates/soiree-home.jpg) |
-| Home on a phone | [maison-home-mobile.jpg](templates/maison-home-mobile.jpg) | [atelier-home-mobile.jpg](templates/atelier-home-mobile.jpg) | [soiree-home-mobile.jpg](templates/soiree-home-mobile.jpg) |
-| Rooms | [maison-rooms.jpg](templates/maison-rooms.jpg) | [atelier-rooms.jpg](templates/atelier-rooms.jpg) | [soiree-rooms.jpg](templates/soiree-rooms.jpg) |
-| Contact | [maison-contact.jpg](templates/maison-contact.jpg) | [atelier-contact.jpg](templates/atelier-contact.jpg) | [soiree-contact.jpg](templates/soiree-contact.jpg) |
+| | Maison (classic) | Atelier (modern) | Soirée (dark) | Lumière (licensed, 25 Sep) |
+| --- | --- | --- | --- | --- |
+| Home | [maison-home.jpg](templates/maison-home.jpg) | [atelier-home.jpg](templates/atelier-home.jpg) | [soiree-home.jpg](templates/soiree-home.jpg) | [lumiere-home.jpg](templates/lumiere-home.jpg) |
+| Home on a phone | [maison-home-mobile.jpg](templates/maison-home-mobile.jpg) | [atelier-home-mobile.jpg](templates/atelier-home-mobile.jpg) | [soiree-home-mobile.jpg](templates/soiree-home-mobile.jpg) | [lumiere-home-mobile.jpg](templates/lumiere-home-mobile.jpg) |
+| Rooms | [maison-rooms.jpg](templates/maison-rooms.jpg) | [atelier-rooms.jpg](templates/atelier-rooms.jpg) | [soiree-rooms.jpg](templates/soiree-rooms.jpg) | [lumiere-rooms.jpg](templates/lumiere-rooms.jpg) |
+| Contact | [maison-contact.jpg](templates/maison-contact.jpg) | [atelier-contact.jpg](templates/atelier-contact.jpg) | [soiree-contact.jpg](templates/soiree-contact.jpg) | [lumiere-contact.jpg](templates/lumiere-contact.jpg) |
 
 Admin: the template choice and the brand fields on a site — [admin-template-brand.jpg](templates/admin-template-brand.jpg).
 
@@ -59,5 +76,3 @@ Photos on the site are the hotel's own, served from its current website until th
 ## phase-3-4/ — the admin after Phases 3 and 4 (25 September)
 
 Dashboard (hotel and fleet), fact review screen, the site's panels (import, write, translate, look), issues. See [phase-3-4/README.md](phase-3-4/README.md).
-
-`templates/lumiere-*.jpg` (25 September): customer zero on Lumière 2.0, the licensed Luxorefi adaptation (home, home on a phone, rooms, contact).
