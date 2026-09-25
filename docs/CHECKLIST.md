@@ -200,6 +200,13 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 | Noticed | What happens | Fix | Added |
 | --- | --- | --- | --- |
 | Template changed in the admin, then "Publish site" → the old look goes live | The sidebar's Publish reads the **stored** site; an unsaved form change is ignored (owner hit this on 25 Sep: r7 shipped Maison after choosing Lumière). Workaround: Save, then Publish | Website panel: disable "Publish site" while the form has unsaved changes and say "Save first", or save automatically before publishing | 25 Sep |
+| Every hotel site needs the three French legal pages | Customer zero has *Mentions légales*, *Confidentialité & cookies* and *Accessibilité* (drafts). Missing: **Règlement intérieur et conditions générales de vente** (the hotel's current site has one) | Add a `reglement-cgv` legal page to the onboarding content (from the hotel's own text) and to the generator's page set, so every new hotel gets the three: cookies/privacy, mentions légales, règlement intérieur + CGV | 25 Sep |
+| Guest reviews and testimonials | No reviews block; the quote block carries one Victor Hugo line. Real reviews only (rule 9) | `testimonials` block fed by real guest reviews (imported with permission from Google/Booking with their source shown, or entered by the hotel) — PROPOSAL.md §8 of the Lumière handoff | 25 Sep |
+| Special offers and deals in view | The `offers` block and collection exist (hotel pack) but customer zero shows none on the home page | Put an offers block on the home page of every generated site (empty = hidden); an "Offres" nav entry when at least one is active | 25 Sep |
+| Blog / news | No posts collection | `posts` collection + `news` block (PROPOSAL.md §8); generated home page shows the latest three | 25 Sep |
+| Easy-to-find contact information | Contact page and footer carry address, phones, email; the header has no phone | Phone number (tel: link) in the header on desktop and a sticky "Call / Book" bar on phones | 25 Sep |
+| Irresistible calls to action | One `cta` block per page at most; wording is the hotel's | Generator writes a CTA block on every page (home, rooms, services, neighbourhood) with a benefit line ("best rate, direct contact"); templates give it more presence | 25 Sep |
+| A "Book now" button impossible to miss | Header "Réserver" button exists; on phones it is inside the burger menu | Keep the Book button visible outside the burger on phones; sticky bottom bar (see contact row); the hero booking bar already helps on Lumière | 25 Sep |
 
 ## Metrics tracked from day one
 
