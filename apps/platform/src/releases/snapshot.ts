@@ -21,7 +21,19 @@ export type SnapshotPage = {
   showInNav: boolean
   showInFooter?: boolean
   blocks: SnapshotBlock[]
-  seo?: { title?: Localized<string>; description?: Localized<string> } | null
+  seo?: { title?: Localized<string>; description?: Localized<string>; image?: Localized<string> | null } | null
+}
+
+export type SnapshotRedirect = { from: string; to: string; permanent: boolean }
+export type SnapshotFormField = { blockType: string; name: string; label?: string | null; required?: boolean | null; width?: number | null; defaultValue?: unknown; options?: { label: string; value: string }[]; message?: unknown }
+export type SnapshotForm = {
+  id: number
+  title: string
+  fields: SnapshotFormField[]
+  submitButtonLabel?: string | null
+  confirmationType?: string | null
+  confirmationMessage?: unknown
+  redirectUrl?: string | null
 }
 
 export type SiteSnapshot = {
@@ -46,6 +58,10 @@ export type SiteSnapshot = {
   }
   /** Static map image for the map block (made at publish from confirmed coordinates), or null. */
   mapImage?: string | null
+  /** Old-site paths redirected to pages of this site (redirects plugin). */
+  redirects?: SnapshotRedirect[]
+  /** Form definitions referenced by form blocks, so the site renders them without the CMS. */
+  forms?: SnapshotForm[]
   pages: SnapshotPage[]
   facts: { key: string; value: string }[]
   packs: Record<string, unknown>
@@ -105,6 +121,41 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
   const cta = (s.cta ?? {}) as { label?: Localized<string>; href?: string }
   // Localized fields come back as { en, fr } objects with locale 'all'; plain fields as values.
   const plain = <T,>(v: unknown): T => v as T
+  // Redirects of this site: a page reference becomes that page's path.
+  const redirectDocs = await payload.find({
+    collection: 'redirects',
+    where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }] },
+    depth: 0,
+    pagination: false,
+    overrideAccess: true,
+  })
+  const pageById = new Map(pages.docs.map((p) => [Number(p.id), String(p.slug)]))
+  const redirects: SnapshotRedirect[] = redirectDocs.docs.flatMap((r) => {
+    const to = (r as { to?: { type?: string; url?: string | null; reference?: { value?: unknown } | null } }).to
+    const ref = to?.reference?.value
+    const refId = typeof ref === 'object' && ref ? (ref as { id: number }).id : ref
+    const target = to?.type === 'reference' ? pageById.get(Number(refId)) : to?.url
+    if (!target) return []
+    return [{ from: String(r.from), to: to?.type === 'reference' ? (target === 'home' ? '/' : `/${target}`) : String(target), permanent: true }]
+  })
+
+  // Forms used by form blocks, and the images pages' metadata points at.
+  const formIds = new Set<number>()
+  const imageIds = new Set<number>()
+  for (const pg of pages.docs as unknown as { blocks?: SnapshotBlock[]; meta?: { image?: unknown } }[]) {
+    for (const b of pg.blocks ?? []) if (b.blockType === 'form' && b.form) formIds.add(Number(typeof b.form === 'object' ? (b.form as { id: number }).id : b.form))
+    for (const id of imageIdsOf(pg.meta?.image)) imageIds.add(id)
+  }
+  const forms: SnapshotForm[] = formIds.size
+    ? (
+        await payload.find({ collection: 'forms', where: { and: [{ id: { in: [...formIds] } }, { tenant: { equals: tenantId } }] }, depth: 0, pagination: false, overrideAccess: true })
+      ).docs.map((f) => toSnapshotForm(f))
+    : []
+  const images = imageIds.size
+    ? (await payload.find({ collection: 'media', where: { and: [{ id: { in: [...imageIds] } }, { tenant: { equals: tenantId } }] }, depth: 0, pagination: false, overrideAccess: true })).docs
+    : []
+  const imageUrl = new Map(images.map((m) => [Number(m.id), (m as { sizes?: { hero?: { url?: string | null } }; url?: string | null }).sizes?.hero?.url || m.url || null]))
+
   return {
     schema: 2,
     site: {
@@ -122,8 +173,10 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
       brand: brandOf(s.brand),
       cta: { label: cta.label ?? null, href: cta.href ?? null },
     },
-    pages: pages.docs.map(toSnapshotPage),
+    pages: pages.docs.map((p) => toSnapshotPage(p, imageUrl)),
     mapImage,
+    redirects,
+    forms,
     facts: facts.docs
       .map((f) => ({ key: f.key, value: f.value }))
       .sort((a, b) => a.key.localeCompare(b.key) || a.value.localeCompare(b.value)),
@@ -154,9 +207,51 @@ export function pick<T>(v: Localized<T> | undefined | null, locale: string, fall
   return (rec[locale] ?? rec[fallback] ?? keys.map((k) => rec[k]).find((x) => x !== null && x !== undefined)) ?? undefined
 }
 
+/** The SEO plugin's image is localized: with locale 'all' it is { en: id | doc, fr: … }. */
+function imageIdsOf(v: unknown): number[] {
+  if (v === null || v === undefined) return []
+  const one = (x: unknown) => (x && typeof x === 'object' && 'id' in (x as object) ? Number((x as { id: number }).id) : Number(x))
+  if (typeof v === 'object' && !('id' in (v as object))) return Object.values(v as Record<string, unknown>).map(one).filter((n) => Number.isFinite(n) && n > 0)
+  const n = one(v)
+  return Number.isFinite(n) && n > 0 ? [n] : []
+}
+
+function toSnapshotForm(f: unknown): SnapshotForm {
+  const d = f as Record<string, unknown>
+  return {
+    id: Number(d.id),
+    title: String(d.title ?? ''),
+    fields: ((d.fields ?? []) as Record<string, unknown>[]).map((x) => ({
+      blockType: String(x.blockType),
+      name: String(x.name ?? ''),
+      label: (x.label as string) ?? null,
+      required: (x.required as boolean) ?? null,
+      width: (x.width as number) ?? null,
+      defaultValue: x.defaultValue,
+      options: x.options as { label: string; value: string }[] | undefined,
+      message: x.message,
+    })),
+    submitButtonLabel: (d.submitButtonLabel as string) ?? null,
+    confirmationType: (d.confirmationType as string) ?? null,
+    confirmationMessage: d.confirmationMessage,
+    redirectUrl: ((d.redirect as { url?: string } | undefined)?.url as string) ?? null,
+  }
+}
+
 /** A page document (read with locale 'all') as the renderer sees it. */
-export function toSnapshotPage(p: unknown): SnapshotPage {
+export function toSnapshotPage(p: unknown, imageUrl?: Map<number, string | null>): SnapshotPage {
   const d = p as Record<string, unknown>
+  // Metadata comes from the SEO plugin's `meta` group (title, description, image).
+  const meta = (d.meta ?? {}) as { title?: Localized<string>; description?: Localized<string>; image?: unknown }
+  const urlOf = (x: unknown) => {
+    const [id] = imageIdsOf(x)
+    return id ? (imageUrl?.get(id) ?? null) : null
+  }
+  const image: Localized<string> | null =
+    meta.image && typeof meta.image === 'object' && !('id' in (meta.image as object))
+      ? Object.fromEntries(Object.entries(meta.image as Record<string, unknown>).map(([l, v]) => [l, urlOf(v)]))
+      : urlOf(meta.image)
+  const seo = { title: meta.title, description: meta.description, image }
   return {
     id: Number(d.id),
     slug: String(d.slug),
@@ -166,6 +261,6 @@ export function toSnapshotPage(p: unknown): SnapshotPage {
     showInNav: d.showInNav !== false,
     showInFooter: d.showInFooter === true,
     blocks: ((d.blocks ?? []) as SnapshotBlock[]).map((b) => ({ ...b })),
-    seo: (d.seo as SnapshotPage['seo']) ?? null,
+    seo,
   }
 }

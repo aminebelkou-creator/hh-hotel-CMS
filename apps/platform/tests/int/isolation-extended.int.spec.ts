@@ -116,12 +116,12 @@ describe('background jobs carry and enforce their tenant', () => {
   it('a job for tenant A cannot write a tenant B page', async () => {
     await run(A.tenant.id, Number(pageB.id), 'written-by-A-job')
     const after = await payload.findByID({ collection: 'pages', id: pageB.id, overrideAccess: true })
-    expect(after.seo?.description ?? null).not.toBe('written-by-A-job')
+    expect(after.meta?.description ?? null).not.toBe('written-by-A-job')
   })
 
   it('the same job for the right tenant does write', async () => {
     await run(A.tenant.id, Number(pageA.id), 'written-by-A-job')
     const after = await payload.findByID({ collection: 'pages', id: pageA.id, overrideAccess: true })
-    expect(after.seo?.description).toBe('written-by-A-job')
+    expect(after.meta?.description).toBe('written-by-A-job')
   })
 })

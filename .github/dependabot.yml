@@ -1,0 +1,29 @@
+# Weekly dependency updates, grouped so a Payload bump arrives as one pull request.
+# Security updates arrive as soon as an advisory is published (docs/12 §4).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    groups:
+      payload:
+        patterns: ["payload", "@payloadcms/*"]
+      next:
+        patterns: ["next", "react", "react-dom", "@types/react*"]
+      dev-tools:
+        dependency-type: development
+    ignore:
+      # Payload is never downgraded and upgrades run through scripts/upgrade-rehearsal.ps1 first (CLAUDE.md 14).
+      - dependency-name: "payload"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@payloadcms/*"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

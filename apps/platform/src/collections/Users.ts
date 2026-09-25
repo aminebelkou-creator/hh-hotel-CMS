@@ -8,7 +8,9 @@ import { selfOrSuperAdmin, superAdminFieldOnly, superAdminOnly } from '../access
  */
 export const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  // Brute-force protection at the application: 5 failed logins lock the account for 15 minutes
+  // (Payload's own lockout; docs/12 §4). Edge rate limits come on top, per host.
+  auth: { maxLoginAttempts: 5, lockTime: 15 * 60 * 1000 },
   admin: { useAsTitle: 'email' },
   access: {
     read: selfOrSuperAdmin,

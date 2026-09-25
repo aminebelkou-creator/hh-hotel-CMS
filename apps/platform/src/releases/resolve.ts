@@ -138,6 +138,8 @@ export function upgradeSnapshot(raw: unknown): SiteSnapshot {
       cta: { label: site.cta?.label ?? null, href: site.cta?.href ?? null },
     },
     mapImage: s.mapImage ?? null,
+    redirects: s.redirects ?? [],
+    forms: s.forms ?? [],
     pages: (s.pages ?? []).map((p) => ({
       ...p,
       navLabel: p.navLabel ?? null,

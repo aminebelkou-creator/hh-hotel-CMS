@@ -13,8 +13,8 @@ Last updated: 24 September 2026, session 11 (how-it-works guide, designer brief 
 | Week 2 | 8 | 6 | All six proof items and the fact confirmation flow done; the Makers gate (waiting on Tencent), the `teo` API (needs a fresh key and a test domain), hotel pack types, fact flow and BIZ items open |
 | Weeks 3–13 | 2 | 44 | Content release pipeline v0 done early (week 4 item); the four gates open; Gate 1 on 12 October |
 | Phase 1 (new list) | 7 | 1 | Done 24 Sep except amenities as a type; see the phase view |
-| Phase 2 and beyond (new list) | 5 | 16 | From the 24 Sep strategy session ([`12-strategy-decisions.md`](12-strategy-decisions.md)) |
-| **Total** | **35** | **74** | |
+| Phase 2 and beyond (new list) | 11 | 10 | From the 24 Sep strategy session ([`12-strategy-decisions.md`](12-strategy-decisions.md)) |
+| **Total** | **41** | **68** | |
 
 ## Phase view (added 24 September)
 
@@ -47,12 +47,12 @@ Phase 2 and later items from the strategy session of 24 September ([`12-strategy
 - [x] **ENG** Platform moved to a Makers project in area overseas, so custom domains can be added (finding 22)
 - [x] **ENG** Guides: how the platform works ([`13-how-it-works.md`](13-how-it-works.md)); designer brief ([`14-designer-brief.md`](14-designer-brief.md)); template tokens for designers ([`design-tokens/`](design-tokens/)); example prompts ([`prompts/`](prompts/README.md)); README documentation section by audience
 - [x] **ENG** Own-domain serving: hotel recognised from the domain, `/` instead of `/s/<site>`, `/admin` only on our domain — `src/proxy.ts`, `app/(sites)/h/`, `tests/int/own-domain.int.spec.ts` (tested locally with a fake host; live once a domain exists)
-- [ ] **ENG** Edge cache of published pages (EdgeOne KV keyed by release); target under 1 s
-- [ ] **ENG** Photo uploads from phones under the 6 MB function limit
-- [ ] **ENG** Adopt Payload SEO, Redirects, Form Builder, Import/Export (tenant-scoped, isolation-tested)
-- [ ] **ENG** Contact form with EU email (Scaleway TEM proposed) and spam protection
-- [ ] **ENG** Security basics: edge rate limits, security headers, Dependabot and code scanning
-- [ ] **ENG** Static map image at publish time instead of the OpenStreetMap embed
+- [x] **ENG** Speed: public pages carry edge cache headers (10 s, stale for a minute) and the origin does one query per page instead of six — but the Makers CDN does not cache function responses (finding 31), so real edge caching waits for Gate 1
+- [x] **ENG** Photo uploads from phones under the 6 MB function limit — shrunk in the browser (`src/admin/UploadShrinker.tsx`), 5 MB cap with a clear error
+- [x] **ENG** Adopt Payload SEO, Redirects, Form Builder (tenant-scoped, RLS, isolation-tested; `tests/int/plugins.int.spec.ts`). Import/Export deferred: the per-hotel export already exists (`tenant-backup.ts`) and the plugin needs an upload collection on our storage adapter
+- [x] **ENG** Contact form: form block, `POST /api/contact`, honeypot and timing checks, submissions in the admin per hotel; email through SMTP once the owner sets the provider (`SMTP_*` variables)
+- [x] **ENG** Security basics: security headers on every response, login lockout (5 tries, 15 min), Dependabot, CodeQL. Edge rate limits are a console setting on the host (owner)
+- [x] **ENG** Static map image at publish time instead of the OpenStreetMap embed — `src/media/static-map.ts`
 - [ ] **ENG** Quality gates in CI: axe, Lighthouse budget, structured data, for every template
 - [ ] **ENG** Brand proposal agent and branding skill (Phase 3)
 - [ ] **ENG** Visual studio v0 on the same blocks (Phase 3)

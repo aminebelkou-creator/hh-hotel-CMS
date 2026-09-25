@@ -134,6 +134,19 @@ body.hh-site { margin: 0; }
 .hh-footer-title { text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; color: var(--hh-inverse-muted); }
 .hh-footer-meta { margin-top: 40px; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--hh-inverse-ink) 14%, transparent); font-size: .75rem; color: var(--hh-inverse-muted); }
 
+/* Forms */
+.hh-form { display: flex; flex-wrap: wrap; gap: 16px 16px; margin-top: 28px; }
+.hh-form-field { flex: 1 1 100%; display: grid; gap: 6px; }
+.hh-form-field label { font-size: .9rem; font-weight: 600; }
+.hh-form-field input, .hh-form-field textarea, .hh-form-field select { font: inherit; color: var(--hh-ink); background: var(--hh-card); border: 1px solid var(--hh-line); border-radius: calc(var(--hh-radius-media) * .6); padding: 11px 14px; width: 100%; }
+.hh-form-field input:focus-visible, .hh-form-field textarea:focus-visible, .hh-form-field select:focus-visible { outline: 3px solid var(--hh-focus); outline-offset: 2px; }
+.hh-form-field--check { grid-template-columns: auto 1fr; align-items: center; }
+.hh-form-field--check input { width: 20px; height: 20px; }
+.hh-form-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.hh-form .hh-small { flex-basis: 100%; margin: 0; }
+.hh-form-error { flex-basis: 100%; font-weight: 600; border-left: 4px solid #b42318; padding-left: 12px; }
+.hh-form-done { background: var(--hh-tint); border: 1px solid var(--hh-line); border-radius: var(--hh-radius); padding: 18px 22px; font-weight: 600; margin-top: 28px; }
+
 /* Text, FAQ, offers, policies, footer legal links */
 .hh-prose h3 { font-size: 1.35rem; margin-top: 1.4em; }
 .hh-faq details { border-bottom: 1px solid var(--hh-line); padding: 16px 0; }

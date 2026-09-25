@@ -80,7 +80,7 @@ async function ensureTenantAndSite(payload: Payload, o: Onboarding) {
         tenant: tenantId,
         _status: 'published',
         blocks: [{ blockType: 'hero', heading: o.site.brandName, provenance: { origin: 'human', sourceFact: 'onboarding' } }],
-        seo: { title: o.site.brandName },
+        meta: { title: o.site.brandName },
       },
       overrideAccess: true,
     })
@@ -93,7 +93,7 @@ async function ensureTenantAndSite(payload: Payload, o: Onboarding) {
         title: o.site.brandName,
         _status: 'published',
         blocks: (page.blocks ?? []).map((b) => ({ ...b, heading: o.site.brandName })),
-        seo: { title: o.site.brandName },
+        meta: { title: o.site.brandName },
       },
       overrideAccess: true,
     })

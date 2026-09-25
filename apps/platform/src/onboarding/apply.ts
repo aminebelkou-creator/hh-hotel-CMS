@@ -86,7 +86,7 @@ const pageData = (p: PageInput, l: Loc, siteId: number, tenantId: number) => ({
   showInFooter: p.showInFooter ?? false,
   _status: 'published' as const,
   blocks: p.blocks.map((b) => blockData(b, l)),
-  seo: { title: v(p.seo?.title, l), description: v(p.seo?.description, l) },
+  meta: { title: v(p.seo?.title, l), description: v(p.seo?.description, l) },
 })
 
 const roomData = (r: RoomInput, l: Loc, tenantId: number) => ({

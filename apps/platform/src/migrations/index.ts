@@ -6,6 +6,8 @@ import * as migration_20260924_012331_hotel_site_content from './20260924_012331
 import * as migration_20260924_012402_drop_booking_mock_settings from './20260924_012402_drop_booking_mock_settings';
 import * as migration_20260924_093504_phase1_selfservice from './20260924_093504_phase1_selfservice';
 import * as migration_20260924_222418_site_templates from './20260924_222418_site_templates';
+import * as migration_20260925_014324_plugins_seo_redirects_forms from './20260925_014324_plugins_seo_redirects_forms';
+import * as migration_20260925_014408_drop_pages_seo_group from './20260925_014408_drop_pages_seo_group';
 
 export const migrations = [
   {
@@ -46,6 +48,16 @@ export const migrations = [
   {
     up: migration_20260924_222418_site_templates.up,
     down: migration_20260924_222418_site_templates.down,
-    name: '20260924_222418_site_templates'
+    name: '20260924_222418_site_templates',
+  },
+  {
+    up: migration_20260925_014324_plugins_seo_redirects_forms.up,
+    down: migration_20260925_014324_plugins_seo_redirects_forms.down,
+    name: '20260925_014324_plugins_seo_redirects_forms',
+  },
+  {
+    up: migration_20260925_014408_drop_pages_seo_group.up,
+    down: migration_20260925_014408_drop_pages_seo_group.down,
+    name: '20260925_014408_drop_pages_seo_group'
   },
 ];

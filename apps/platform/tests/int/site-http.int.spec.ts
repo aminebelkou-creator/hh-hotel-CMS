@@ -148,6 +148,17 @@ describe('public hotel site', () => {
     }
   })
 
+  it('every response carries the baseline security headers', async (ctx) => {
+    if (!reachable) ctx.skip()
+    for (const path of [`/s/${A.slug}`, '/admin/login', '/api/users/me']) {
+      const h = (await fetch(`${BASE}${path}`)).headers
+      expect(h.get('x-content-type-options'), path).toBe('nosniff')
+      expect(h.get('referrer-policy'), path).toBe('strict-origin-when-cross-origin')
+      expect(h.get('strict-transport-security'), path).toContain('max-age=31536000')
+      expect(h.get('x-frame-options'), path).toBe('SAMEORIGIN')
+    }
+  })
+
   it('no booking step is served: the platform has no booking logic', async (ctx) => {
     if (!reachable) ctx.skip()
     expect((await fetch(`${BASE}/s/${A.slug}/book`)).status).toBe(404)

@@ -3,6 +3,11 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
+import { seoPlugin } from '@payloadcms/plugin-seo'
+import { redirectsPlugin } from '@payloadcms/plugin-redirects'
+import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { contactEndpoint } from './forms/contactEndpoint'
 import { postgresStorage } from './media/postgres-storage'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -35,12 +40,28 @@ export default buildConfig({
   // A clear error instead of the edge's 413 for anything that still exceeds the body limit.
   upload: { limits: { fileSize: 5 * 1024 * 1024 } },
   collections: [Users, Tenants, Sites, makePages(packBlocks), Media, Domains, Releases, Facts, ...packCollections],
+  // Outgoing email (contact forms) through SMTP when configured (EU provider, docs/12 §7);
+  // otherwise Payload logs the message. Credentials live in environment variables only.
+  email: process.env.SMTP_HOST
+    ? nodemailerAdapter({
+        defaultFromAddress: process.env.SMTP_FROM || 'no-reply@example.invalid',
+        defaultFromName: process.env.SMTP_FROM_NAME || 'Hotel website',
+        transportOptions: {
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT || 587),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+        },
+      })
+    : undefined,
   localization: {
     locales: ['en', 'fr'],
     defaultLocale: 'en',
     fallback: true,
   },
   editor: lexicalEditor(),
+  // Public contact-form submissions (src/forms/contactEndpoint.ts).
+  endpoints: [contactEndpoint],
   // Background jobs carry their tenant in the input and scope every query by it (see src/jobs).
   jobs: { tasks: [touchPageSeo, publishSiteTask] },
   secret: process.env.PAYLOAD_SECRET || '',
@@ -58,6 +79,36 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
+    // Page metadata with a search preview and an image per page (docs/12 §3). Tenant-scoped
+    // through the pages collection; read by the release snapshot, never by the renderer.
+    seoPlugin({
+      collections: ['pages'],
+      uploadsCollection: 'media',
+      tabbedUI: false,
+      generateTitle: ({ doc }) => String((doc as { title?: string })?.title ?? ''),
+      generateURL: ({ doc }) => `/${String((doc as { slug?: string })?.slug ?? '')}`.replace('/home', '/'),
+    }),
+    // Old-site URLs redirected to the new pages; part of the release snapshot per site.
+    redirectsPlugin({
+      collections: ['pages'],
+      overrides: {
+        admin: { group: 'Website' },
+        fields: ({ defaultFields }) => [
+          { name: 'site', type: 'relationship', relationTo: 'sites', required: true, index: true },
+          ...defaultFields,
+        ],
+      },
+    }),
+    // Contact forms: definitions and submissions per tenant; email through the adapter above.
+    formBuilderPlugin({
+      fields: { payment: false, state: false, country: false },
+      formOverrides: { admin: { group: 'Website' } },
+      formSubmissionOverrides: {
+        admin: { group: 'Website' },
+        // Visitors submit through POST /api/contact (src/forms), never through this collection's REST.
+        access: { create: ({ req }) => Boolean(req.user) },
+      },
+    }),
     // Photos stored in Postgres (media_blobs) and served publicly at /media/<file>.
     cloudStoragePlugin({
       collections: { media: { adapter: postgresStorage, disableLocalStorage: true, disablePayloadAccessControl: true } },
@@ -72,6 +123,9 @@ export default buildConfig({
         domains: {},
         releases: {},
         facts: {},
+        redirects: {},
+        forms: {},
+        'form-submissions': {},
         ...Object.fromEntries(packTenantCollections.map((slug) => [slug, {}])),
       },
       userHasAccessToAllTenants: (user) => isSuperAdmin(user),

@@ -123,6 +123,18 @@ export const coreBlocks: Block[] = [
     ],
   },
   {
+    slug: 'form',
+    // The GraphQL type would otherwise collide with the forms collection's `Form`.
+    interfaceName: 'FormBlock',
+    graphQL: { singularName: 'FormBlock' },
+    labels: { singular: 'Form', plural: 'Forms' },
+    fields: [
+      { name: 'heading', type: 'text', localized: true },
+      { name: 'intro', type: 'textarea', localized: true },
+      { name: 'form', type: 'relationship', relationTo: 'forms', required: true, admin: { description: 'Built under Website → Forms' } },
+    ],
+  },
+  {
     slug: 'contact',
     labels: { singular: 'Contact details', plural: 'Contact details' },
     admin: { disableBlockName: true },
@@ -185,14 +197,7 @@ export const makePages = (extraBlocks: Block[] = []): CollectionConfig => ({
       ],
     },
     { name: 'blocks', type: 'blocks', blocks: [...coreBlocks, ...extraBlocks] },
-    {
-      name: 'seo',
-      type: 'group',
-      fields: [
-        { name: 'title', type: 'text', localized: true },
-        { name: 'description', type: 'textarea', localized: true },
-      ],
-    },
+    // Page metadata (title, description, image) is the SEO plugin's `meta` group (payload.config.ts).
   ],
 })
 

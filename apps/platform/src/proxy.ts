@@ -8,6 +8,13 @@ import { HOSTNAME_RE, PLATFORM_ONLY, isPlatformHost, requestHost } from './site/
  * the platform host, so a hotel's domain can never expose them (design: docs/12 §2).
  */
 export function proxy(req: NextRequest) {
+  const res = route(req)
+  // Security headers on every response we control (the admin sets its own where stricter).
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) if (!res.headers.has(k)) res.headers.set(k, v)
+  return res
+}
+
+function route(req: NextRequest) {
   const host = requestHost((n) => req.headers.get(n))
   const { pathname, search } = req.nextUrl
   if (isPlatformHost(host)) {
@@ -17,6 +24,9 @@ export function proxy(req: NextRequest) {
     if (/^\/s\//.test(pathname)) res.headers.set('cache-control', PUBLIC_CACHE)
     return res
   }
+  // Contact forms post from the hotel's domain; everything else under /api stays on ours.
+  const formPost = req.method === 'POST' && pathname === '/api/contact'
+  if (formPost) return NextResponse.next()
   if (PLATFORM_ONLY.test(pathname)) return new NextResponse('Not found', { status: 404 })
   if (!HOSTNAME_RE.test(host.replace(/:\d+$/, ''))) return new NextResponse('Not found', { status: 404 })
   const url = req.nextUrl.clone()
@@ -38,4 +48,17 @@ export const PUBLIC_CACHE = 'public, max-age=0, s-maxage=10, stale-while-revalid
 export const config = {
   // Everything except Next's own assets and the public photo route, which are host-neutral.
   matcher: ['/((?!_next/|media/|favicon\\.ico).*)'],
+}
+
+/**
+ * Baseline headers (docs/12 §4). Public pages embed nothing from third parties, so framing
+ * is refused everywhere except the admin's own live preview, which Payload handles itself.
+ */
+const SECURITY_HEADERS: Record<string, string> = {
+  'x-content-type-options': 'nosniff',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'x-frame-options': 'SAMEORIGIN',
+  'permissions-policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+  'strict-transport-security': 'max-age=31536000; includeSubDomains',
+  'cross-origin-opener-policy': 'same-origin-allow-popups',
 }

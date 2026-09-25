@@ -17,6 +17,11 @@ const LABELS = {
     release: 'Version',
     notFound: 'Page introuvable',
     legal: 'Informations légales',
+    send: 'Envoyer',
+    sending: 'Envoi…',
+    sent: 'Merci, votre message a bien été envoyé.',
+    sendFailed: 'Le message n’a pas pu être envoyé. Réessayez ou appelez-nous.',
+    required: 'obligatoire',
   },
   en: {
     menu: 'Menu',
@@ -36,6 +41,11 @@ const LABELS = {
     release: 'Release',
     notFound: 'Page not found',
     legal: 'Legal information',
+    send: 'Send',
+    sending: 'Sending…',
+    sent: 'Thank you, your message has been sent.',
+    sendFailed: 'The message could not be sent. Try again or call us.',
+    required: 'required',
   },
 } as const
 export type Labels = Record<keyof (typeof LABELS)['en'], string>

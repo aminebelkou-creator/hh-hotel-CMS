@@ -38,6 +38,10 @@
       "reason": "Engineer-run onboarding script that writes a hotel's site content; never reachable from a request. Every write names the tenant from the content file."
     },
     {
+      "file": "src/forms/contactEndpoint.ts",
+      "reason": "Public contact-form endpoint: reads the one form the visitor submits to and stores the submission under that form's tenant, after bot checks. Visitors are anonymous, so no user-scoped access applies; the tenant can only be the form's."
+    },
+    {
       "file": "src/onboarding/owner.ts",
       "reason": "Engineer-run script that creates a hotel's owner account (owner role, that one tenant); never reachable from a request. Refuses super-admins and users of other tenants."
     },

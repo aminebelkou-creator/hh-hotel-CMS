@@ -31,6 +31,17 @@ export function canonicalUrl(live: LiveRelease, origin: Origin, locale: string, 
   return `${origin.proto}://${origin.host}${path(pageHref(s, locale, slug))}`
 }
 
+/** Where a path that is not a page should go, per the site's redirects (old-site URLs), or null. */
+export function redirectFor(live: LiveRelease, slugParts: string[] | undefined): string | null {
+  const s = live.release.snapshot
+  const path = '/' + (slugParts ?? []).join('/')
+  const hit = (s.redirects ?? []).find((r) => r.from.replace(/\/+$/, '') === path.replace(/\/+$/, '') || r.from === path)
+  if (!hit) return null
+  if (/^https?:\/\//.test(hit.to)) return hit.to
+  const slug = hit.to.replace(/^\/+/, '') || 'home'
+  return pageHref(s, s.site.defaultLocale, slug)
+}
+
 export function resolvePage(live: LiveRelease, slugParts: string[] | undefined) {
   const snapshot = live.release.snapshot
   const path = resolvePath(snapshot, slugParts)
@@ -56,7 +67,7 @@ export function siteMetadata(live: LiveRelease, slugParts: string[] | undefined,
       canonical: canonicalUrl(live, origin, locale, page.slug),
       languages: Object.fromEntries(snapshot.site.enabledLocales.map((l) => [l, canonicalUrl(live, origin, l, page.slug)])),
     },
-    openGraph: { title, siteName: brand, locale, type: 'website', images: hero ? [String(hero.imageUrl)] : undefined },
+    openGraph: { title, siteName: brand, locale, type: 'website', images: pick(page.seo?.image, locale, def) ? [String(pick(page.seo?.image, locale, def))] : hero ? [String(hero.imageUrl)] : undefined },
     // Release stamp: the pipeline's verification step reads this to confirm what is served.
     other: { 'x-release': String(live.release.id), 'x-release-version': live.release.version },
   }

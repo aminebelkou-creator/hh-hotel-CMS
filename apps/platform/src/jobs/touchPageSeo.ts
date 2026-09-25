@@ -21,7 +21,7 @@ export const touchPageSeo: TaskConfig<'touchPageSeo'> = {
     const res = await req.payload.update({
       collection: 'pages',
       where: { and: [{ id: { equals: input.pageId } }, { tenant: { equals: input.tenantId } }] },
-      data: { seo: { description: input.description } },
+      data: { meta: { description: input.description } },
       overrideAccess: true,
       req,
     })

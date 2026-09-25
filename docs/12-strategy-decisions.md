@@ -22,13 +22,13 @@ Outcome of a question-and-answer session with the owner after Phase 1. Each entr
 
 | Decision | Items |
 | --- | --- |
-| Adopt (Phase 2) | Payload SEO, Redirects, Form Builder, Import/Export |
+| Adopt (Phase 2) | Payload SEO, Redirects, Form Builder — **done 25 Sep**. Import/Export deferred (per-hotel export exists; the plugin needs an upload collection on our storage adapter) |
 | Already used | Multi-tenant, MCP, Cloud Storage (photo adapter) |
 | Later | S3 storage (EU object storage), Sentry, two-factor login (community, after review), AI translation (community, after review), SEO analyser (trial) |
 | Skip | Sitemap, JSON-LD and reviews plugins (we generate from the release), Search, Nested Docs, Stripe, Ecommerce |
 | Build ourselves | AEO (structured data, `llms.txt`, consistent facts), Google Business Profile sync (a server-side connector writing proposed facts), sitemaps and schema.org |
 
-EdgeOne features: **KV** to cache published pages at the edge (Phase 2; KV never decides which release is live, so rollback stays instant); **Blob** a possible later home for photos once EU storage is confirmed; **agents** runtime for Phase 3 (120 s limit: long work runs as jobs); **image processing** not needed (uploads are already WebP in three sizes). Everything EdgeOne-specific sits behind an adapter: Gate 1 can still choose Cloudflare, which has an equivalent for each.
+EdgeOne features: **KV** to cache published pages at the edge (after Gate 1: the Makers CDN ignores cache headers on function responses, finding 31, so an edge function would be needed; the origin was made faster instead); **Blob** a possible later home for photos once EU storage is confirmed; **agents** runtime for Phase 3 (120 s limit: long work runs as jobs); **image processing** not needed (uploads are already WebP in three sizes). Everything EdgeOne-specific sits behind an adapter: Gate 1 can still choose Cloudflare, which has an equivalent for each.
 
 Limits found: cloud functions accept **6 MB** request bodies and run **120 s**; phone photos need a size cap or in-browser resize.
 

@@ -81,7 +81,7 @@ jobs:
         run: |
           pnpm exec next start -p 3000 > /tmp/next.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:3000/api/users/me >/dev/null && break; sleep 2; done
-          PLATFORM_URL=http://localhost:3000 pnpm exec vitest run --config ./vitest.config.mts tests/int/rest-isolation.int.spec.ts tests/int/site-http.int.spec.ts tests/int/self-service.int.spec.ts tests/int/own-domain.int.spec.ts
+          PLATFORM_URL=http://localhost:3000 pnpm exec vitest run --config ./vitest.config.mts tests/int/rest-isolation.int.spec.ts tests/int/site-http.int.spec.ts tests/int/self-service.int.spec.ts tests/int/own-domain.int.spec.ts tests/int/plugins.int.spec.ts
       - name: Server log on failure
         if: failure()
         run: tail -n 100 /tmp/next.log || true

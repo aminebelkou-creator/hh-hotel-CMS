@@ -7,6 +7,7 @@ import { pick, type Localized, type SiteSnapshot, type SnapshotBlock } from '@/r
 import { linkHref, pageHref } from './routing'
 import { practicalInfo } from './load'
 import type { Labels } from './i18n'
+import { FormBlock } from './FormBlock'
 
 type Ctx = { snapshot: SiteSnapshot; locale: string; t: Labels }
 
@@ -209,6 +210,24 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                       {p<string>(b.buttonLabel)}
                     </a>
                   )}
+                </div>
+              </section>
+            )
+          }
+          case 'form': {
+            const formId = Number(typeof b.form === 'object' && b.form ? (b.form as { id: number }).id : b.form)
+            const form = (snapshot.forms ?? []).find((f) => f.id === formId)
+            if (!form) return null
+            return (
+              <section key={key} className="hh-section">
+                <div className="hh-wrap hh-prose">
+                  {p<string>(b.heading) && <h2 className="hh-section-title">{p<string>(b.heading)}</h2>}
+                  {paragraphs(p<string>(b.intro)).map((para, k) => (
+                    <p key={k} className="hh-lead">
+                      {para}
+                    </p>
+                  ))}
+                  <FormBlock form={form} t={t} />
                 </div>
               </section>
             )
