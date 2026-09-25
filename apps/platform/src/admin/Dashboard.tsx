@@ -1,6 +1,7 @@
 import React from 'react'
 import type { AdminViewServerProps, Payload } from 'payload'
 import { isSuperAdmin } from '../access'
+import { Gutter } from '@payloadcms/ui'
 import { IssueList } from './IssueList'
 
 type NavGroup = { label: string; entities: { slug: string; type: 'collections' | 'globals'; label: string }[] }
@@ -51,6 +52,7 @@ export async function Dashboard(props: Props) {
   }
 
   return (
+    <Gutter>
     <div style={{ padding: '0 0 40px' }}>
       <h1 style={{ margin: '24px 0 4px' }}>{superAdmin ? 'All hotels' : 'Your website'}</h1>
       <p style={{ margin: '0 0 20px', opacity: 0.75 }}>
@@ -124,6 +126,7 @@ export async function Dashboard(props: Props) {
         })
       )}
     </div>
+    </Gutter>
   )
 }
 

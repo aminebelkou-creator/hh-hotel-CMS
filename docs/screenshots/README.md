@@ -55,3 +55,7 @@ Live on https://hh-platform-poc.edgeone.cool/s/hotel-herse-dor. Content approved
 | Admin dashboard (local, super-admin) | [admin-dashboard.jpg](2026-09-24/admin-dashboard.jpg) |
 
 Photos on the site are the hotel's own, served from its current website until the media pipeline exists.
+
+## phase-3-4/ — the admin after Phases 3 and 4 (25 September)
+
+Dashboard (hotel and fleet), fact review screen, the site's panels (import, write, translate, look), issues. See [phase-3-4/README.md](phase-3-4/README.md).
