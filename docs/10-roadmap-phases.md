@@ -57,11 +57,11 @@ Goal: onboarding a new hotel takes hours, not days. Needs the **AI model key**.
 
 | Deliverable | Done when |
 | --- | --- |
-| **Ingest v1**: crawl, AI extraction of rooms, services and policies into facts, with sources | 80 % of customer zero's facts found without hand work |
-| **Fact review screen** for the hotelier: confirm, correct or reject in one pass | Review of a new hotel's facts in under 15 minutes |
-| **Generation**: pages and room types drafted from confirmed facts, marked "generated" | A first draft site in under 5 minutes |
-| **Translation** to a second and third locale, with human-edit protection | EN/DE drafts from FR |
-| **Brand proposal** by an agent (accent from the logo, template, fonts), approved by the hotel; a branding skill that packages the design contract | A new hotel's brand proposed in minutes, published only after approval |
+| **Ingest v1**: crawl, AI extraction of rooms, services and policies into facts, with sources | **Built 25 Sep** (`src/ingest/crawl.ts`, `run.ts`, the Website panel's import; AI pass behind `AI_PROVIDER`). The 80 % measure waits for the model key |
+| **Fact review screen** for the hotelier: confirm, correct or reject in one pass | **Built 25 Sep**: `/admin/review/<site>` (`src/admin/FactReview.tsx`), grouped by kind, "confirm the sure ones" |
+| **Generation**: pages and room types drafted from confirmed facts, marked "generated" | **Built 25 Sep**: `src/generate/generate.ts`, drafts only, slots rewritten only while `generated`, model copy checked against the facts |
+| **Translation** to a second and third locale, with human-edit protection | **Built 25 Sep**: `src/generate/translate.ts`, needs a model; a person's text is never overwritten. The Payload config localises EN/FR today (DE is a config change) |
+| **Brand proposal** by an agent (accent from the logo, template, fonts), approved by the hotel; a branding skill that packages the design contract | **Built 25 Sep**: `src/design/propose-brand.ts` (accent from pixels, template from facts and photo mood, contrast gates on apply), Look panel; prompt in `docs/prompts/onboard-hotel-self-service.md` |
 | **Visual studio v0** (Puck on the same blocks): edit on the page, desktop first, then phone | A hotelier edits a page visually without the forms |
 | Design partners 1–3 onboarded with it | Three hotels with a draft site |
 

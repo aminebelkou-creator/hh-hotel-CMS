@@ -47,9 +47,9 @@ describe('row-level security (database-enforced tenant boundary)', () => {
   it('RLS is enabled and forced on every tenant table', async () => {
     const r = await pool.query(
       `select relname, relrowsecurity, relforcerowsecurity from pg_class
-       where relname in ('sites','pages','_pages_v','media','domains','releases','facts','rooms','offers','redirects','forms','form_submissions') and relkind = 'r'`,
+       where relname in ('sites','pages','_pages_v','media','domains','releases','facts','rooms','offers','redirects','forms','form_submissions','crawls') and relkind = 'r'`,
     )
-    expect(r.rows.length).toBe(12)
+    expect(r.rows.length).toBe(13)
     for (const row of r.rows) expect([row.relname, row.relrowsecurity, row.relforcerowsecurity]).toEqual([row.relname, true, true])
   })
 

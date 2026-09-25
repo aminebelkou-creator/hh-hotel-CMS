@@ -52,6 +52,26 @@
     {
       "file": "../../packs/hotel/src/snapshot.ts",
       "reason": "Hotel pack's release-snapshot contribution, called only by the release pipeline with an explicit tenantId; the query filters on it."
+    },
+    {
+      "file": "src/ingest/run.ts",
+      "reason": "In-product ingest, run after src/ingest/endpoints.ts has checked the caller's access to the site or crawl with the caller's own access; every query filters on the explicit tenantId (jobs pattern). Proven by tests/int/ingest.int.spec.ts."
+    },
+    {
+      "file": "src/ingest/facts.ts",
+      "reason": "Fact upsert used by the ingest pipeline and the engineer-run import; every query filters on the tenantId the caller resolved."
+    },
+    {
+      "file": "src/generate/generate.ts",
+      "reason": "Generation, run after src/generate/endpoints.ts has checked the caller's access to the site with the caller's own access; every query filters on the explicit tenantId and it writes drafts only. Proven by tests/int/generate.int.spec.ts."
+    },
+    {
+      "file": "src/generate/translate.ts",
+      "reason": "Translation, run after src/generate/endpoints.ts has checked the caller's access to the site; every query filters on the explicit tenantId, writes drafts, never overwrites a person's text. Proven by tests/int/generate.int.spec.ts."
+    },
+    {
+      "file": "src/design/propose-brand.ts",
+      "reason": "Brand proposal and apply, run after src/design/brand-endpoints.ts has checked the caller's access to the site; every query filters on the explicit tenantId; apply runs the same contrast gates as a hand-picked brand."
     }
   ]
 }

@@ -22,6 +22,7 @@ import { Media } from './collections/Media'
 import { Domains } from './collections/Domains'
 import { Releases } from './collections/Releases'
 import { Facts } from './collections/Facts'
+import { Crawls } from './collections/Crawls'
 import { isSuperAdmin, superAdminFieldOnly } from './access'
 import { touchPageSeo } from './jobs/touchPageSeo'
 import { publishSiteTask } from './jobs/publishSite'
@@ -35,11 +36,15 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     // Phone photos are shrunk in the browser before upload (functions accept 6 MB bodies).
-    components: { providers: ['/admin/UploadShrinker#UploadShrinker'] },
+    components: {
+      providers: ['/admin/UploadShrinker#UploadShrinker'],
+      // Fact review screen (Phase 3): /admin/review/<siteId>.
+      views: { review: { Component: '/admin/ReviewView#ReviewView', path: '/review/:siteId', exact: true } },
+    },
   },
   // A clear error instead of the edge's 413 for anything that still exceeds the body limit.
   upload: { limits: { fileSize: 5 * 1024 * 1024 } },
-  collections: [Users, Tenants, Sites, makePages(packBlocks), Media, Domains, Releases, Facts, ...packCollections],
+  collections: [Users, Tenants, Sites, makePages(packBlocks), Media, Domains, Releases, Facts, Crawls, ...packCollections],
   // Outgoing email (contact forms) through SMTP when configured (EU provider, docs/12 §7);
   // otherwise Payload logs the message. Credentials live in environment variables only.
   email: process.env.SMTP_HOST
@@ -123,6 +128,7 @@ export default buildConfig({
         domains: {},
         releases: {},
         facts: {},
+        crawls: {},
         redirects: {},
         forms: {},
         'form-submissions': {},

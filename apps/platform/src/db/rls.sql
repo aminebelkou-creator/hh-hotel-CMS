@@ -35,7 +35,8 @@ begin
       ('offers', 'tenant_id'),
       ('redirects', 'tenant_id'),
       ('forms', 'tenant_id'),
-      ('form_submissions', 'tenant_id')
+      ('form_submissions', 'tenant_id'),
+      ('crawls', 'tenant_id')
     ) as v(tbl, col)
   loop
     execute format('alter table %I enable row level security', t.tbl);

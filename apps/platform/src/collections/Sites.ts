@@ -1,6 +1,9 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated, superAdminFieldOnly } from '../access'
 import { publishEndpoint, rollbackEndpoint } from '../releases/endpoints'
+import { ingestEndpoint } from '../ingest/endpoints'
+import { generateEndpoint, translateEndpoint } from '../generate/endpoints'
+import { applyBrandEndpoint, proposeBrandEndpoint } from '../design/brand-endpoints'
 import { isHex } from '../design/color'
 import { resolveTheme, type Brand } from '../design/theme'
 import { CORNERS, DEFAULT_TEMPLATE, FONT_IDS, FONT_LABELS, TEMPLATE_IDS, TEMPLATES } from '../design/templates'
@@ -21,13 +24,25 @@ export const Sites: CollectionConfig = {
   slug: 'sites',
   admin: { useAsTitle: 'name' },
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
-  endpoints: [publishEndpoint, rollbackEndpoint],
+  endpoints: [publishEndpoint, rollbackEndpoint, ingestEndpoint, generateEndpoint, translateEndpoint, proposeBrandEndpoint, applyBrandEndpoint],
   fields: [
     {
       name: 'publishPanel',
       type: 'ui',
       admin: { position: 'sidebar', components: { Field: '/admin/PublishPanel#PublishPanel' } },
     },
+    {
+      name: 'ingestPanel',
+      type: 'ui',
+      admin: { position: 'sidebar', components: { Field: '/admin/IngestPanel#IngestPanel' } },
+    },
+    {
+      name: 'brandPanel',
+      type: 'ui',
+      admin: { position: 'sidebar', components: { Field: '/admin/BrandPanel#BrandPanel' } },
+    },
+    // A suggested look (template + accent) waiting for approval; written by src/design/propose-brand.ts.
+    { name: 'brandProposal', type: 'json', admin: { hidden: true } },
     { name: 'name', type: 'text', required: true },
     {
       name: 'slug',
@@ -36,6 +51,11 @@ export const Sites: CollectionConfig = {
       unique: true,
       index: true,
       admin: { description: 'Platform-wide unique; the public preview lives at /s/<slug>' },
+    },
+    {
+      name: 'sourceUrl',
+      type: 'text',
+      admin: { description: 'The hotel’s current website, imported into the fact base from the Website panel (Phase 3 ingest).' },
     },
     {
       name: 'brandName',

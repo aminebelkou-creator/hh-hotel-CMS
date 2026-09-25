@@ -1,15 +1,8 @@
 import type { Block, CollectionConfig, Field } from 'payload'
 import { authenticated } from '../access'
 
-const provenance: Field = {
-  name: 'provenance',
-  type: 'group',
-  admin: { description: 'Who last shaped this content. Regeneration never overwrites human edits.' },
-  fields: [
-    { name: 'origin', type: 'select', defaultValue: 'human', options: ['generated', 'human', 'locked'] },
-    { name: 'sourceFact', type: 'text', admin: { description: 'Fact-base reference for generated content' } },
-  ],
-}
+import { provenance } from './provenance'
+import { protectHumanEdits } from '../generate/protect'
 
 /** Remote image until the media pipeline exists (plan week 5): a URL plus localized alt text. */
 const remoteImage = (name = 'image'): Field[] => [
@@ -95,6 +88,7 @@ export const coreBlocks: Block[] = [
       { name: 'text', type: 'textarea', localized: true },
       ...link('button'),
       ...remoteImage(),
+      provenance,
     ],
   },
   {
@@ -141,6 +135,7 @@ export const coreBlocks: Block[] = [
     fields: [
       { name: 'heading', type: 'text', localized: true },
       { name: 'intro', type: 'textarea', localized: true, admin: { description: 'Phones, email, address and times come from confirmed facts' } },
+      provenance,
     ],
   },
   {
@@ -149,6 +144,7 @@ export const coreBlocks: Block[] = [
       { name: 'heading', type: 'text', localized: true },
       { name: 'text', type: 'textarea', localized: true },
       { name: 'zoom', type: 'number', defaultValue: 16, min: 3, max: 19, admin: { description: 'Position comes from the confirmed facts geo.lat and geo.lon' } },
+      provenance,
     ],
   },
 ]
@@ -167,6 +163,8 @@ export const makePages = (extraBlocks: Block[] = []): CollectionConfig => ({
   },
   versions: { drafts: true, maxPerDoc: 25 },
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
+  // Rule 7: a person's edit to a generated block marks it human; regeneration then leaves it alone.
+  hooks: { beforeChange: [protectHumanEdits] },
   defaultSort: 'navOrder',
   fields: [
     {

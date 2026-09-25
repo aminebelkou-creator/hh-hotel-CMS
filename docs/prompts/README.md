@@ -9,7 +9,8 @@ Ready-to-use prompts for the recurring jobs on this project. Copy one, replace t
 | [propose-template.md](propose-template.md) | An AI design assistant | You need a new template and have no designer |
 | [designer-brief-email.md](designer-brief-email.md) | A freelance designer (by email) | Commissioning a template |
 | [brand-proposal.md](brand-proposal.md) | An AI assistant, or a coding agent with admin access | Choosing a template and brand for a new hotel |
-| [onboard-hotel.md](onboard-hotel.md) | A coding agent | Putting a new hotel on the platform from its current website |
+| [onboard-hotel-self-service.md](onboard-hotel-self-service.md) | A team member in the admin | Putting a new hotel on the platform with the Phase 3 tools (import, review, draft, translate, look) |
+| [onboard-hotel.md](onboard-hotel.md) | A coding agent | Putting a new hotel on the platform by hand-written content (customer zero's way) |
 | [add-feature.md](add-feature.md) | A coding agent | Adding a feature, a hotel-pack type or a Payload plugin |
 
 ## How these prompts are written

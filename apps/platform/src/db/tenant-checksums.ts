@@ -32,6 +32,7 @@ const TABLES: [string, string][] = [
   ['redirects', 'tenant_id'],
   ['forms', 'tenant_id'],
   ['form_submissions', 'tenant_id'],
+  ['crawls', 'tenant_id'],
 ]
 
 const payload = await getPayload({ config })

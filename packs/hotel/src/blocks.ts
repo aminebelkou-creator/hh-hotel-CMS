@@ -1,4 +1,15 @@
-import type { Block } from 'payload'
+import type { Block, Field } from 'payload'
+
+/** Same shape as the core's provenance group (rule 7); generation writes these blocks too. */
+const provenance: Field = {
+  name: 'provenance',
+  type: 'group',
+  admin: { description: 'Who last shaped this content. Regeneration never overwrites human edits.' },
+  fields: [
+    { name: 'origin', type: 'select', defaultValue: 'human', options: ['generated', 'human', 'locked'] },
+    { name: 'sourceFact', type: 'text' },
+  ],
+}
 
 /** Page block: the hotel's room types as cards. Empty `limit` shows all of them. */
 export const roomsBlock: Block = {
@@ -20,6 +31,7 @@ export const roomsBlock: Block = {
         { label: 'Detailed', value: 'detailed' },
       ],
     },
+    provenance,
   ],
 }
 
@@ -33,6 +45,7 @@ export const offersBlock: Block = {
     { name: 'heading', type: 'text', localized: true },
     { name: 'intro', type: 'textarea', localized: true },
     { name: 'limit', type: 'number', min: 1 },
+    provenance,
   ],
 }
 
@@ -53,6 +66,7 @@ export const policiesBlock: Block = {
         { name: 'text', type: 'textarea', required: true, localized: true },
       ],
     },
+    provenance,
   ],
 }
 

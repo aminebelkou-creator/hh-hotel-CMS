@@ -35,6 +35,7 @@ export function methodOf(raw?: string): FactMethod {
   if (m.includes('keyword')) return 'keyword'
   if (m.startsWith('heading')) return 'heading'
   if (m === 'manual') return 'manual'
+  if (m === 'agent') return 'agent'
   return 'text'
 }
 

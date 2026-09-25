@@ -17,6 +17,7 @@ import path from 'node:path'
 import { getPayload, type Payload } from 'payload'
 import config from '@payload-config'
 import { normaliseFacts, normaliseValue, type RawFact } from './normalise'
+import { upsertFact } from './facts'
 import { nextPublishSeq, publishSite } from '../releases/publish'
 
 type Decision = { key: string; value: string; status: 'confirmed' | 'rejected' | 'unconfirmed'; note?: string }
@@ -102,34 +103,6 @@ async function ensureTenantAndSite(payload: Payload, o: Onboarding) {
   return { tenantId, siteId }
 }
 
-async function upsert(payload: Payload, tenantId: number, siteId: number, f: ReturnType<typeof normaliseFacts>[number]) {
-  const existing = (
-    await payload.find({
-      collection: 'facts',
-      where: { and: [{ tenant: { equals: tenantId } }, { key: { equals: f.key } }, { value: { equals: f.value } }] },
-      limit: 1,
-      overrideAccess: true,
-    })
-  ).docs[0]
-  const data = {
-    key: f.key,
-    value: f.value,
-    site: siteId,
-    confidence: f.confidence,
-    method: f.method,
-    source: f.source ?? undefined,
-    occurrences: f.occurrences,
-    evidence: f.evidence as unknown as Record<string, unknown>[],
-  }
-  if (existing) {
-    // Re-import refreshes evidence; the decision (status) stays as the business left it.
-    await payload.update({ collection: 'facts', id: existing.id, data, overrideAccess: true })
-    return 'updated'
-  }
-  await payload.create({ collection: 'facts', data: { ...data, tenant: tenantId, status: 'unconfirmed' }, overrideAccess: true })
-  return 'created'
-}
-
 async function decide(payload: Payload, tenantId: number, siteId: number, d: Decision) {
   const norm = normaliseValue(d.key, d.value)
   const value = norm ? norm[1] : d.value
@@ -169,7 +142,7 @@ const run = async () => {
   const { tenantId, siteId } = await ensureTenantAndSite(payload, o)
   const counts: Record<string, number> = {}
   for (const f of facts) {
-    const r = await upsert(payload, tenantId, siteId, f)
+    const r = await upsertFact(payload, tenantId, siteId, f)
     counts[r] = (counts[r] ?? 0) + 1
   }
   for (const d of o.decisions) {

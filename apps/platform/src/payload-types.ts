@@ -76,6 +76,7 @@ export interface Config {
     domains: Domain;
     releases: Release;
     facts: Fact;
+    crawls: Crawl;
     rooms: Room;
     offers: Offer;
     redirects: Redirect;
@@ -98,6 +99,7 @@ export interface Config {
     domains: DomainsSelect<false> | DomainsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
     facts: FactsSelect<false> | FactsSelect<true>;
+    crawls: CrawlsSelect<false> | CrawlsSelect<true>;
     rooms: RoomsSelect<false> | RoomsSelect<true>;
     offers: OffersSelect<false> | OffersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -221,11 +223,24 @@ export interface Tenant {
 export interface Site {
   id: number;
   tenant?: (number | null) | Tenant;
+  brandProposal?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   name: string;
   /**
    * Platform-wide unique; the public preview lives at /s/<slug>
    */
   slug: string;
+  /**
+   * The hotel’s current website, imported into the fact base from the Website panel (Phase 3 ingest).
+   */
+  sourceUrl?: string | null;
   /**
    * Public name shown on the site. Backfilled from the tenant name by migration.
    */
@@ -533,6 +548,16 @@ export interface Page {
              * Alternative text for screen readers
              */
             imageAlt?: string | null;
+            /**
+             * Who last shaped this content. Regeneration never overwrites human edits.
+             */
+            provenance?: {
+              origin?: ('generated' | 'human' | 'locked') | null;
+              /**
+               * Fact-base reference for generated content
+               */
+              sourceFact?: string | null;
+            };
             id?: string | null;
             blockName?: string | null;
             blockType: 'cta';
@@ -587,6 +612,16 @@ export interface Page {
              * Phones, email, address and times come from confirmed facts
              */
             intro?: string | null;
+            /**
+             * Who last shaped this content. Regeneration never overwrites human edits.
+             */
+            provenance?: {
+              origin?: ('generated' | 'human' | 'locked') | null;
+              /**
+               * Fact-base reference for generated content
+               */
+              sourceFact?: string | null;
+            };
             id?: string | null;
             blockName?: string | null;
             blockType: 'contact';
@@ -598,6 +633,16 @@ export interface Page {
              * Position comes from the confirmed facts geo.lat and geo.lon
              */
             zoom?: number | null;
+            /**
+             * Who last shaped this content. Regeneration never overwrites human edits.
+             */
+            provenance?: {
+              origin?: ('generated' | 'human' | 'locked') | null;
+              /**
+               * Fact-base reference for generated content
+               */
+              sourceFact?: string | null;
+            };
             id?: string | null;
             blockName?: string | null;
             blockType: 'map';
@@ -851,6 +896,13 @@ export interface RoomsBlock {
   intro?: string | null;
   limit?: number | null;
   layout?: ('cards' | 'detailed') | null;
+  /**
+   * Who last shaped this content. Regeneration never overwrites human edits.
+   */
+  provenance?: {
+    origin?: ('generated' | 'human' | 'locked') | null;
+    sourceFact?: string | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'rooms';
@@ -863,6 +915,13 @@ export interface OffersBlock {
   heading?: string | null;
   intro?: string | null;
   limit?: number | null;
+  /**
+   * Who last shaped this content. Regeneration never overwrites human edits.
+   */
+  provenance?: {
+    origin?: ('generated' | 'human' | 'locked') | null;
+    sourceFact?: string | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'offers';
@@ -884,6 +943,13 @@ export interface PoliciesBlock {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Who last shaped this content. Regeneration never overwrites human edits.
+   */
+  provenance?: {
+    origin?: ('generated' | 'human' | 'locked') | null;
+    sourceFact?: string | null;
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'policies';
@@ -960,6 +1026,65 @@ export interface Fact {
   decisionNote?: string | null;
   decidedBy?: (number | null) | User;
   decidedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Imports from the hotel’s current website. Start one from the site’s Website panel.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "crawls".
+ */
+export interface Crawl {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  site: number | Site;
+  startUrl: string;
+  status: 'queued' | 'running' | 'done' | 'failed';
+  maxPages?: number | null;
+  pagesCrawled?: number | null;
+  pagesLeft?: number | null;
+  /**
+   * Distinct facts written to the fact base (new or refreshed)
+   */
+  factsFound?: number | null;
+  factsNew?: number | null;
+  /**
+   * Whether a model proposed extra facts, and how many
+   */
+  aiPass?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Site audit: pages, titles, structured data, thin pages
+   */
+  audit?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  log?: string | null;
+  startedBy?: string | null;
+  finishedAt?: string | null;
+  state?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1310,6 +1435,10 @@ export interface PayloadLockedDocument {
         value: number | Fact;
       } | null)
     | ({
+        relationTo: 'crawls';
+        value: number | Crawl;
+      } | null)
+    | ({
         relationTo: 'rooms';
         value: number | Room;
       } | null)
@@ -1432,8 +1561,10 @@ export interface TenantsSelect<T extends boolean = true> {
  */
 export interface SitesSelect<T extends boolean = true> {
   tenant?: T;
+  brandProposal?: T;
   name?: T;
   slug?: T;
+  sourceUrl?: T;
   brandName?: T;
   timezone?: T;
   enabledLocales?: T;
@@ -1590,6 +1721,12 @@ export interface PagesSelect<T extends boolean = true> {
               buttonHref?: T;
               imageUrl?: T;
               imageAlt?: T;
+              provenance?:
+                | T
+                | {
+                    origin?: T;
+                    sourceFact?: T;
+                  };
               id?: T;
               blockName?: T;
             };
@@ -1633,6 +1770,12 @@ export interface PagesSelect<T extends boolean = true> {
           | {
               heading?: T;
               intro?: T;
+              provenance?:
+                | T
+                | {
+                    origin?: T;
+                    sourceFact?: T;
+                  };
               id?: T;
               blockName?: T;
             };
@@ -1642,6 +1785,12 @@ export interface PagesSelect<T extends boolean = true> {
               heading?: T;
               text?: T;
               zoom?: T;
+              provenance?:
+                | T
+                | {
+                    origin?: T;
+                    sourceFact?: T;
+                  };
               id?: T;
               blockName?: T;
             };
@@ -1680,6 +1829,12 @@ export interface RoomsBlockSelect<T extends boolean = true> {
   intro?: T;
   limit?: T;
   layout?: T;
+  provenance?:
+    | T
+    | {
+        origin?: T;
+        sourceFact?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -1691,6 +1846,12 @@ export interface OffersBlockSelect<T extends boolean = true> {
   heading?: T;
   intro?: T;
   limit?: T;
+  provenance?:
+    | T
+    | {
+        origin?: T;
+        sourceFact?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -1707,6 +1868,12 @@ export interface PoliciesBlockSelect<T extends boolean = true> {
         title?: T;
         text?: T;
         id?: T;
+      };
+  provenance?:
+    | T
+    | {
+        origin?: T;
+        sourceFact?: T;
       };
   id?: T;
   blockName?: T;
@@ -1822,6 +1989,29 @@ export interface FactsSelect<T extends boolean = true> {
   decisionNote?: T;
   decidedBy?: T;
   decidedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "crawls_select".
+ */
+export interface CrawlsSelect<T extends boolean = true> {
+  tenant?: T;
+  site?: T;
+  startUrl?: T;
+  status?: T;
+  maxPages?: T;
+  pagesCrawled?: T;
+  pagesLeft?: T;
+  factsFound?: T;
+  factsNew?: T;
+  aiPass?: T;
+  audit?: T;
+  log?: T;
+  startedBy?: T;
+  finishedAt?: T;
+  state?: T;
   updatedAt?: T;
   createdAt?: T;
 }
