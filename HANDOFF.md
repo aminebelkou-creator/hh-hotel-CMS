@@ -159,6 +159,12 @@ Kept current. When a delta becomes permanent, change the plan by decision and mo
 
 ### 2026-09-25 · session 15 · fix-later batch 1 (contact and Book on phones, legal set, offers on home) and batch 2 (gallery, lighter images)
 
+**Changed (batch 7, 26 Sep: video hero)**
+- Hero fields `videoUrl`, `videoMobileUrl` (migration `hero_video`). `src/site/HeroVideo.tsx` (client): the photo stays the first paint; after `load`, unless reduced motion or data saver, the video (portrait cut under 768 px portrait) is set, muted, looped, fades in; a pause/play button (aria-pressed). CSS `.hh-hero-video`, `.hh-hero-video-toggle`, hidden under reduced motion.
+- Platform stock media: `public/stock/paris/seine-conciergerie-{1280,540x960}.mp4` from Pexels (MetaX Studios, free licence, 12 s, silent, faded loop, H.264), `SOURCES.md` records source and changes. Owner asked for "free hotel stock video": chose Paris itself (Seine, Conciergerie), not another hotel's rooms, so guests are never shown what the hotel does not have. `proxy.ts` leaves `/stock/` host-neutral (served on a hotel's own domain too).
+- Customer zero: video over the lounge photo; `apply.ts --only=hero-video` sets only the two fields on the live home hero.
+- Tests: site-http (no `src` in the HTML, stock file 206 with video/mp4), `tests/visual/hero-video.mjs` in Chrome: desktop plays the 1280 cut and pauses on the button, phone plays the 540×960 cut, reduced motion fetches nothing. 165 tests green locally.
+
 **Changed (batch 6: safe publishing)**
 - Website panel (`src/admin/PublishPanel.tsx`): on a site, unsaved settings are validated and saved before the publish (the r7 mistake: template chosen, not saved, old look published); "Unsaved changes" note while the form is modified; on a page with unsaved or draft changes it asks to publish the page first instead of publishing stale content. `tests/visual/publish-guard.mjs` drives it in a browser.
 - Measured: CI green (`96f3c62`), deploy green; customer zero published **r15** within the same minute the deploy finished (23:46 UTC), live on the first publish (r9 had failed in the same situation).

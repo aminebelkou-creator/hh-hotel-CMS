@@ -13,6 +13,7 @@ import { Img as SharedImg, fullSizeOf, SIZES } from './Img'
 import { Lightbox } from './Lightbox'
 import { NewsBlock } from './News'
 import { ReviewsBlock } from './Reviews'
+import { HeroVideo } from './HeroVideo'
 
 type Ctx = { snapshot: SiteSnapshot; locale: string; t: Labels }
 
@@ -44,6 +45,9 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
             return (
               <section key={key} className={b.imageUrl ? 'hh-hero hh-hero--image' : 'hh-hero'}>
                 {b.imageUrl ? <Img src={b.imageUrl as string} alt={p<string>(b.imageAlt)} eager={i === 0} sizes="full" /> : null}
+                {b.imageUrl && typeof b.videoUrl === 'string' && b.videoUrl ? (
+                  <HeroVideo src={b.videoUrl} mobileSrc={(b.videoMobileUrl as string) || null} labels={{ pauseVideo: t.pauseVideo, playVideo: t.playVideo }} />
+                ) : null}
                 <div className="hh-hero-inner hh-wrap">
                   {b.rating === 'classification' && <HeroRating facts={snapshot.facts} locale={locale} />}
                   <Tag>{p<string>(b.heading)}</Tag>

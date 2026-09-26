@@ -23,7 +23,7 @@ const PHOTO = 'data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADs
  */
 type SeedBlocks = NonNullable<Page['blocks']>
 const seedBlocks = (slug: string, n: number): SeedBlocks => {
-  const hero: SeedBlocks[number] = { blockType: 'hero', heading: `Welcome to tenant ${n}`, subheading: `${slug} page of a seeded hotel`, ctaLabel: 'Contact us', ctaHref: 'contact', rating: 'classification', bookingBar: slug === 'home', provenance: seedProvenance }
+  const hero: SeedBlocks[number] = { blockType: 'hero', heading: `Welcome to tenant ${n}`, subheading: `${slug} page of a seeded hotel`, ctaLabel: 'Contact us', ctaHref: 'contact', rating: 'classification', bookingBar: slug === 'home', imageUrl: n === 5 && slug === 'home' ? PHOTO : undefined, imageAlt: n === 5 && slug === 'home' ? 'The lounge' : undefined, videoUrl: n === 5 && slug === 'home' ? '/stock/paris/seine-conciergerie-1280.mp4' : undefined, videoMobileUrl: n === 5 && slug === 'home' ? '/stock/paris/seine-conciergerie-540x960.mp4' : undefined, provenance: seedProvenance }
   if (slug === 'rooms') {
     return [
       hero,

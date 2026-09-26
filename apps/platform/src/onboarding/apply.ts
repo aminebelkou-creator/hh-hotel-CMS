@@ -29,7 +29,7 @@ export function blockData(b: BlockInput, l: Loc): Record<string, unknown> {
   const prov = { origin: 'human', sourceFact: 'onboarding' }
   switch (b.blockType) {
     case 'hero':
-      return { blockType: 'hero', heading: v(b.heading, l), subheading: v(b.subheading, l), imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l), ctaLabel: v(b.cta?.label, l), ctaHref: b.cta?.href, rating: b.rating ?? 'none', bookingBar: b.bookingBar ?? false, provenance: prov }
+      return { blockType: 'hero', heading: v(b.heading, l), subheading: v(b.subheading, l), imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l), ctaLabel: v(b.cta?.label, l), ctaHref: b.cta?.href, rating: b.rating ?? 'none', bookingBar: b.bookingBar ?? false, videoUrl: b.video?.src, videoMobileUrl: b.video?.mobileSrc, provenance: prov }
     case 'textImage':
       return { blockType: 'textImage', eyebrow: v(b.eyebrow, l), heading: v(b.heading, l), body: v(b.body, l), imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l), imagePosition: b.imagePosition ?? 'right', points: (b.points ?? []).map((t) => ({ text: v(t, l) })), linkLabel: v(b.link?.label, l), linkHref: b.link?.href, provenance: prov }
     case 'features':
@@ -244,6 +244,25 @@ export async function applyBlog(payload: Payload, content: SiteContent) {
   return { tenantId, siteId, posts: (content.posts ?? []).length, blogPages: blogPages.length, homeNewsAdded: home }
 }
 
+/**
+ * The home hero's background video alone: sets videoUrl/videoMobileUrl (not localized) on the
+ * live home page's first hero, every other field, block and edit left as it is.
+ */
+export async function applyHeroVideo(payload: Payload, content: SiteContent) {
+  const { tenantId, siteId, locales } = await siteOf(payload, content)
+  const hero = content.pages.find((p) => p.slug === 'home')?.blocks.find((b) => b.blockType === 'hero') as Extract<BlockInput, { blockType: 'hero' }> | undefined
+  const home = (await payload.find({ collection: 'pages', where: { and: [{ site: { equals: siteId } }, { tenant: { equals: tenantId } }, { slug: { equals: 'home' } }] }, limit: 1, overrideAccess: true, depth: 0 })).docs[0]
+  if (!hero || !home) return { tenantId, siteId, updated: false }
+  const first = locales[0]
+  const stored = (await payload.findByID({ collection: 'pages', id: home.id, locale: first, fallbackLocale: false, depth: 0, overrideAccess: true, draft: false })) as { blocks?: Record<string, unknown>[] }
+  const blocks = stored.blocks ?? []
+  const i = blocks.findIndex((b) => b.blockType === 'hero')
+  if (i < 0) return { tenantId, siteId, updated: false }
+  blocks[i] = { ...blocks[i], videoUrl: hero.video?.src ?? null, videoMobileUrl: hero.video?.mobileSrc ?? null }
+  await payload.update({ collection: 'pages', id: home.id, locale: first, data: { blocks, _status: 'published' } as never, overrideAccess: true, depth: 0, context: { generation: true } })
+  return { tenantId, siteId, updated: true, video: hero.video?.src ?? null }
+}
+
 /** The reviews alone: the hotel's reviews and the home page's reviews block. */
 export async function applyReviewsOnly(payload: Payload, content: SiteContent) {
   const { tenantId, siteId, locales } = await siteOf(payload, content)
@@ -318,7 +337,7 @@ if (isMain) {
     if (!content) throw new Error(`Usage: apply.ts <${Object.keys(SITES).join('|')}> [--publish]`)
     const payload = await getPayload({ config })
     const t0 = Date.now()
-    const r = process.argv.includes('--only=posts') ? await applyBlog(payload, content) : process.argv.includes('--only=reviews') ? await applyReviewsOnly(payload, content) : await applySite(payload, content)
+    const r = process.argv.includes('--only=posts') ? await applyBlog(payload, content) : process.argv.includes('--only=reviews') ? await applyReviewsOnly(payload, content) : process.argv.includes('--only=hero-video') ? await applyHeroVideo(payload, content) : await applySite(payload, content)
     console.log(`applied ${slug}: ${JSON.stringify(r)} in ${Date.now() - t0} ms`)
     if (process.argv.includes('--publish')) {
       const seq = await nextPublishSeq(payload, r.tenantId, r.siteId)

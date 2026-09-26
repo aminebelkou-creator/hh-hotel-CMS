@@ -40,6 +40,8 @@ const LABELS = {
     readReview: 'Lire l’avis sur {source}',
     ratedOutOf: 'Note : {n} sur {max}',
     directReview: 'Message d’un client',
+    pauseVideo: 'Mettre la vidéo en pause',
+    playVideo: 'Lire la vidéo',
   },
   en: {
     menu: 'Menu',
@@ -82,6 +84,8 @@ const LABELS = {
     readReview: 'Read the review on {source}',
     ratedOutOf: 'Rated {n} out of {max}',
     directReview: 'From a guest’s message',
+    pauseVideo: 'Pause the video',
+    playVideo: 'Play the video',
   },
 } as const
 export type Labels = Record<keyof (typeof LABELS)['en'], string>

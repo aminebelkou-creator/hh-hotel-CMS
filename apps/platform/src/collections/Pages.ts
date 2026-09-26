@@ -42,6 +42,13 @@ export const coreBlocks: Block[] = [
         defaultValue: false,
         admin: { description: 'Arrival, departure and guests fields that open the site’s Book link with those dates. No availability or prices: the platform runs no booking logic.' },
       },
+      {
+        type: 'row',
+        fields: [
+          { name: 'videoUrl', type: 'text', admin: { description: 'Optional silent background video (MP4, landscape) over the photo. The photo stays the first image, and the only one with reduced motion or data saver.' } },
+          { name: 'videoMobileUrl', type: 'text', admin: { description: 'Optional portrait cut for phones (MP4, 9:16)' } },
+        ],
+      },
       provenance,
     ],
   },

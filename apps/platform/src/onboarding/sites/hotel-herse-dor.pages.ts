@@ -27,6 +27,10 @@ const home: PageInput = {
       // Stars from the confirmed classification fact; the bar opens the site's Book link with the dates (no booking logic).
       rating: 'classification',
       bookingBar: true,
+      // Owner's choice (26 Sep): a free stock clip of Paris over the lounge photo. The Seine and the
+      // Conciergerie (Île de la Cité, ~20 min on foot), not another hotel's rooms. Pexels licence:
+      // free commercial use, no attribution required (credited in public/stock/paris/SOURCES.md).
+      video: { src: '/stock/paris/seine-conciergerie-1280.mp4', mobileSrc: '/stock/paris/seine-conciergerie-540x960.mp4' },
     },
     {
       blockType: 'quote',

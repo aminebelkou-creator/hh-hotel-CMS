@@ -430,6 +430,14 @@ export interface Page {
              */
             bookingBar?: boolean | null;
             /**
+             * Optional silent background video (MP4, landscape) over the photo. The photo stays the first image, and the only one with reduced motion or data saver.
+             */
+            videoUrl?: string | null;
+            /**
+             * Optional portrait cut for phones (MP4, 9:16)
+             */
+            videoMobileUrl?: string | null;
+            /**
              * Who last shaped this content. Regeneration never overwrites human edits.
              */
             provenance?: {
@@ -2014,6 +2022,8 @@ export interface PagesSelect<T extends boolean = true> {
               ctaHref?: T;
               rating?: T;
               bookingBar?: T;
+              videoUrl?: T;
+              videoMobileUrl?: T;
               provenance?:
                 | T
                 | {

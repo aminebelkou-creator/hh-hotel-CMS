@@ -3,7 +3,7 @@ export type L = { fr: string; en: string }
 export type Img = { url: string; alt: L }
 
 export type BlockInput =
-  | { blockType: 'hero'; heading: L; subheading?: L; image?: Img; cta?: { label: L; href: string }; rating?: 'none' | 'classification'; bookingBar?: boolean }
+  | { blockType: 'hero'; heading: L; subheading?: L; image?: Img; cta?: { label: L; href: string }; rating?: 'none' | 'classification'; bookingBar?: boolean; video?: { src: string; mobileSrc?: string } }
   | { blockType: 'textImage'; eyebrow?: L; heading?: L; body: L; image?: Img; imagePosition?: 'left' | 'right'; points?: L[]; link?: { label: L; href: string } }
   | { blockType: 'features'; heading?: L; intro?: L; items: { icon?: string; title: L; text?: L }[] }
   | { blockType: 'banners'; eyebrow?: L; heading?: L; items: { image: Img; title: L; href?: string }[] }

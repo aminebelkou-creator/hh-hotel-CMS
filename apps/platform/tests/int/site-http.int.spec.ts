@@ -206,6 +206,20 @@ describe('public hotel site', () => {
     expect(rooms).not.toContain('hh-booking-bar') // only where the hotel switched it on
   })
 
+  it('hero video: a silent loop over the photo, loaded only after the page (no src in the HTML), stock file served on every host', async (ctx) => {
+    if (!reachable) ctx.skip()
+    const home = await (await fetch(`${BASE}/s/${A.slug}`)).text()
+    const hero = home.slice(home.indexOf('<section class="hh-hero hh-hero--image">'), home.indexOf('</section>', home.indexOf('<section class="hh-hero hh-hero--image">')))
+    expect(hero).toMatch(/<img [^>]*alt="The lounge"/) // the photo stays the first paint
+    expect(hero).toMatch(/<video class="hh-hero-video" muted="" loop="" playsInline="" preload="none" aria-hidden="true" tabindex="-1"><\/video>/i)
+    expect(hero).not.toMatch(/<video[^>]* src=/)
+    const rooms = await (await fetch(`${BASE}/s/${A.slug}/rooms`)).text()
+    expect(rooms).not.toContain('<video')
+    const file = await fetch(`${BASE}/stock/paris/seine-conciergerie-540x960.mp4`, { headers: { range: 'bytes=0-99' } })
+    expect([200, 206]).toContain(file.status)
+    expect(file.headers.get('content-type')).toContain('video/mp4')
+  })
+
   it('shows guest reviews word for word, in their own language, with source and score; drafts never', async (ctx) => {
     if (!reachable) ctx.skip()
     const home = await (await fetch(`${BASE}/s/${A.slug}`)).text()

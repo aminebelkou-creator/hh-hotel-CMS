@@ -46,8 +46,9 @@ function route(req: NextRequest) {
 export const PUBLIC_CACHE = 'public, max-age=0, s-maxage=10, stale-while-revalidate=60'
 
 export const config = {
-  // Everything except Next's own assets and the public photo route, which are host-neutral.
-  matcher: ['/((?!_next/|media/|favicon\\.ico).*)'],
+  // Everything except Next's own assets, the public photo route and the platform's stock media
+  // (public/stock, e.g. hero videos), which are host-neutral.
+  matcher: ['/((?!_next/|media/|stock/|favicon\\.ico).*)'],
 }
 
 /**
