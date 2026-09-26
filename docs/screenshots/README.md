@@ -24,6 +24,7 @@ Taken on the **public platform** (https://hh-platform.edgeone.dev, release r8, c
 | Guest reviews on the home page (r14: three real Google reviews) | [desktop](2026-09-25/reviews-desktop.jpg), [phone](2026-09-25/reviews-mobile.jpg), [English page](2026-09-25/reviews-desktop-en.jpg) |
 | Hero with the booking bar, full width on phones (r14) | [desktop](2026-09-25/hero-desktop.jpg), [phone](2026-09-25/hero-mobile.jpg) |
 | Hero video (26 Sep, local build): the Seine and the Conciergerie over the lounge photo, pause button bottom right | [desktop](2026-09-26/hero-video-desktop.jpg), [phone](2026-09-26/hero-video-mobile.jpg) |
+| AI blog drafts (26 Sep, local build): the Blog panel on the site, and the draft post it wrote from the confirmed facts | [panel](2026-09-26/blog-drafts-panel.png), [draft post](2026-09-26/blog-drafts-post.png) |
 | Services (EN) | [site-services-en.jpg](2026-09-25/site-services-en.jpg) |
 | Neighbourhood (FR) | [site-neighbourhood-fr.jpg](2026-09-25/site-neighbourhood-fr.jpg) |
 | Contact (FR) | [site-contact-fr.jpg](2026-09-25/site-contact-fr.jpg) |

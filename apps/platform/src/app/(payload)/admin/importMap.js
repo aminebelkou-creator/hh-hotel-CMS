@@ -3,6 +3,7 @@ import { TenantField as TenantField_1d0591e3cf4f332c83a86da13a0de59a } from '@pa
 import { PublishPanel as PublishPanel_d52ce0a567afd1b39df0fd9d8b267248 } from '../../../admin/PublishPanel'
 import { IngestPanel as IngestPanel_382e05c02dce705ff4ce269284c4b1aa } from '../../../admin/IngestPanel'
 import { BrandPanel as BrandPanel_6b5993fc1a33c018b34e1af6ef0f6b61 } from '../../../admin/BrandPanel'
+import { BlogDraftPanel as BlogDraftPanel_e9f19bdec77a1c28fac55230167e6494 } from '../../../admin/BlogDraftPanel'
 import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -46,6 +47,7 @@ export const importMap = {
   "/admin/PublishPanel#PublishPanel": PublishPanel_d52ce0a567afd1b39df0fd9d8b267248,
   "/admin/IngestPanel#IngestPanel": IngestPanel_382e05c02dce705ff4ce269284c4b1aa,
   "/admin/BrandPanel#BrandPanel": BrandPanel_6b5993fc1a33c018b34e1af6ef0f6b61,
+  "/admin/BlogDraftPanel#BlogDraftPanel": BlogDraftPanel_e9f19bdec77a1c28fac55230167e6494,
   "@payloadcms/plugin-multi-tenant/client#AssignTenantFieldTrigger": AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,

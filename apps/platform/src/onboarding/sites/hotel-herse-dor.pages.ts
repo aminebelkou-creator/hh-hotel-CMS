@@ -245,8 +245,8 @@ const area: PageInput = {
       blockType: 'hero',
       heading: { fr: 'Le Marais, à pied', en: 'The Marais, on foot' },
       subheading: {
-        fr: 'Place des Vosges à 100 m, Bastille à 200 m, Notre-Dame et le Louvre à moins de 20 minutes de marche.',
-        en: 'Place des Vosges 100 m away, Bastille 200 m, Notre-Dame and the Louvre under 20 minutes on foot.',
+        fr: 'Place des Vosges à 100 m, Bastille à 200 m, Notre-Dame à une vingtaine de minutes à pied, le Louvre à une demi-heure.',
+        en: 'Place des Vosges 100 m away, Bastille 200 m, Notre-Dame about 20 minutes on foot, the Louvre about half an hour.',
       },
       image: IMG.view,
     },
@@ -254,8 +254,8 @@ const area: PageInput = {
       blockType: 'textImage',
       heading: { fr: 'Une adresse privilégiée', en: 'An exceptional address' },
       body: {
-        fr: 'Le Marais, quartier historique, culturel mais aussi tendance et festif, doit son charme à la richesse de son architecture et de son histoire. À quelques mètres de la place de la Bastille et de son Opéra, à deux pas de la place des Vosges où Victor Hugo résida seize ans (sa maison se visite gratuitement).\n\nTout près : le musée Carnavalet, le musée Picasso, la rue des Rosiers, les grands magasins de la rue de Rivoli, le Centre Pompidou, l’île de la Cité et l’île Saint-Louis. Valsez au gré de vos envies, sans forcément prendre le métro.',
-        en: 'The Marais, historic and cultural but also lively and fashionable, owes its charm to its architecture and its history. A few metres from Place de la Bastille and its opera house, a short walk from Place des Vosges, where Victor Hugo lived for sixteen years (his house is free to visit).\n\nClose by: the Carnavalet and Picasso museums, rue des Rosiers, the shops of rue de Rivoli, the Centre Pompidou, Île de la Cité and Île Saint-Louis. Wander wherever you like, often without taking the metro.',
+        fr: 'Le Marais, quartier historique, culturel mais aussi tendance et festif, doit son charme à la richesse de son architecture et de son histoire. À quelques mètres de la place de la Bastille et de son Opéra, à deux pas de la place des Vosges où Victor Hugo résida seize ans (sa maison se visite ; l’entrée est habituellement gratuite, payante pendant certaines expositions).\n\nTout près : le musée Carnavalet, le musée Picasso, la rue des Rosiers, les grands magasins de la rue de Rivoli, le Centre Pompidou, l’île de la Cité et l’île Saint-Louis. Valsez au gré de vos envies, sans forcément prendre le métro.',
+        en: 'The Marais, historic and cultural but also lively and fashionable, owes its charm to its architecture and its history. A few metres from Place de la Bastille and its opera house, a short walk from Place des Vosges, where Victor Hugo lived for sixteen years (his house is open to visitors; usually free, charged during some exhibitions).\n\nClose by: the Carnavalet and Picasso museums, rue des Rosiers, the shops of rue de Rivoli, the Centre Pompidou, Île de la Cité and Île Saint-Louis. Wander wherever you like, often without taking the metro.',
       },
       image: IMG.patio,
       imagePosition: 'left',

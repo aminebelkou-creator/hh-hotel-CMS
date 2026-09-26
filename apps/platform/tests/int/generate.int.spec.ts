@@ -11,6 +11,7 @@ import { SEED_PASSWORD, tenantEmail, tenantSlug } from '@/seed/constants'
 import { generateSite, hasUnbackedNumbers, mergeBlocks } from '@/generate/generate'
 import { defaultCopy, slugify } from '@/generate/copy'
 import { translateSite } from '@/generate/translate'
+import { draftFromFacts, suggestPost } from '@/generate/post-drafts'
 import { setAiForTests } from '@/ai/provider'
 
 const BASE = (process.env.PLATFORM_URL || 'http://localhost:3000').replace(/\/+$/, '')
@@ -62,6 +63,7 @@ const seedFacts = async (t: T) => {
 }
 const cleanup = async (t: T) => {
   await payload.delete({ collection: 'facts', where: { and: [{ tenant: { equals: t.tenantId } }, { decisionNote: { equals: TAG } }] }, overrideAccess: true })
+  await payload.delete({ collection: 'posts', where: { and: [{ tenant: { equals: t.tenantId } }, { 'provenance.sourceFact': { like: 'gen:post:' } }] }, overrideAccess: true })
   await payload.delete({ collection: 'rooms', where: { and: [{ tenant: { equals: t.tenantId } }, { slug: { in: ['chambre-double', 'suite-familiale'] } }] }, overrideAccess: true })
   await payload.delete({ collection: 'pages', where: { and: [{ tenant: { equals: t.tenantId } }, { slug: { in: ['services', 'legal-notice', 'privacy', 'house-rules-and-terms'] } }] }, overrideAccess: true })
   // Seeded home/rooms/contact pages: strip the generated slots we added, keep the seed blocks.
@@ -252,5 +254,71 @@ describe('translateSite', () => {
     await expect(translateSite(payload, { tenantId: A.tenantId, siteId: A.siteId, to: 'de', by: 'test' })).rejects.toThrow(/not enabled/)
     await expect(translateSite(payload, { tenantId: A.tenantId, siteId: A.siteId, to: 'en', by: 'test' })).rejects.toThrow(/same/)
     setAiForTests(undefined)
+  })
+})
+
+describe('suggestPost (AI blog drafts)', () => {
+  it('builds a draft from facts only, and refuses a topic the facts cannot carry', () => {
+    const f = new Map([['address', ['1 rue X, 75001 Paris, FR']], ['policy.checkin', ['15:00']], ['amenity', ['24h-reception']]])
+    const d = draftFromFacts('practical', f, 'en', 'Hotel Test')
+    expect(d?.title).toBe('Planning your arrival at Hotel Test')
+    expect(d?.body).toContain('Rooms ready from 15:00')
+    expect(d?.body).toContain('Reception open 24 hours')
+    expect(d?.body).not.toContain('Check-out') // no checkout fact → no line
+    expect(draftFromFacts('practical', f, 'fr', 'Hôtel Test')?.title).toBe('Préparer votre arrivée à l’Hôtel Test')
+    expect(draftFromFacts('practical', f, 'fr', 'Maison Test')?.title).toBe('Préparer votre arrivée à Maison Test')
+    expect(draftFromFacts('breakfast', f, 'en', 'Hotel Test')).toBeNull()
+    expect(draftFromFacts('rooms', f, 'fr', 'Hôtel Test')).toBeNull()
+  })
+
+  it('creates a DRAFT post marked generated, never published', async () => {
+    setAiForTests(undefined)
+    const r = await suggestPost(payload, { tenantId: A.tenantId, siteId: A.siteId, topic: 'rooms', by: 'test' })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.model).toBeNull()
+    const post = await payload.findByID({ collection: 'posts', id: r.postId, depth: 0, overrideAccess: true })
+    expect(post.status).toBe('draft')
+    expect(Number(typeof post.tenant === 'object' ? post.tenant?.id : post.tenant)).toBe(A.tenantId)
+    expect((post.provenance as { origin?: string; sourceFact?: string }).origin).toBe('generated')
+    expect((post.provenance as { sourceFact?: string }).sourceFact).toBe('gen:post:rooms')
+    expect(post.body).toContain('Chambre Double')
+    expect(post.body).toContain('18 m²')
+    expect(post.body).not.toContain('Helipad')
+    // A second suggestion on the same topic gets its own address.
+    const again = await suggestPost(payload, { tenantId: A.tenantId, siteId: A.siteId, topic: 'rooms', by: 'test' })
+    expect(again.ok && again.slug).not.toBe(r.slug)
+  })
+
+  it('says so when the facts are too thin, and writes nothing', async () => {
+    const before = await payload.count({ collection: 'posts', where: { tenant: { equals: A.tenantId } }, overrideAccess: true })
+    const r = await suggestPost(payload, { tenantId: A.tenantId, siteId: A.siteId, topic: 'breakfast', by: 'test' })
+    expect(r.ok).toBe(false)
+    const after = await payload.count({ collection: 'posts', where: { tenant: { equals: A.tenantId } }, overrideAccess: true })
+    expect(after.totalDocs).toBe(before.totalDocs)
+  })
+
+  it('keeps the plain draft when the model adds a number no fact backs', async () => {
+    setAiForTests({ name: 'openai', available: true, model: 'scripted', complete: async () => ({ title: 'Arrive in style', excerpt: 'Only 200 m from the Louvre.', body: 'Check-in from 15:00.' }) })
+    const r = await suggestPost(payload, { tenantId: A.tenantId, siteId: A.siteId, topic: 'practical', by: 'test' })
+    setAiForTests(undefined)
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.model).toBe('scripted')
+    const post = await payload.findByID({ collection: 'posts', id: r.postId, depth: 0, overrideAccess: true })
+    expect(post.title).toBe('Arrive in style')
+    expect(post.excerpt).not.toContain('200 m')
+  })
+
+  it('is bound to the tenant, and over HTTP only the owner may ask', async (ctx) => {
+    await expect(suggestPost(payload, { tenantId: A.tenantId, siteId: B.siteId, topic: 'practical', by: 'test' })).rejects.toThrow(/not found in tenant/)
+    if (!reachable) ctx.skip()
+    const cross = await fetch(`${BASE}/api/sites/${A.siteId}/suggest-post`, { method: 'POST', headers: { ...auth(B), 'content-type': 'application/json' }, body: JSON.stringify({ topic: 'practical' }) })
+    expect(cross.status).toBe(404)
+    const bad = await fetch(`${BASE}/api/sites/${A.siteId}/suggest-post`, { method: 'POST', headers: { ...auth(A), 'content-type': 'application/json' }, body: JSON.stringify({ topic: 'nonsense' }) })
+    expect(bad.status).toBe(400)
+    const own = await fetch(`${BASE}/api/sites/${A.siteId}/suggest-post`, { method: 'POST', headers: { ...auth(A), 'content-type': 'application/json' }, body: JSON.stringify({ topic: 'amenities' }) })
+    expect(own.status).toBe(200)
+    expect(((await own.json()) as { ok: boolean }).ok).toBe(true)
   })
 })

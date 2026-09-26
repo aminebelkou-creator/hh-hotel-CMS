@@ -70,6 +70,10 @@
       "reason": "Translation, run after src/generate/endpoints.ts has checked the caller's access to the site; every query filters on the explicit tenantId, writes drafts, never overwrites a person's text. Proven by tests/int/generate.int.spec.ts."
     },
     {
+      "file": "src/generate/post-drafts.ts",
+      "reason": "Blog draft suggestion, run after src/generate/endpoints.ts has checked the caller's access to the site; every query filters on the explicit tenantId and site, it only creates DRAFT posts from confirmed facts and never publishes. Proven by tests/int/generate.int.spec.ts."
+    },
+    {
       "file": "src/design/propose-brand.ts",
       "reason": "Brand proposal and apply, run after src/design/brand-endpoints.ts has checked the caller's access to the site; every query filters on the explicit tenantId; apply runs the same contrast gates as a hand-picked brand."
     },
@@ -88,6 +92,10 @@
     {
       "file": "src/collections/AuditLog.ts",
       "reason": "Action-log hooks write one row per change under the changed document's own tenant; the row is never reachable to a user's write, and content access was already checked by the operation that fired the hook."
+    },
+    {
+      "file": "src/onboarding/replace-text.ts",
+      "reason": "Engineer-run text correction on a live site (exact substrings, one locale, no fallback), never reachable from a request. The tenant comes from the site and is named on every query."
     }
   ]
 }

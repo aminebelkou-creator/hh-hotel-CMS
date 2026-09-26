@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated, superAdminFieldOnly } from '../access'
 import { publishEndpoint, rollbackEndpoint } from '../releases/endpoints'
 import { ingestEndpoint } from '../ingest/endpoints'
-import { generateEndpoint, translateEndpoint } from '../generate/endpoints'
+import { generateEndpoint, suggestPostEndpoint, translateEndpoint } from '../generate/endpoints'
 import { applyBrandEndpoint, proposeBrandEndpoint } from '../design/brand-endpoints'
 import { checkSiteEndpoint, reportEndpoint, sendReportEndpoint } from '../health/endpoints'
 import { isHex } from '../design/color'
@@ -25,7 +25,7 @@ export const Sites: CollectionConfig = {
   slug: 'sites',
   admin: { useAsTitle: 'name' },
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
-  endpoints: [publishEndpoint, rollbackEndpoint, ingestEndpoint, generateEndpoint, translateEndpoint, proposeBrandEndpoint, applyBrandEndpoint, checkSiteEndpoint, reportEndpoint, sendReportEndpoint],
+  endpoints: [publishEndpoint, rollbackEndpoint, ingestEndpoint, generateEndpoint, translateEndpoint, suggestPostEndpoint, proposeBrandEndpoint, applyBrandEndpoint, checkSiteEndpoint, reportEndpoint, sendReportEndpoint],
   fields: [
     {
       name: 'publishPanel',
@@ -41,6 +41,11 @@ export const Sites: CollectionConfig = {
       name: 'brandPanel',
       type: 'ui',
       admin: { position: 'sidebar', components: { Field: '/admin/BrandPanel#BrandPanel' } },
+    },
+    {
+      name: 'blogDraftPanel',
+      type: 'ui',
+      admin: { position: 'sidebar', components: { Field: '/admin/BlogDraftPanel#BlogDraftPanel' } },
     },
     // A suggested look (template + accent) waiting for approval; written by src/design/propose-brand.ts.
     { name: 'brandProposal', type: 'json', admin: { hidden: true } },

@@ -1,0 +1,26 @@
+[
+  {
+    "page": "quartier",
+    "locale": "fr",
+    "from": "Notre-Dame et le Louvre à moins de 20 minutes de marche.",
+    "to": "Notre-Dame à une vingtaine de minutes à pied, le Louvre à une demi-heure."
+  },
+  {
+    "page": "quartier",
+    "locale": "en",
+    "from": "Notre-Dame and the Louvre under 20 minutes on foot.",
+    "to": "Notre-Dame about 20 minutes on foot, the Louvre about half an hour."
+  },
+  {
+    "page": "quartier",
+    "locale": "fr",
+    "from": "(sa maison se visite gratuitement)",
+    "to": "(sa maison se visite ; l’entrée est habituellement gratuite, payante pendant certaines expositions)"
+  },
+  {
+    "page": "quartier",
+    "locale": "en",
+    "from": "(his house is free to visit)",
+    "to": "(his house is open to visitors; usually free, charged during some exhibitions)"
+  }
+]

@@ -1,6 +1,7 @@
 import type { Endpoint, PayloadRequest } from 'payload'
 import { generateSite } from './generate'
 import { translateSite, type Locale } from './translate'
+import { POST_TOPICS, suggestPost, type PostTopic } from './post-drafts'
 
 const siteForCaller = async (req: PayloadRequest) => {
   if (!req.user) return { ok: false as const, res: Response.json({ error: 'Unauthorized' }, { status: 401 }) }
@@ -29,6 +30,27 @@ export const translateEndpoint: Endpoint = {
       return Response.json(res)
     } catch (e) {
       return Response.json({ error: (e as Error).message }, { status: 422 })
+    }
+  },
+}
+
+/**
+ * POST /api/sites/:id/suggest-post { topic } → a DRAFT blog post written from the confirmed facts
+ * (and polished by the model when one is configured). Never published: the owner decides.
+ */
+export const suggestPostEndpoint: Endpoint = {
+  path: '/:id/suggest-post',
+  method: 'post',
+  handler: async (req: PayloadRequest) => {
+    const s = await siteForCaller(req)
+    if (!s.ok) return s.res
+    const body = (await req.json?.().catch(() => ({}))) as { topic?: string }
+    if (!body.topic || !(POST_TOPICS as readonly string[]).includes(body.topic)) return Response.json({ error: `topic must be one of ${POST_TOPICS.join(', ')}` }, { status: 400 })
+    try {
+      const res = await suggestPost(req.payload, { tenantId: s.tenantId, siteId: Number(s.site.id), topic: body.topic as PostTopic, by: s.by })
+      return Response.json(res, { status: res.ok ? 200 : 422 })
+    } catch (e) {
+      return Response.json({ error: (e as Error).message }, { status: 500 })
     }
   },
 }
