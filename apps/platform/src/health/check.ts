@@ -11,6 +11,7 @@ import type { Payload } from 'payload'
 import { loadLiveRelease } from '../releases/resolve'
 import type { SiteSnapshot } from '../releases/snapshot'
 import { ISSUE_KINDS } from './kinds'
+import { bookHref } from '../site/routing'
 
 export type Finding = {
   kind: (typeof ISSUE_KINDS)[number]
@@ -76,6 +77,12 @@ export async function findIssues(payload: Payload, args: { tenantId: number; sit
   const seen = new Set<string>()
   for (const l of links) {
     if (/^(tel:|mailto:|#)/i.test(l.href)) continue
+    // "book" is the hotel's booking engine (Website settings), not a page.
+    if (l.href === 'book') {
+      if (!seen.has('book') && !bookHref(snap, d)) findings.push({ kind: 'broken-link', severity: 'error', title: 'The Book buttons have nowhere to go', detail: 'Add the booking engine address in Website settings → Booking engine, or add a contact page.', fingerprint: 'book:none' })
+      seen.add('book')
+      continue
+    }
     if (/^https?:\/\//i.test(l.href)) {
       if (args.fetchLinks === false || seen.has(l.href)) continue
       seen.add(l.href)

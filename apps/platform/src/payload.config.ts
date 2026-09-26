@@ -32,6 +32,7 @@ import { isSuperAdmin, superAdminFieldOnly } from './access'
 import { touchPageSeo } from './jobs/touchPageSeo'
 import { publishSiteTask } from './jobs/publishSite'
 import { packBlocks, packCollections, packTenantCollections } from './packs'
+import { ADMIN_COPY, GROUPS, withAdminCopy } from './admin/copy'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -41,7 +42,11 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     // Phone photos are shrunk in the browser before upload (functions accept 6 MB bodies).
+    // The admin in the hotel's words: our logo, a clear tab title, grouped menu (src/admin/copy.ts).
+    meta: { titleSuffix: ' · Hotel website' },
     components: {
+      graphics: { Logo: '/admin/Brand#Logo', Icon: '/admin/Brand#Icon' },
+      beforeLogin: ['/admin/Brand#LoginIntro'],
       providers: ['/admin/UploadShrinker#UploadShrinker'],
       // Fact review screen (Phase 3): /admin/review/<siteId>.
       views: {
@@ -54,7 +59,7 @@ export default buildConfig({
   // A clear error instead of the edge's 413 for anything that still exceeds the body limit.
   upload: { limits: { fileSize: 5 * 1024 * 1024 } },
   // Content collections carry the action log hooks (src/collections/AuditLog.ts).
-  collections: [Users, Tenants, ...[Sites, makePages(packBlocks), Posts, Reviews, Media, Domains, Releases, Facts, Crawls, Issues, AuditLog, ...packCollections].map(withAudit)],
+  collections: [Users, Tenants, ...[Sites, makePages(packBlocks), Posts, Reviews, Media, Facts, ...packCollections, Issues, Releases, AuditLog, Domains, Crawls].map(withAudit)].map(withAdminCopy),
   // Outgoing email (contact forms) through SMTP when configured (EU provider, docs/12 §7);
   // otherwise Payload logs the message. Credentials live in environment variables only.
   email: process.env.SMTP_HOST
@@ -108,7 +113,8 @@ export default buildConfig({
     redirectsPlugin({
       collections: ['pages'],
       overrides: {
-        admin: { group: 'Website' },
+        labels: { singular: ADMIN_COPY.redirects.singular, plural: ADMIN_COPY.redirects.plural },
+        admin: { group: ADMIN_COPY.redirects.group, description: ADMIN_COPY.redirects.description },
         fields: ({ defaultFields }) => [
           { name: 'site', type: 'relationship', relationTo: 'sites', required: true, index: true },
           ...defaultFields,
@@ -118,9 +124,10 @@ export default buildConfig({
     // Contact forms: definitions and submissions per tenant; email through the adapter above.
     formBuilderPlugin({
       fields: { payment: false, state: false, country: false },
-      formOverrides: { admin: { group: 'Website' } },
+      formOverrides: { labels: { singular: ADMIN_COPY.forms.singular, plural: ADMIN_COPY.forms.plural }, admin: { group: ADMIN_COPY.forms.group, description: ADMIN_COPY.forms.description } },
       formSubmissionOverrides: {
-        admin: { group: 'Website' },
+        labels: { singular: ADMIN_COPY['form-submissions'].singular, plural: ADMIN_COPY['form-submissions'].plural },
+        admin: { group: ADMIN_COPY['form-submissions'].group, description: ADMIN_COPY['form-submissions'].description },
         // Visitors submit through POST /api/contact (src/forms), never through this collection's REST.
         access: { create: ({ req }) => Boolean(req.user) },
       },
@@ -162,6 +169,12 @@ export default buildConfig({
     }),
     // Outbound MCP: intent-shaped exposure, scoped per API key. Deletes never exposed.
     mcpPlugin({
+      // API keys for AI clients: our team's tool, out of the hotels' menu.
+      overrideApiKeyCollection: (c) => ({
+        ...c,
+        labels: { singular: 'API key', plural: 'API keys' },
+        admin: { ...(c.admin ?? {}), group: GROUPS.platform, hidden: ({ user }) => !isSuperAdmin(user as never) },
+      }),
       collections: {
         pages: {
           enabled: { find: true, create: true, update: true, delete: false },

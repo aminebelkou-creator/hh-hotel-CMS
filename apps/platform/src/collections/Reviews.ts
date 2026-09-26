@@ -21,6 +21,7 @@ export const Reviews: CollectionConfig = {
   defaultSort: 'order',
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
   fields: [
+    { name: 'reviewHelp', type: 'ui', admin: { components: { Field: '/admin/Help#ReviewHelp' } } },
     {
       name: 'text',
       type: 'textarea',

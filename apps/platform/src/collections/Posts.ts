@@ -33,6 +33,7 @@ export const Posts: CollectionConfig = {
   access: { read: authenticated, create: authenticated, update: authenticated, delete: authenticated },
   hooks: { beforeChange: [markHumanEdits] },
   fields: [
+    { name: 'postHelp', type: 'ui', admin: { components: { Field: '/admin/Help#PostHelp' } } },
     { name: 'title', type: 'text', required: true, localized: true },
     {
       name: 'slug',

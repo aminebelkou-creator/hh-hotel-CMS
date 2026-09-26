@@ -20,6 +20,7 @@ const link = (prefix: string): Field[] => [
 export const coreBlocks: Block[] = [
   {
     slug: 'hero',
+    labels: { singular: 'Big photo at the top (hero)', plural: 'Big photos at the top' },
     fields: [
       { name: 'heading', type: 'text', required: true, localized: true },
       { name: 'subheading', type: 'text', localized: true },
@@ -52,10 +53,10 @@ export const coreBlocks: Block[] = [
       provenance,
     ],
   },
-  { slug: 'richText', fields: [{ name: 'content', type: 'richText', localized: true }, provenance] },
+  { slug: 'richText', labels: { singular: 'Formatted text', plural: 'Formatted text' }, fields: [{ name: 'content', type: 'richText', localized: true }, provenance] },
   {
     slug: 'textImage',
-    labels: { singular: 'Text and image', plural: 'Text and image' },
+    labels: { singular: 'Text and photo', plural: 'Text and photo' },
     fields: [
       { name: 'eyebrow', type: 'text', localized: true },
       { name: 'heading', type: 'text', localized: true },
@@ -74,7 +75,7 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'features',
-    labels: { singular: 'Features', plural: 'Features' },
+    labels: { singular: 'List of features (icons)', plural: 'Lists of features' },
     fields: [
       { name: 'heading', type: 'text', localized: true },
       { name: 'intro', type: 'textarea', localized: true },
@@ -92,9 +93,9 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'banners',
+    labels: { singular: 'Photo banners with titles', plural: 'Photo banners' },
     interfaceName: 'BannersBlock',
     graphQL: { singularName: 'BannersBlock' },
-    labels: { singular: 'Banners', plural: 'Banners' },
     // Full-width photo strips with a title (spaces, rooms, moments); the title shows on hover and always on phones.
     fields: [
       { name: 'eyebrow', type: 'text', localized: true },
@@ -114,9 +115,9 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'mediaBand',
+    labels: { singular: 'Wide photo', plural: 'Wide photos' },
     interfaceName: 'MediaBandBlock',
     graphQL: { singularName: 'MediaBandBlock' },
-    labels: { singular: 'Photo band', plural: 'Photo bands' },
     // One full-width photo between sections.
     fields: [
       { name: 'imageUrl', type: 'text', required: true, admin: { description: 'Image URL (https or /media/…)' } },
@@ -126,6 +127,7 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'gallery',
+    labels: { singular: 'Photo gallery', plural: 'Photo galleries' },
     fields: [
       { name: 'heading', type: 'text', localized: true },
       {
@@ -140,6 +142,7 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'quote',
+    labels: { singular: 'Quote', plural: 'Quotes' },
     fields: [
       { name: 'text', type: 'textarea', required: true, localized: true },
       { name: 'author', type: 'text', localized: true },
@@ -147,7 +150,7 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'cta',
-    labels: { singular: 'Call to action', plural: 'Calls to action' },
+    labels: { singular: 'Book band (call to action)', plural: 'Book bands' },
     fields: [
       {
         name: 'variant',
@@ -183,9 +186,9 @@ export const coreBlocks: Block[] = [
   {
     // Blog posts (collection `posts`): the latest few as cards, or every post on the blog page.
     slug: 'news',
+    labels: { singular: 'Latest blog posts', plural: 'Blog posts' },
     interfaceName: 'NewsBlock',
     graphQL: { singularName: 'NewsBlock' },
-    labels: { singular: 'Blog posts', plural: 'Blog posts' },
     fields: [
       { name: 'heading', type: 'text', localized: true },
       { name: 'intro', type: 'textarea', localized: true },
@@ -206,9 +209,9 @@ export const coreBlocks: Block[] = [
   {
     // Guest reviews (collection `reviews`): real words typed in by the hotel, never written by us.
     slug: 'reviews',
+    labels: { singular: 'Guest reviews', plural: 'Guest reviews' },
     interfaceName: 'ReviewsBlock',
     graphQL: { singularName: 'ReviewsBlock' },
-    labels: { singular: 'Guest reviews', plural: 'Guest reviews' },
     fields: [
       { name: 'heading', type: 'text', localized: true },
       { name: 'intro', type: 'textarea', localized: true },
@@ -234,10 +237,10 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'form',
+    labels: { singular: 'Contact form', plural: 'Contact forms' },
     // The GraphQL type would otherwise collide with the forms collection's `Form`.
     interfaceName: 'FormBlock',
     graphQL: { singularName: 'FormBlock' },
-    labels: { singular: 'Form', plural: 'Forms' },
     fields: [
       { name: 'heading', type: 'text', localized: true },
       { name: 'intro', type: 'textarea', localized: true },
@@ -246,7 +249,7 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'contact',
-    labels: { singular: 'Contact details', plural: 'Contact details' },
+    labels: { singular: 'Contact details (phone, email, address)', plural: 'Contact details' },
     admin: { disableBlockName: true },
     fields: [
       { name: 'heading', type: 'text', localized: true },
@@ -256,6 +259,7 @@ export const coreBlocks: Block[] = [
   },
   {
     slug: 'map',
+    labels: { singular: 'Map', plural: 'Maps' },
     fields: [
       { name: 'heading', type: 'text', localized: true },
       { name: 'text', type: 'textarea', localized: true },
@@ -288,26 +292,28 @@ export const makePages = (extraBlocks: Block[] = []): CollectionConfig => ({
       type: 'ui',
       admin: { position: 'sidebar', components: { Field: '/admin/PublishPanel#PublishPanel' } },
     },
-    { name: 'title', type: 'text', required: true, localized: true },
+    { name: 'pageHelp', type: 'ui', admin: { components: { Field: '/admin/Help#PageHelp' } } },
+    { name: 'title', type: 'text', required: true, localized: true, admin: { description: 'The page’s name in the browser tab and search results (unless a search title is set below).' } },
     {
       name: 'slug',
       type: 'text',
       required: true,
       index: true,
-      admin: { description: '"home" is the start page' },
+      label: 'Short name (address)',
+      admin: { description: 'The end of the page’s address, e.g. “chambres” for /chambres. “home” is the start page. Lower-case, no spaces.' },
       validate: (v: unknown) =>
         typeof v === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(v) && !RESERVED_SLUGS.includes(v)
           ? true
           : `Lower-case letters, digits and hyphens; not one of: ${RESERVED_SLUGS.join(', ')}`,
     },
-    { name: 'site', type: 'relationship', relationTo: 'sites', required: true },
+    { name: 'site', type: 'relationship', relationTo: 'sites', required: true, admin: { description: 'The website this page belongs to' } },
     {
       type: 'row',
       fields: [
-        { name: 'navLabel', type: 'text', localized: true, admin: { description: 'Menu label (defaults to the title)' } },
-        { name: 'navOrder', type: 'number', defaultValue: 0 },
-        { name: 'showInNav', type: 'checkbox', defaultValue: true },
-        { name: 'showInFooter', type: 'checkbox', defaultValue: false, admin: { description: 'Legal and practical pages' } },
+        { name: 'navLabel', type: 'text', localized: true, label: 'Menu label', admin: { description: 'Short word in the menu (defaults to the title)' } },
+        { name: 'navOrder', type: 'number', defaultValue: 0, label: 'Position in the menu', admin: { description: 'Smaller numbers come first' } },
+        { name: 'showInNav', type: 'checkbox', defaultValue: true, label: 'Show in the menu' },
+        { name: 'showInFooter', type: 'checkbox', defaultValue: false, label: 'Show in the footer', admin: { description: 'For legal and practical pages' } },
       ],
     },
     {

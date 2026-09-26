@@ -152,7 +152,7 @@ export function FactReview({ siteId }: { siteId: number }) {
                 value={edits[f.id] ?? f.value}
                 onChange={(e) => setEdits({ ...edits, [f.id]: e.target.value })}
                 disabled={f.status === 'rejected'}
-                style={{ flex: '1 1 320px', minWidth: 200, padding: '6px 8px', borderRadius: 4, border: '1px solid var(--theme-elevation-250)', background: 'transparent', color: 'inherit' }}
+                style={{ flex: '1 1 320px', minWidth: 200, padding: '6px 8px', borderRadius: 999, border: '1px solid var(--theme-elevation-250)', background: 'transparent', color: 'inherit' }}
               />
               <span style={{ fontSize: 11, opacity: 0.65, flex: '0 0 auto' }}>
                 {Math.round((f.confidence ?? 0) * 100)}% · {f.method ?? '?'}
@@ -198,15 +198,15 @@ const row = (status: string): React.CSSProperties => ({
   flexWrap: 'wrap',
   padding: '6px 8px',
   marginBottom: 4,
-  borderRadius: 4,
+  borderRadius: 999,
   background: status === 'confirmed' ? 'rgba(31,122,61,.08)' : status === 'rejected' ? 'rgba(180,35,24,.06)' : 'var(--theme-elevation-50)',
   opacity: status === 'rejected' ? 0.7 : 1,
 })
 const btn = (primary: boolean): React.CSSProperties => ({
   padding: '6px 10px',
-  borderRadius: 4,
+  borderRadius: 999,
   border: primary ? 'none' : '1px solid var(--theme-elevation-250)',
-  background: primary ? 'var(--theme-success-500, #1f7a3d)' : 'transparent',
+  background: primary ? 'var(--hh-navy, #16233f)' : 'transparent',
   color: primary ? '#fff' : 'inherit',
   cursor: 'pointer',
   fontSize: 12,

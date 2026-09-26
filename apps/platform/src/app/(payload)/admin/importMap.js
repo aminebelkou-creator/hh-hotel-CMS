@@ -4,7 +4,9 @@ import { PublishPanel as PublishPanel_d52ce0a567afd1b39df0fd9d8b267248 } from '.
 import { IngestPanel as IngestPanel_382e05c02dce705ff4ce269284c4b1aa } from '../../../admin/IngestPanel'
 import { BrandPanel as BrandPanel_6b5993fc1a33c018b34e1af6ef0f6b61 } from '../../../admin/BrandPanel'
 import { BlogDraftPanel as BlogDraftPanel_e9f19bdec77a1c28fac55230167e6494 } from '../../../admin/BlogDraftPanel'
+import { SiteHelp as SiteHelp_4d7d0b3db16f0ddf672b986624f3c86d } from '../../../admin/Help'
 import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
+import { PageHelp as PageHelp_4d7d0b3db16f0ddf672b986624f3c86d } from '../../../admin/Help'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -33,6 +35,12 @@ import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c08
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
+import { PostHelp as PostHelp_4d7d0b3db16f0ddf672b986624f3c86d } from '../../../admin/Help'
+import { ReviewHelp as ReviewHelp_4d7d0b3db16f0ddf672b986624f3c86d } from '../../../admin/Help'
+import { RoomHelp as RoomHelp_4d7d0b3db16f0ddf672b986624f3c86d } from '../../../admin/Help'
+import { Icon as Icon_d4751384a7cf3b09ce46117cb8895da1 } from '../../../admin/Brand'
+import { Logo as Logo_d4751384a7cf3b09ce46117cb8895da1 } from '../../../admin/Brand'
+import { LoginIntro as LoginIntro_d4751384a7cf3b09ce46117cb8895da1 } from '../../../admin/Brand'
 import { TenantSelector as TenantSelector_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { UploadShrinker as UploadShrinker_8277d101d22c0f3d625e04c8f887bebb } from '../../../admin/UploadShrinker'
 import { TenantSelectionProvider as TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
@@ -48,7 +56,9 @@ export const importMap = {
   "/admin/IngestPanel#IngestPanel": IngestPanel_382e05c02dce705ff4ce269284c4b1aa,
   "/admin/BrandPanel#BrandPanel": BrandPanel_6b5993fc1a33c018b34e1af6ef0f6b61,
   "/admin/BlogDraftPanel#BlogDraftPanel": BlogDraftPanel_e9f19bdec77a1c28fac55230167e6494,
+  "/admin/Help#SiteHelp": SiteHelp_4d7d0b3db16f0ddf672b986624f3c86d,
   "@payloadcms/plugin-multi-tenant/client#AssignTenantFieldTrigger": AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a,
+  "/admin/Help#PageHelp": PageHelp_4d7d0b3db16f0ddf672b986624f3c86d,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -77,6 +87,12 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
+  "/admin/Help#PostHelp": PostHelp_4d7d0b3db16f0ddf672b986624f3c86d,
+  "/admin/Help#ReviewHelp": ReviewHelp_4d7d0b3db16f0ddf672b986624f3c86d,
+  "/admin/Help#RoomHelp": RoomHelp_4d7d0b3db16f0ddf672b986624f3c86d,
+  "/admin/Brand#Icon": Icon_d4751384a7cf3b09ce46117cb8895da1,
+  "/admin/Brand#Logo": Logo_d4751384a7cf3b09ce46117cb8895da1,
+  "/admin/Brand#LoginIntro": LoginIntro_d4751384a7cf3b09ce46117cb8895da1,
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelector": TenantSelector_d6d5f193a167989e2ee7d14202901e62,
   "/admin/UploadShrinker#UploadShrinker": UploadShrinker_8277d101d22c0f3d625e04c8f887bebb,
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelectionProvider": TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62,

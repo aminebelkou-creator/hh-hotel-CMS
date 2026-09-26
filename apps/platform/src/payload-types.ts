@@ -75,14 +75,14 @@ export interface Config {
     posts: Post;
     reviews: Review;
     media: Media;
-    domains: Domain;
-    releases: Release;
     facts: Fact;
-    crawls: Crawl;
-    issues: Issue;
-    'audit-log': AuditLog;
     rooms: Room;
     offers: Offer;
+    issues: Issue;
+    releases: Release;
+    'audit-log': AuditLog;
+    domains: Domain;
+    crawls: Crawl;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -102,14 +102,14 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    domains: DomainsSelect<false> | DomainsSelect<true>;
-    releases: ReleasesSelect<false> | ReleasesSelect<true>;
     facts: FactsSelect<false> | FactsSelect<true>;
-    crawls: CrawlsSelect<false> | CrawlsSelect<true>;
-    issues: IssuesSelect<false> | IssuesSelect<true>;
-    'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
     rooms: RoomsSelect<false> | RoomsSelect<true>;
     offers: OffersSelect<false> | OffersSelect<true>;
+    issues: IssuesSelect<false> | IssuesSelect<true>;
+    releases: ReleasesSelect<false> | ReleasesSelect<true>;
+    'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
+    domains: DomainsSelect<false> | DomainsSelect<true>;
+    crawls: CrawlsSelect<false> | CrawlsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -225,6 +225,8 @@ export interface Tenant {
   createdAt: string;
 }
 /**
+ * Name, languages, look and booking engine of your website, and the Publish button (side panel).
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "sites".
  */
@@ -240,25 +242,6 @@ export interface Site {
     | number
     | boolean
     | null;
-  name: string;
-  /**
-   * Platform-wide unique; the public preview lives at /s/<slug>
-   */
-  slug: string;
-  /**
-   * The hotel’s current website, imported into the fact base from the Website panel (Phase 3 ingest).
-   */
-  sourceUrl?: string | null;
-  /**
-   * Public name shown on the site. Backfilled from the tenant name by migration.
-   */
-  brandName?: string | null;
-  /**
-   * IANA time zone for offers, events and opening hours.
-   */
-  timezone?: string | null;
-  enabledLocales?: ('en' | 'fr' | 'de' | 'es' | 'it')[] | null;
-  defaultLocale?: ('en' | 'fr' | 'de' | 'es' | 'it') | null;
   theme?:
     | {
         [k: string]: unknown;
@@ -269,13 +252,37 @@ export interface Site {
     | boolean
     | null;
   /**
+   * How your hotel appears in this admin and in reports.
+   */
+  name: string;
+  /**
+   * Shown in the header, the browser tab and search results. Leave empty to use the hotel name.
+   */
+  brandName?: string | null;
+  /**
+   * A short line under the name, e.g. “3-star hotel · Le Marais, Paris”. One per language: switch the language at the top right.
+   */
+  tagline?: string | null;
+  /**
+   * Optional: the address (https://…) of your logo image. Without it, the name is written in the template’s font.
+   */
+  logoUrl?: string | null;
+  /**
+   * Guests switch language from the header. Each page is written once per language.
+   */
+  enabledLocales?: ('en' | 'fr' | 'de' | 'es' | 'it')[] | null;
+  /**
+   * The language of your main address; the others get /en, /de… in front.
+   */
+  defaultLocale?: ('en' | 'fr' | 'de' | 'es' | 'it') | null;
+  /**
+   * Used to start and end offers at the right time (e.g. Europe/Paris).
+   */
+  timezone?: string | null;
+  /**
    * Maison: Classic and warm: serif headings, cream background, full-width photos. Suits heritage and boutique hotels. · Atelier: Modern and minimal: sans-serif type, white space, square corners, photo beside the headline. Suits design and city hotels. · Soirée: Dark and elegant: night palette, gold accent, centred headlines. Suits luxury and evening-led hotels. · Lumière: Luxurious and bright: ivory pages, a full-screen photo hero with a glass booking bar, navy bands and cards, champagne-gold buttons, large serif headlines. Suits upscale boutique and resort hotels.
    */
   template?: ('maison' | 'atelier' | 'soiree' | 'lumiere') | null;
-  /**
-   * Template upgrades reach canary sites first (customer zero, our demo sites), then everyone. Render-time only: not part of releases.
-   */
-  designChannel?: ('stable' | 'canary') | null;
   /**
    * Optional: leave empty to use the template as designed. Colours as #rrggbb. Button text, links and secondary text are adjusted automatically to stay readable (WCAG AA).
    */
@@ -296,29 +303,39 @@ export interface Site {
      */
     corners?: ('square' | 'soft' | 'round') | null;
   };
-  status?: ('draft' | 'live' | 'suspended') | null;
   /**
-   * Short line under the name, used in the header and search results
-   */
-  tagline?: string | null;
-  /**
-   * Logo image URL (https). Remote until the media pipeline exists
-   */
-  logoUrl?: string | null;
-  /**
-   * The "Book" button in the header. "book" (the booking engine below), a page slug (e.g. contact), a URL, tel: or mailto:. No booking logic runs on the platform
-   */
-  cta?: {
-    label?: string | null;
-    href?: string | null;
-  };
-  /**
-   * The hotel’s own online booking engine. Every link set to "book" (header, hero booking bar, room cards, calls to action) opens it, with the chosen dates when the engine accepts them. Empty: "book" links go to the contact page.
+   * Where guests book online. Every Book button (header, the dates bar on the home page, each room, the Book bands) opens it, with the dates the guest chose when possible. Copy the address your booking engine gives you (or ask its support). Left empty, Book buttons go to your contact page.
    */
   booking?: {
     engine?: ('link' | 'clock-pms') | null;
     url?: string | null;
   };
+  /**
+   * The button at the top right of every page (and at the bottom of the screen on phones).
+   */
+  cta?: {
+    /**
+     * One per language.
+     */
+    label?: string | null;
+    /**
+     * “book” opens your booking engine (above). You can also give a page (contact), a full address, tel:+33… or mailto:…
+     */
+    href?: string | null;
+  };
+  /**
+   * Used in the preview address /s/<short name>. Changing it changes that address.
+   */
+  slug: string;
+  /**
+   * The address the facts were read from (Import the current website, in the side panel).
+   */
+  sourceUrl?: string | null;
+  status?: ('draft' | 'live' | 'suspended') | null;
+  /**
+   * Template upgrades reach canary sites first (customer zero, our demo sites), then everyone. Render-time only: not part of releases.
+   */
+  designChannel?: ('stable' | 'canary') | null;
   /**
    * Set by the release pipeline. Rollback moves this pointer.
    */
@@ -338,6 +355,8 @@ export interface Site {
   createdAt: string;
 }
 /**
+ * Every publish of your website. Undo the last one from Website settings.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "releases".
  */
@@ -387,26 +406,37 @@ export interface Release {
   createdAt: string;
 }
 /**
+ * Each page of your website. Open one to change its text, photos and sections; then publish the site to put the changes online.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
   id: number;
   tenant?: (number | null) | Tenant;
+  /**
+   * The page’s name in the browser tab and search results (unless a search title is set below).
+   */
   title: string;
   /**
-   * "home" is the start page
+   * The end of the page’s address, e.g. “chambres” for /chambres. “home” is the start page. Lower-case, no spaces.
    */
   slug: string;
+  /**
+   * The website this page belongs to
+   */
   site: number | Site;
   /**
-   * Menu label (defaults to the title)
+   * Short word in the menu (defaults to the title)
    */
   navLabel?: string | null;
+  /**
+   * Smaller numbers come first
+   */
   navOrder?: number | null;
   showInNav?: boolean | null;
   /**
-   * Legal and practical pages
+   * For legal and practical pages
    */
   showInFooter?: boolean | null;
   /**
@@ -754,7 +784,7 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * JPEG, PNG or WebP. Large phone photos are shrunk automatically before upload (max 5 MB after shrinking).
+ * Your photos. JPEG, PNG or WebP; large phone photos are made smaller automatically before upload. Describe each photo for guests who cannot see it.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
@@ -942,6 +972,8 @@ export interface FormBlock {
   blockType: 'form';
 }
 /**
+ * The forms guests fill in on your website (fields, confirmation message, who receives them).
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "forms".
  */
@@ -1165,7 +1197,7 @@ export interface PoliciesBlock {
   blockType: 'policies';
 }
 /**
- * Blog articles. A post shows on the site once it is Published and the site is published again.
+ * News and tips for your guests. A post shows on the site once it is Published and the site is published again.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
@@ -1215,7 +1247,7 @@ export interface Post {
   createdAt: string;
 }
 /**
- * Real reviews only, copied word for word from the guest (Google, Booking, TripAdvisor, a letter…). Shown once Published and the site is published again.
+ * Real reviews only, copied word for word from the guest (Google, Booking, Tripadvisor, a letter…). Shown once Published and the site is published again.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "reviews".
@@ -1266,32 +1298,7 @@ export interface Review {
   createdAt: string;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "domains".
- */
-export interface Domain {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  /**
-   * The hotel adds a CNAME for this name at its DNS provider, pointing at the platform
-   */
-  hostname: string;
-  site: number | Site;
-  primary?: boolean | null;
-  /**
-   * Set by the platform team once the DNS points here. Only verified or active domains are served
-   */
-  status?: ('pending' | 'verified' | 'active' | 'error') | null;
-  certificate?: ('none' | 'requested' | 'issued' | 'expiring' | 'error') | null;
-  /**
-   * Set by the release pipeline adapter, never by the app
-   */
-  provider?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * The fact base. Confirm or reject each fact; only confirmed facts feed generation and releases.
+ * Everything the website states about your hotel (address, times, services…). Only confirmed facts are used. The quickest way to check them: Review facts, on the home screen.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "facts".
@@ -1341,7 +1348,198 @@ export interface Fact {
   createdAt: string;
 }
 /**
- * Imports from the hotel’s current website. Start one from the site’s Website panel.
+ * One entry per category of room (not per room number): description, photos, equipment. Prices and availability stay in your booking engine.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rooms".
+ */
+export interface Room {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
+  slug: string;
+  /**
+   * e.g. Superior, Comfort
+   */
+  category?: string | null;
+  order?: number | null;
+  /**
+   * One or two sentences for the room card
+   */
+  summary?: string | null;
+  description?: string | null;
+  sizeSqm?: number | null;
+  maxOccupancy?: number | null;
+  /**
+   * e.g. Double bed or two singles
+   */
+  bed?: string | null;
+  view?: string | null;
+  features?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  images?:
+    | {
+        url: string;
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Packages and promotions, shown on the website between their start and end dates.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offers".
+ */
+export interface Offer {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  slug: string;
+  active?: boolean | null;
+  order?: number | null;
+  /**
+   * Short badge, e.g. "-10 %" or "Breakfast included"
+   */
+  highlight?: string | null;
+  summary: string;
+  /**
+   * Small print shown under the offer
+   */
+  conditions?: string | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  ctaLabel?: string | null;
+  /**
+   * A page slug (e.g. contact), a URL, tel: or mailto:
+   */
+  ctaHref?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * What the nightly checks noticed on your live website, with a one-click fix when there is one.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "issues".
+ */
+export interface Issue {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  site: number | Site;
+  kind:
+    | 'broken-link'
+    | 'missing-alt'
+    | 'missing-meta'
+    | 'stale-content'
+    | 'expired-offer'
+    | 'missing-fact'
+    | 'uptime'
+    | 'performance'
+    | 'accessibility'
+    | 'unanswered';
+  severity: 'info' | 'warning' | 'error';
+  title: string;
+  detail?: string | null;
+  /**
+   * Where it was seen
+   */
+  url?: string | null;
+  status: 'open' | 'applied' | 'resolved' | 'dismissed';
+  fingerprint: string;
+  /**
+   * What "Apply" would do
+   */
+  fixLabel?: string | null;
+  fix?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  source?: string | null;
+  detectedAt?: string | null;
+  resolvedAt?: string | null;
+  appliedBy?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Every change to your website content, with who made it and when.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log".
+ */
+export interface AuditLog {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  collectionSlug: string;
+  docId: string;
+  operation: 'create' | 'update' | 'delete';
+  /**
+   * user:<id> <email>, api-key:<id>, job, system
+   */
+  actor: string;
+  summary: string;
+  /**
+   * Field names that changed
+   */
+  changed?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * generation, translation, import, publish…
+   */
+  context?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * The web addresses of your website (e.g. www.your-hotel.com) and their certificate status.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "domains".
+ */
+export interface Domain {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  /**
+   * The hotel adds a CNAME for this name at its DNS provider, pointing at the platform
+   */
+  hostname: string;
+  site: number | Site;
+  primary?: boolean | null;
+  /**
+   * Set by the platform team once the DNS points here. Only verified or active domains are served
+   */
+  status?: ('pending' | 'verified' | 'active' | 'error') | null;
+  certificate?: ('none' | 'requested' | 'issued' | 'expiring' | 'error') | null;
+  /**
+   * Set by the release pipeline adapter, never by the app
+   */
+  provider?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Reads of your current website that proposed facts.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "crawls".
@@ -1400,170 +1598,8 @@ export interface Crawl {
   createdAt: string;
 }
 /**
- * What the platform noticed about your website, with a fix to approve when there is one.
+ * Addresses of your previous website sent to the matching new page, so old links and search results keep working.
  *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "issues".
- */
-export interface Issue {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  site: number | Site;
-  kind:
-    | 'broken-link'
-    | 'missing-alt'
-    | 'missing-meta'
-    | 'stale-content'
-    | 'expired-offer'
-    | 'missing-fact'
-    | 'uptime'
-    | 'performance'
-    | 'accessibility'
-    | 'unanswered';
-  severity: 'info' | 'warning' | 'error';
-  title: string;
-  detail?: string | null;
-  /**
-   * Where it was seen
-   */
-  url?: string | null;
-  status: 'open' | 'applied' | 'resolved' | 'dismissed';
-  fingerprint: string;
-  /**
-   * What "Apply" would do
-   */
-  fixLabel?: string | null;
-  fix?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  source?: string | null;
-  detectedAt?: string | null;
-  resolvedAt?: string | null;
-  appliedBy?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Every change to your website content, with who made it.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "audit-log".
- */
-export interface AuditLog {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  collectionSlug: string;
-  docId: string;
-  operation: 'create' | 'update' | 'delete';
-  /**
-   * user:<id> <email>, api-key:<id>, job, system
-   */
-  actor: string;
-  summary: string;
-  /**
-   * Field names that changed
-   */
-  changed?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * generation, translation, import, publish…
-   */
-  context?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Room types shown on the hotel website. Changes go live with the next publish.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "rooms".
- */
-export interface Room {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  name: string;
-  slug: string;
-  /**
-   * e.g. Superior, Comfort
-   */
-  category?: string | null;
-  order?: number | null;
-  /**
-   * One or two sentences for the room card
-   */
-  summary?: string | null;
-  description?: string | null;
-  sizeSqm?: number | null;
-  maxOccupancy?: number | null;
-  /**
-   * e.g. Double bed or two singles
-   */
-  bed?: string | null;
-  view?: string | null;
-  features?:
-    | {
-        label: string;
-        id?: string | null;
-      }[]
-    | null;
-  images?:
-    | {
-        url: string;
-        alt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Packages and promotions shown on the website between their dates. Changes go live with the next publish.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "offers".
- */
-export interface Offer {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  title: string;
-  slug: string;
-  active?: boolean | null;
-  order?: number | null;
-  /**
-   * Short badge, e.g. "-10 %" or "Breakfast included"
-   */
-  highlight?: string | null;
-  summary: string;
-  /**
-   * Small print shown under the offer
-   */
-  conditions?: string | null;
-  validFrom?: string | null;
-  validTo?: string | null;
-  imageUrl?: string | null;
-  imageAlt?: string | null;
-  ctaLabel?: string | null;
-  /**
-   * A page slug (e.g. contact), a URL, tel: or mailto:
-   */
-  ctaHref?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1584,6 +1620,8 @@ export interface Redirect {
   createdAt: string;
 }
 /**
+ * Messages guests sent through the contact form of your website.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
@@ -1828,28 +1866,8 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'domains';
-        value: number | Domain;
-      } | null)
-    | ({
-        relationTo: 'releases';
-        value: number | Release;
-      } | null)
-    | ({
         relationTo: 'facts';
         value: number | Fact;
-      } | null)
-    | ({
-        relationTo: 'crawls';
-        value: number | Crawl;
-      } | null)
-    | ({
-        relationTo: 'issues';
-        value: number | Issue;
-      } | null)
-    | ({
-        relationTo: 'audit-log';
-        value: number | AuditLog;
       } | null)
     | ({
         relationTo: 'rooms';
@@ -1858,6 +1876,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'offers';
         value: number | Offer;
+      } | null)
+    | ({
+        relationTo: 'issues';
+        value: number | Issue;
+      } | null)
+    | ({
+        relationTo: 'releases';
+        value: number | Release;
+      } | null)
+    | ({
+        relationTo: 'audit-log';
+        value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'domains';
+        value: number | Domain;
+      } | null)
+    | ({
+        relationTo: 'crawls';
+        value: number | Crawl;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1975,16 +2013,15 @@ export interface TenantsSelect<T extends boolean = true> {
 export interface SitesSelect<T extends boolean = true> {
   tenant?: T;
   brandProposal?: T;
+  theme?: T;
   name?: T;
-  slug?: T;
-  sourceUrl?: T;
   brandName?: T;
-  timezone?: T;
+  tagline?: T;
+  logoUrl?: T;
   enabledLocales?: T;
   defaultLocale?: T;
-  theme?: T;
+  timezone?: T;
   template?: T;
-  designChannel?: T;
   brand?:
     | T
     | {
@@ -1995,21 +2032,22 @@ export interface SitesSelect<T extends boolean = true> {
         bodyFont?: T;
         corners?: T;
       };
-  status?: T;
-  tagline?: T;
-  logoUrl?: T;
-  cta?:
-    | T
-    | {
-        label?: T;
-        href?: T;
-      };
   booking?:
     | T
     | {
         engine?: T;
         url?: T;
       };
+  cta?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+      };
+  slug?: T;
+  sourceUrl?: T;
+  status?: T;
+  designChannel?: T;
   currentRelease?: T;
   publish?:
     | T
@@ -2505,43 +2543,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "domains_select".
- */
-export interface DomainsSelect<T extends boolean = true> {
-  tenant?: T;
-  hostname?: T;
-  site?: T;
-  primary?: T;
-  status?: T;
-  certificate?: T;
-  provider?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "releases_select".
- */
-export interface ReleasesSelect<T extends boolean = true> {
-  tenant?: T;
-  site?: T;
-  version?: T;
-  artifactRef?: T;
-  status?: T;
-  templateVersion?: T;
-  requestSeq?: T;
-  publishedBy?: T;
-  checksum?: T;
-  pageCount?: T;
-  durationMs?: T;
-  verifiedAt?: T;
-  error?: T;
-  snapshot?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "facts_select".
  */
 export interface FactsSelect<T extends boolean = true> {
@@ -2558,68 +2559,6 @@ export interface FactsSelect<T extends boolean = true> {
   decisionNote?: T;
   decidedBy?: T;
   decidedAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "crawls_select".
- */
-export interface CrawlsSelect<T extends boolean = true> {
-  tenant?: T;
-  site?: T;
-  startUrl?: T;
-  status?: T;
-  maxPages?: T;
-  pagesCrawled?: T;
-  pagesLeft?: T;
-  factsFound?: T;
-  factsNew?: T;
-  aiPass?: T;
-  audit?: T;
-  log?: T;
-  startedBy?: T;
-  finishedAt?: T;
-  state?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "issues_select".
- */
-export interface IssuesSelect<T extends boolean = true> {
-  tenant?: T;
-  site?: T;
-  kind?: T;
-  severity?: T;
-  title?: T;
-  detail?: T;
-  url?: T;
-  status?: T;
-  fingerprint?: T;
-  fixLabel?: T;
-  fix?: T;
-  source?: T;
-  detectedAt?: T;
-  resolvedAt?: T;
-  appliedBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "audit-log_select".
- */
-export interface AuditLogSelect<T extends boolean = true> {
-  tenant?: T;
-  collectionSlug?: T;
-  docId?: T;
-  operation?: T;
-  actor?: T;
-  summary?: T;
-  changed?: T;
-  context?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2674,6 +2613,105 @@ export interface OffersSelect<T extends boolean = true> {
   imageAlt?: T;
   ctaLabel?: T;
   ctaHref?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "issues_select".
+ */
+export interface IssuesSelect<T extends boolean = true> {
+  tenant?: T;
+  site?: T;
+  kind?: T;
+  severity?: T;
+  title?: T;
+  detail?: T;
+  url?: T;
+  status?: T;
+  fingerprint?: T;
+  fixLabel?: T;
+  fix?: T;
+  source?: T;
+  detectedAt?: T;
+  resolvedAt?: T;
+  appliedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "releases_select".
+ */
+export interface ReleasesSelect<T extends boolean = true> {
+  tenant?: T;
+  site?: T;
+  version?: T;
+  artifactRef?: T;
+  status?: T;
+  templateVersion?: T;
+  requestSeq?: T;
+  publishedBy?: T;
+  checksum?: T;
+  pageCount?: T;
+  durationMs?: T;
+  verifiedAt?: T;
+  error?: T;
+  snapshot?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log_select".
+ */
+export interface AuditLogSelect<T extends boolean = true> {
+  tenant?: T;
+  collectionSlug?: T;
+  docId?: T;
+  operation?: T;
+  actor?: T;
+  summary?: T;
+  changed?: T;
+  context?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "domains_select".
+ */
+export interface DomainsSelect<T extends boolean = true> {
+  tenant?: T;
+  hostname?: T;
+  site?: T;
+  primary?: T;
+  status?: T;
+  certificate?: T;
+  provider?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "crawls_select".
+ */
+export interface CrawlsSelect<T extends boolean = true> {
+  tenant?: T;
+  site?: T;
+  startUrl?: T;
+  status?: T;
+  maxPages?: T;
+  pagesCrawled?: T;
+  pagesLeft?: T;
+  factsFound?: T;
+  factsNew?: T;
+  aiPass?: T;
+  audit?: T;
+  log?: T;
+  startedBy?: T;
+  finishedAt?: T;
+  state?: T;
   updatedAt?: T;
   createdAt?: T;
 }

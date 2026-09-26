@@ -112,8 +112,8 @@ export function IngestPanel() {
   if (!siteId) return null
   const shown = running ?? last
   return (
-    <div style={box}>
-      <p style={{ fontWeight: 600, margin: '0 0 6px' }}>Import the current website</p>
+    <div className="hh-panel">
+      <p className="hh-panel-title">Import the current website</p>
       <p style={{ margin: '0 0 10px', fontSize: 13, opacity: 0.8 }}>
         Reads the hotel’s existing site and proposes facts (phones, times, rooms, services). Nothing is published: you confirm each fact first.
       </p>
@@ -122,7 +122,7 @@ export function IngestPanel() {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="https://www.example-hotel.com"
-        style={{ width: '100%', padding: '7px 9px', marginBottom: 8, borderRadius: 4, border: '1px solid var(--theme-elevation-250)', background: 'transparent', color: 'inherit' }}
+        style={{ width: '100%', padding: '7px 9px', marginBottom: 8, borderRadius: 999, border: '1px solid var(--theme-elevation-250)', background: 'transparent', color: 'inherit' }}
       />
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
         <button type="button" style={btn(true)} disabled={running !== null || !url} onClick={run}>
@@ -143,7 +143,7 @@ export function IngestPanel() {
           {shown.pagesLeft ? `, ${shown.pagesLeft} left` : ''}, {shown.factsFound} facts ({shown.factsNew} new)
         </p>
       )}
-      <p style={{ fontWeight: 600, margin: '0 0 6px' }}>Write the pages</p>
+      <p className="hh-panel-title">Write the pages</p>
       <p style={{ margin: '0 0 10px', fontSize: 13, opacity: 0.8 }}>
         Drafts the home, rooms, services and contact pages and the room types from the confirmed facts. Your own edits are kept; nothing is published.
       </p>
@@ -179,18 +179,11 @@ export function IngestPanel() {
   )
 }
 
-const box: React.CSSProperties = {
-  border: '1px solid var(--theme-elevation-150)',
-  borderRadius: 6,
-  padding: 14,
-  marginBottom: 20,
-  background: 'var(--theme-elevation-50)',
-}
 const btn = (primary: boolean): React.CSSProperties => ({
   padding: '7px 12px',
-  borderRadius: 4,
+  borderRadius: 999,
   border: primary ? 'none' : '1px solid var(--theme-elevation-250)',
-  background: primary ? 'var(--theme-success-500, #1f7a3d)' : 'transparent',
+  background: primary ? 'var(--hh-navy, #16233f)' : 'transparent',
   color: primary ? '#fff' : 'inherit',
   cursor: 'pointer',
   fontSize: 13,

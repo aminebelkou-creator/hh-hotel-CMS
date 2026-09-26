@@ -87,13 +87,13 @@ export function PublishPanel() {
     }
   }
 
-  if (!siteId) return <div style={box}>Save the document first to publish its site.</div>
+  if (!siteId) return <div className="hh-panel">Save the document first to publish its site.</div>
   const current = idOf(site?.currentRelease)
   const siteUrl = site?.slug ? `/s/${site.slug}` : null
 
   return (
-    <div style={box}>
-      <p style={{ fontWeight: 600, margin: '0 0 6px' }}>Website</p>
+    <div className="hh-panel">
+      <p className="hh-panel-title">Website</p>
       <p style={{ margin: '0 0 12px', fontSize: 13, opacity: 0.8 }}>
         Publishing makes every published page live at once, as a new version you can undo.
       </p>
@@ -149,18 +149,11 @@ export function PublishPanel() {
   )
 }
 
-const box: React.CSSProperties = {
-  border: '1px solid var(--theme-elevation-150)',
-  borderRadius: 6,
-  padding: 14,
-  marginBottom: 20,
-  background: 'var(--theme-elevation-50)',
-}
 const btn = (primary: boolean): React.CSSProperties => ({
   padding: '7px 12px',
-  borderRadius: 4,
+  borderRadius: 999,
   border: primary ? 'none' : '1px solid var(--theme-elevation-250)',
-  background: primary ? 'var(--theme-success-500, #1f7a3d)' : 'transparent',
+  background: primary ? 'var(--hh-navy, #16233f)' : 'transparent',
   color: primary ? '#fff' : 'inherit',
   cursor: 'pointer',
   fontSize: 13,

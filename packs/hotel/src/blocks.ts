@@ -17,7 +17,7 @@ export const roomsBlock: Block = {
   // Distinct type names: the `rooms` collection already owns "Room"/"Rooms" in GraphQL and TypeScript.
   interfaceName: 'RoomsBlock',
   graphQL: { singularName: 'RoomsBlock' },
-  labels: { singular: 'Rooms', plural: 'Rooms' },
+  labels: { singular: 'Room types', plural: 'Room types' },
   fields: [
     { name: 'heading', type: 'text', localized: true },
     { name: 'intro', type: 'textarea', localized: true },
@@ -42,7 +42,7 @@ export const offersBlock: Block = {
   slug: 'offers',
   interfaceName: 'OffersBlock',
   graphQL: { singularName: 'OffersBlock' },
-  labels: { singular: 'Offers', plural: 'Offers' },
+  labels: { singular: 'Current offers', plural: 'Current offers' },
   fields: [
     { name: 'heading', type: 'text', localized: true },
     { name: 'intro', type: 'textarea', localized: true },
@@ -56,7 +56,7 @@ export const policiesBlock: Block = {
   slug: 'policies',
   interfaceName: 'PoliciesBlock',
   graphQL: { singularName: 'PoliciesBlock' },
-  labels: { singular: 'Hotel policies', plural: 'Hotel policies' },
+  labels: { singular: 'Good to know (hotel policies)', plural: 'Hotel policies' },
   fields: [
     { name: 'heading', type: 'text', localized: true },
     { name: 'showTimes', type: 'checkbox', defaultValue: true, admin: { description: 'Show check-in and check-out times from the fact base' } },

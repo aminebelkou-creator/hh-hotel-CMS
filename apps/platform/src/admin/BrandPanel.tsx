@@ -47,8 +47,8 @@ export function BrandPanel() {
 
   if (!siteId) return null
   return (
-    <div style={box}>
-      <p style={{ fontWeight: 600, margin: '0 0 6px' }}>Look</p>
+    <div className="hh-panel">
+      <p className="hh-panel-title">Look</p>
       <p style={{ margin: '0 0 10px', fontSize: 13, opacity: 0.8 }}>Suggest a template and an accent colour from the logo, the photos and the confirmed facts. Nothing changes until you apply it.</p>
       <button type="button" style={btn(false)} disabled={busy !== null} onClick={() => call('propose-brand')}>
         {busy === 'propose-brand' ? 'Looking…' : p ? 'Propose again' : 'Propose a look'}
@@ -56,7 +56,7 @@ export function BrandPanel() {
       {p && (
         <div style={{ marginTop: 10, fontSize: 13 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 22, height: 22, borderRadius: 4, background: p.accent, border: '1px solid rgba(0,0,0,.15)' }} />
+            <span style={{ width: 22, height: 22, borderRadius: 999, background: p.accent, border: '1px solid rgba(0,0,0,.15)' }} />
             <strong>{NAMES[p.template] ?? p.template}</strong> · accent {p.accent} <span style={{ opacity: 0.6 }}>(from the {p.sources.accent})</span>
           </div>
           {p.rationale && <p style={{ margin: '6px 0' }}>{p.rationale}</p>}
@@ -90,12 +90,11 @@ export function BrandPanel() {
   )
 }
 
-const box: React.CSSProperties = { border: '1px solid var(--theme-elevation-150)', borderRadius: 6, padding: 14, marginBottom: 20, background: 'var(--theme-elevation-50)' }
 const btn = (primary: boolean): React.CSSProperties => ({
   padding: '7px 12px',
-  borderRadius: 4,
+  borderRadius: 999,
   border: primary ? 'none' : '1px solid var(--theme-elevation-250)',
-  background: primary ? 'var(--theme-success-500, #1f7a3d)' : 'transparent',
+  background: primary ? 'var(--hh-navy, #16233f)' : 'transparent',
   color: primary ? '#fff' : 'inherit',
   cursor: 'pointer',
   fontSize: 13,

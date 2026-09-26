@@ -23,6 +23,7 @@ export const Rooms: CollectionConfig = {
   defaultSort: 'order',
   access: { read: signedIn, create: signedIn, update: signedIn, delete: superAdminOnly },
   fields: [
+    { name: 'roomHelp', type: 'ui', admin: { components: { Field: '/admin/Help#RoomHelp' } } },
     { name: 'name', type: 'text', required: true, localized: true },
     { name: 'slug', type: 'text', required: true, index: true },
     { name: 'category', type: 'text', admin: { description: 'e.g. Superior, Comfort' } },

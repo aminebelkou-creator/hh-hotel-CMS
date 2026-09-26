@@ -49,39 +49,11 @@ export const Sites: CollectionConfig = {
     },
     // A suggested look (template + accent) waiting for approval; written by src/design/propose-brand.ts.
     { name: 'brandProposal', type: 'json', admin: { hidden: true } },
-    { name: 'name', type: 'text', required: true },
     {
-      name: 'slug',
-      type: 'text',
-      required: true,
-      unique: true,
-      index: true,
-      admin: { description: 'Platform-wide unique; the public preview lives at /s/<slug>' },
+      name: 'siteHelp',
+      type: 'ui',
+      admin: { components: { Field: '/admin/Help#SiteHelp' } },
     },
-    {
-      name: 'sourceUrl',
-      type: 'text',
-      admin: { description: 'The hotel’s current website, imported into the fact base from the Website panel (Phase 3 ingest).' },
-    },
-    {
-      name: 'brandName',
-      type: 'text',
-      admin: { description: 'Public name shown on the site. Backfilled from the tenant name by migration.' },
-    },
-    {
-      name: 'timezone',
-      type: 'text',
-      defaultValue: 'Europe/Paris',
-      admin: { description: 'IANA time zone for offers, events and opening hours.' },
-    },
-    {
-      name: 'enabledLocales',
-      type: 'select',
-      hasMany: true,
-      defaultValue: ['en'],
-      options: ['en', 'fr', 'de', 'es', 'it'],
-    },
-    { name: 'defaultLocale', type: 'select', defaultValue: 'en', options: ['en', 'fr', 'de', 'es', 'it'] },
     {
       name: 'theme',
       type: 'json',
@@ -89,96 +61,207 @@ export const Sites: CollectionConfig = {
       admin: { hidden: true },
     },
     {
-      name: 'template',
-      type: 'select',
-      defaultValue: DEFAULT_TEMPLATE,
-      options: TEMPLATE_IDS.map((id) => ({ label: TEMPLATES[id].name, value: id })),
-      admin: {
-        description: TEMPLATE_IDS.map((id) => `${TEMPLATES[id].name}: ${TEMPLATES[id].description.en}`).join(' · '),
-      },
-    },
-    {
-      name: 'designChannel',
-      type: 'select',
-      defaultValue: 'stable',
-      options: [
-        { label: 'Stable', value: 'stable' },
-        { label: 'Canary (sees template changes first)', value: 'canary' },
-      ],
-      admin: { description: 'Template upgrades reach canary sites first (customer zero, our demo sites), then everyone. Render-time only: not part of releases.' },
-      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
-    },
-    {
-      name: 'brand',
-      type: 'group',
-      label: 'Brand',
-      admin: {
-        description:
-          'Optional: leave empty to use the template as designed. Colours as #rrggbb. Button text, links and secondary text are adjusted automatically to stay readable (WCAG AA).',
-      },
-      fields: [
-        { type: 'row', fields: [
-          { name: 'accent', type: 'text', label: 'Accent colour', validate: hexField, admin: { placeholder: 'template default', width: '33%' } },
-          { name: 'background', type: 'text', label: 'Background colour', validate: readableField, admin: { placeholder: 'template default', width: '33%' } },
-          { name: 'text', type: 'text', label: 'Text colour', validate: readableField, admin: { placeholder: 'template default', width: '33%' } },
-        ] },
-        { type: 'row', fields: [
-          { name: 'headingFont', type: 'select', options: FONT_IDS.map((f) => ({ label: FONT_LABELS[f], value: f })), admin: { width: '33%', description: 'Empty: the template font' } },
-          { name: 'bodyFont', type: 'select', options: FONT_IDS.map((f) => ({ label: FONT_LABELS[f], value: f })), admin: { width: '33%', description: 'Empty: the template font' } },
-          { name: 'corners', type: 'select', options: CORNERS.map((c) => ({ label: c, value: c })), admin: { width: '33%', description: 'Empty: the template corners' } },
-        ] },
-      ],
-    },
-    {
-      name: 'status',
-      type: 'select',
-      defaultValue: 'draft',
-      options: ['draft', 'live', 'suspended'],
-    },
-    {
-      name: 'tagline',
-      type: 'text',
-      localized: true,
-      admin: { description: 'Short line under the name, used in the header and search results' },
-    },
-    { name: 'logoUrl', type: 'text', admin: { description: 'Logo image URL (https). Remote until the media pipeline exists' } },
-    {
-      name: 'cta',
-      type: 'group',
-      label: 'Header call to action',
-      admin: { description: 'The "Book" button in the header. "book" (the booking engine below), a page slug (e.g. contact), a URL, tel: or mailto:. No booking logic runs on the platform' },
-      fields: [
-        { name: 'label', type: 'text', localized: true },
-        { name: 'href', type: 'text' },
-      ],
-    },
-    {
-      name: 'booking',
-      type: 'group',
-      label: 'Booking engine',
-      admin: {
-        description:
-          'The hotel’s own online booking engine. Every link set to "book" (header, hero booking bar, room cards, calls to action) opens it, with the chosen dates when the engine accepts them. Empty: "book" links go to the contact page.',
-      },
-      fields: [
+      type: 'tabs',
+      tabs: [
         {
-          type: 'row',
+          label: 'Hotel',
+          description: 'Your hotel’s name and the languages of the website.',
           fields: [
+            { name: 'name', type: 'text', required: true, label: 'Hotel name', admin: { description: 'How your hotel appears in this admin and in reports.' } },
             {
-              name: 'engine',
-              type: 'select',
-              defaultValue: 'link',
-              options: [
-                { label: 'Other engine or page (dates as query parameters)', value: 'link' },
-                { label: 'Clock PMS+ web booking engine', value: 'clock-pms' },
-              ],
-              admin: { width: '40%' },
+              name: 'brandName',
+              type: 'text',
+              label: 'Name on the website',
+              admin: { description: 'Shown in the header, the browser tab and search results. Leave empty to use the hotel name.' },
             },
             {
-              name: 'url',
+              name: 'tagline',
               type: 'text',
-              admin: { width: '60%', placeholder: 'https://sky-eu1.clock-software.com/spa/pms-wbe/#/hotel/12345' },
-              validate: (v: unknown) => (v == null || v === '' || (typeof v === 'string' && /^https:\/\/\S+$/.test(v)) ? true : 'An https:// address'),
+              localized: true,
+              label: 'Tagline',
+              admin: { description: 'A short line under the name, e.g. “3-star hotel · Le Marais, Paris”. One per language: switch the language at the top right.' },
+            },
+            { name: 'logoUrl', type: 'text', label: 'Logo address', admin: { description: 'Optional: the address (https://…) of your logo image. Without it, the name is written in the template’s font.' } },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'enabledLocales',
+                  type: 'select',
+                  hasMany: true,
+                  defaultValue: ['en'],
+                  label: 'Languages of the website',
+                  options: [
+                    { label: 'English', value: 'en' },
+                    { label: 'Français', value: 'fr' },
+                    { label: 'Deutsch', value: 'de' },
+                    { label: 'Español', value: 'es' },
+                    { label: 'Italiano', value: 'it' },
+                  ],
+                  admin: { width: '50%', description: 'Guests switch language from the header. Each page is written once per language.' },
+                },
+                {
+                  name: 'defaultLocale',
+                  type: 'select',
+                  defaultValue: 'en',
+                  label: 'Main language',
+                  options: [
+                    { label: 'English', value: 'en' },
+                    { label: 'Français', value: 'fr' },
+                    { label: 'Deutsch', value: 'de' },
+                    { label: 'Español', value: 'es' },
+                    { label: 'Italiano', value: 'it' },
+                  ],
+                  admin: { width: '50%', description: 'The language of your main address; the others get /en, /de… in front.' },
+                },
+              ],
+            },
+            {
+              name: 'timezone',
+              type: 'text',
+              defaultValue: 'Europe/Paris',
+              label: 'Time zone',
+              admin: { description: 'Used to start and end offers at the right time (e.g. Europe/Paris).' },
+            },
+          ],
+        },
+        {
+          label: 'Look',
+          description: 'The design of your website. Changing it never changes your texts or photos; publish to see it online.',
+          fields: [
+            {
+              name: 'template',
+              type: 'select',
+              defaultValue: DEFAULT_TEMPLATE,
+              options: TEMPLATE_IDS.map((id) => ({ label: TEMPLATES[id].name, value: id })),
+              admin: {
+                description: TEMPLATE_IDS.map((id) => `${TEMPLATES[id].name}: ${TEMPLATES[id].description.en}`).join(' · '),
+              },
+            },
+            {
+              name: 'brand',
+              type: 'group',
+              label: 'Brand',
+              admin: {
+                description:
+                  'Optional: leave empty to use the template as designed. Colours as #rrggbb. Button text, links and secondary text are adjusted automatically to stay readable (WCAG AA).',
+              },
+              fields: [
+                { type: 'row', fields: [
+                  { name: 'accent', type: 'text', label: 'Accent colour', validate: hexField, admin: { placeholder: 'template default', width: '33%' } },
+                  { name: 'background', type: 'text', label: 'Background colour', validate: readableField, admin: { placeholder: 'template default', width: '33%' } },
+                  { name: 'text', type: 'text', label: 'Text colour', validate: readableField, admin: { placeholder: 'template default', width: '33%' } },
+                ] },
+                { type: 'row', fields: [
+                  { name: 'headingFont', type: 'select', label: 'Heading font', options: FONT_IDS.map((f) => ({ label: FONT_LABELS[f], value: f })), admin: { width: '33%', description: 'Empty: the template font' } },
+                  { name: 'bodyFont', type: 'select', label: 'Text font', options: FONT_IDS.map((f) => ({ label: FONT_LABELS[f], value: f })), admin: { width: '33%', description: 'Empty: the template font' } },
+                  { name: 'corners', type: 'select', label: 'Corners', options: CORNERS.map((c) => ({ label: c, value: c })), admin: { width: '33%', description: 'Empty: the template corners' } },
+                ] },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Booking',
+          description: 'Where the Book buttons of your website go.',
+          fields: [
+            {
+              name: 'booking',
+              type: 'group',
+              label: 'Booking engine',
+              admin: {
+                description:
+                  'Where guests book online. Every Book button (header, the dates bar on the home page, each room, the Book bands) opens it, with the dates the guest chose when possible. Copy the address your booking engine gives you (or ask its support). Left empty, Book buttons go to your contact page.',
+              },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'engine',
+                      type: 'select',
+                      label: 'Kind of booking engine',
+                      defaultValue: 'link',
+                      options: [
+                        { label: 'Other engine or page (dates as query parameters)', value: 'link' },
+                        { label: 'Clock PMS+ web booking engine', value: 'clock-pms' },
+                      ],
+                      admin: { width: '40%' },
+                    },
+                    {
+                      name: 'url',
+                      type: 'text',
+                      label: 'Booking engine address',
+                      admin: { width: '60%', placeholder: 'https://sky-eu1.clock-software.com/spa/pms-wbe/#/hotel/12345' },
+                      validate: (v: unknown) => (v == null || v === '' || (typeof v === 'string' && /^https:\/\/\S+$/.test(v)) ? true : 'An https:// address'),
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              name: 'cta',
+              type: 'group',
+              label: 'Book button in the header',
+              admin: { description: 'The button at the top right of every page (and at the bottom of the screen on phones).' },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'label', type: 'text', localized: true, label: 'Button text', admin: { width: '40%', placeholder: 'Book', description: 'One per language.' } },
+                    {
+                      name: 'href',
+                      type: 'text',
+                      label: 'Where it goes',
+                      admin: { width: '60%', placeholder: 'book', description: '“book” opens your booking engine (above). You can also give a page (contact), a full address, tel:+33… or mailto:…' },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Advanced',
+          description: 'Technical settings, mostly set up by your platform contact.',
+          fields: [
+            {
+              name: 'slug',
+              type: 'text',
+              required: true,
+              unique: true,
+              index: true,
+              label: 'Short name',
+              admin: { description: 'Used in the preview address /s/<short name>. Changing it changes that address.' },
+              access: { update: superAdminFieldOnly },
+            },
+            {
+              name: 'sourceUrl',
+              type: 'text',
+              label: 'Your current website',
+              admin: { description: 'The address the facts were read from (Import the current website, in the side panel).' },
+            },
+            {
+              name: 'status',
+              type: 'select',
+              defaultValue: 'draft',
+              options: [
+                { label: 'Being prepared', value: 'draft' },
+                { label: 'Live', value: 'live' },
+                { label: 'Suspended', value: 'suspended' },
+              ],
+              access: { update: superAdminFieldOnly },
+            },
+            {
+              name: 'designChannel',
+              type: 'select',
+              defaultValue: 'stable',
+              options: [
+                { label: 'Stable', value: 'stable' },
+                { label: 'Canary (sees template changes first)', value: 'canary' },
+              ],
+              admin: { description: 'Template upgrades reach canary sites first (customer zero, our demo sites), then everyone. Render-time only: not part of releases.' },
+              access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
             },
           ],
         },
@@ -195,7 +278,7 @@ export const Sites: CollectionConfig = {
     {
       name: 'publish',
       type: 'group',
-      admin: { readOnly: true, description: 'Release pipeline state. Written only by the publish job.' },
+      admin: { readOnly: true, hidden: true, description: 'Release pipeline state. Written only by the publish job.' },
       access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
       fields: [
         { name: 'requestSeq', type: 'number', defaultValue: 0, admin: { description: 'Incremented on every publish request; older requests are superseded' } },

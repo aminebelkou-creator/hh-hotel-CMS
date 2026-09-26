@@ -41,8 +41,8 @@ export function BlogDraftPanel() {
   }
 
   return (
-    <div style={box}>
-      <p style={{ fontWeight: 600, margin: '0 0 6px' }}>Blog</p>
+    <div className="hh-panel">
+      <p className="hh-panel-title">Blog</p>
       <p style={{ margin: '0 0 10px', fontSize: 13, opacity: 0.8 }}>
         Suggest a post written from your confirmed facts. It is saved as a draft: read it, change what you like, then publish it.
       </p>
@@ -74,5 +74,4 @@ export function BlogDraftPanel() {
   )
 }
 
-const box: React.CSSProperties = { border: '1px solid var(--theme-elevation-150)', borderRadius: 6, padding: 14, marginBottom: 20, background: 'var(--theme-elevation-50)' }
-const btn: React.CSSProperties = { marginTop: 6, padding: '7px 12px', borderRadius: 4, border: 'none', background: 'var(--theme-success-500, #1f7a3d)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }
+const btn: React.CSSProperties = { marginTop: 6, padding: '7px 12px', borderRadius: 999, border: 'none', background: 'var(--hh-navy, #16233f)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }
