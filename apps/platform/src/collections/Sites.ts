@@ -146,10 +146,42 @@ export const Sites: CollectionConfig = {
       name: 'cta',
       type: 'group',
       label: 'Header call to action',
-      admin: { description: 'The "Book" button in the header. A page slug (e.g. contact), a URL, tel: or mailto:. No booking logic runs on the platform' },
+      admin: { description: 'The "Book" button in the header. "book" (the booking engine below), a page slug (e.g. contact), a URL, tel: or mailto:. No booking logic runs on the platform' },
       fields: [
         { name: 'label', type: 'text', localized: true },
         { name: 'href', type: 'text' },
+      ],
+    },
+    {
+      name: 'booking',
+      type: 'group',
+      label: 'Booking engine',
+      admin: {
+        description:
+          'The hotel’s own online booking engine. Every link set to "book" (header, hero booking bar, room cards, calls to action) opens it, with the chosen dates when the engine accepts them. Empty: "book" links go to the contact page.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'engine',
+              type: 'select',
+              defaultValue: 'link',
+              options: [
+                { label: 'Other engine or page (dates as query parameters)', value: 'link' },
+                { label: 'Clock PMS+ web booking engine', value: 'clock-pms' },
+              ],
+              admin: { width: '40%' },
+            },
+            {
+              name: 'url',
+              type: 'text',
+              admin: { width: '60%', placeholder: 'https://sky-eu1.clock-software.com/spa/pms-wbe/#/hotel/12345' },
+              validate: (v: unknown) => (v == null || v === '' || (typeof v === 'string' && /^https:\/\/\S+$/.test(v)) ? true : 'An https:// address'),
+            },
+          ],
+        },
       ],
     },
     {

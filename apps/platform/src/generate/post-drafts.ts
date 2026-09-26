@@ -24,7 +24,9 @@ export const frAt = (hotel: string) => (/^h[oô]tel\b/i.test(hotel) ? `à l’${
 const frOf = (hotel: string) => (/^h[oô]tel\b/i.test(hotel) ? `de l’${hotel}` : `de ${hotel}`)
 
 /** The deterministic draft for a topic in one language, or null when the facts are too thin. */
-export function draftFromFacts(topic: PostTopic, f: FactMap, locale: L, hotel: string): Draft | null {
+export type RoomText = { name: string; summary?: string | null; description?: string | null; sizeSqm?: number | null; maxOccupancy?: number | null; bed?: string | null; features: string[] }
+
+export function draftFromFacts(topic: PostTopic, f: FactMap, locale: L, hotel: string, rooms?: RoomText[]): Draft | null {
   const fr = locale === 'fr'
   if (topic === 'practical') {
     const address = first(f, 'address')
@@ -73,6 +75,19 @@ export function draftFromFacts(topic: PostTopic, f: FactMap, locale: L, hotel: s
     }
   }
   if (topic === 'rooms') {
+    // The hotel's room types (the rooms collection, in this language) when it has them; else room.* facts.
+    if (rooms?.length) {
+      const sections = rooms.slice(0, 6).map((r) => {
+        const bits = [r.sizeSqm ? `${r.sizeSqm} m²` : null, r.maxOccupancy ? (fr ? `jusqu’à ${r.maxOccupancy} personne${r.maxOccupancy > 1 ? 's' : ''}` : `up to ${r.maxOccupancy} guest${r.maxOccupancy > 1 ? 's' : ''}`) : null, r.bed || null].filter(Boolean)
+        const features = r.features.slice(0, 8).map((x) => `- ${x}`).join('\n')
+        return [`## ${r.name}`, bits.join(' · '), r.description || r.summary || '', features].filter(Boolean).join('\n\n')
+      })
+      return {
+        title: fr ? 'Nos chambres, une à une' : 'Our rooms, one by one',
+        excerpt: fr ? `Les ${rooms.length} catégories de chambres ${frOf(hotel)}, pour choisir celle qui vous ressemble.` : `The ${rooms.length} room categories at ${hotel}, to choose the one that suits you.`,
+        body: [fr ? 'Chaque catégorie de chambre, telle que l’hôtel la décrit.' : 'Each room category, as the hotel describes it.', ...sections].join('\n\n'),
+      }
+    }
     const names = all(f, 'room.name')
     if (!names.length) return null
     const of = (key: string, name: string) => all(f, key).find((v) => v.toLowerCase().startsWith(`${name.toLowerCase()}:`))?.split(':').slice(1).join(':').trim()
@@ -88,18 +103,29 @@ export function draftFromFacts(topic: PostTopic, f: FactMap, locale: L, hotel: s
     }
   }
   // breakfast
-  const hours = first(f, 'breakfast.hours')
-  if (!hours) return null
+  const raw = first(f, 'breakfast.hours')
+  if (!raw) return null
+  const hours = hoursText(raw, locale)
   const price = first(f, 'breakfast.price')
+  const perPerson = price && !/person/i.test(price) ? (fr ? ' par personne' : ' per person') : ''
   return {
     title: fr ? `Le petit-déjeuner ${frAt(hotel)}` : `Breakfast at ${hotel}`,
     excerpt: fr ? `Servi ${hours} : tout ce qu’il faut savoir sur le petit-déjeuner.` : `Served ${hours}: all about breakfast.`,
     body: [
       fr ? `Le petit-déjeuner est servi ${hours}.` : `Breakfast is served ${hours}.`,
-      price ? (fr ? `Tarif : ${price}.` : `Price: ${price}.`) : null,
+      price ? (fr ? `Tarif : ${price}${perPerson}.` : `Price: ${price}${perPerson}.`) : null,
       fr ? 'Demandez à la réception s’il est inclus dans votre tarif.' : 'Ask reception whether it is included in your rate.',
     ].filter(Boolean).join('\n\n'),
   }
+}
+
+/** "07:00-10:30" → "de 7h à 10h30" / "from 7:00 to 10:30"; anything else is kept as written. */
+export function hoursText(v: string, locale: L) {
+  const m = /^\s*(\d{1,2})[h:.]?(\d{2})?\s*(?:-|–|à|to)\s*(\d{1,2})[h:.]?(\d{2})?\s*$/i.exec(v)
+  if (!m) return v
+  const fr = (h: string, mm?: string) => `${Number(h)}h${mm && mm !== '00' ? mm : ''}`
+  const en = (h: string, mm?: string) => `${Number(h)}:${mm ?? '00'}`
+  return locale === 'fr' ? `de ${fr(m[1], m[2])} à ${fr(m[3], m[4])}` : `from ${en(m[1], m[2])} to ${en(m[3], m[4])}`
 }
 
 const SYSTEM = `You polish a short hotel blog post. Keep the same facts, the same structure (blank lines between paragraphs, "## " subheadings, "- " list lines) and the same language. Never add a number, price, distance, date or claim that is not in the draft or the facts. Answer JSON {"title","excerpt","body"}.`
@@ -121,6 +147,23 @@ async function polish(draft: Draft, f: FactMap, locale: L): Promise<{ draft: Dra
   }
 }
 
+/** The tenant's room types in one language (hotel pack); [] when the pack or the rooms are absent. */
+async function roomsIn(payload: Payload, tenantId: number, locale: L): Promise<RoomText[]> {
+  if (!payload.collections['rooms' as 'pages']) return []
+  const docs = (await payload.find({ collection: 'rooms' as 'pages', where: { tenant: { equals: tenantId } }, locale, fallbackLocale: false, sort: 'order', limit: 20, depth: 0, overrideAccess: true })).docs as unknown as Record<string, unknown>[]
+  return docs
+    .filter((r) => typeof r.name === 'string' && r.name)
+    .map((r) => ({
+      name: String(r.name),
+      summary: (r.summary as string) ?? null,
+      description: (r.description as string) ?? null,
+      sizeSqm: (r.sizeSqm as number) ?? null,
+      maxOccupancy: (r.maxOccupancy as number) ?? null,
+      bed: (r.bed as string) ?? null,
+      features: ((r.features as { label?: string }[] | undefined) ?? []).map((x) => x.label ?? '').filter(Boolean),
+    }))
+}
+
 export type SuggestResult = { ok: true; postId: number; slug: string; title: string; model: string | null } | { ok: false; reason: string }
 
 /** Creates one draft post for a topic, in every enabled locale the templates cover (fr, en). */
@@ -134,7 +177,7 @@ export async function suggestPost(payload: Payload, args: { tenantId: number; si
   const drafts = new Map<L, Draft>()
   let model: string | null = null
   for (const l of locales) {
-    const d = draftFromFacts(args.topic, f, l, hotel)
+    const d = draftFromFacts(args.topic, f, l, hotel, args.topic === 'rooms' ? await roomsIn(payload, args.tenantId, l) : undefined)
     if (!d) continue
     const p = await polish(d, f, l)
     model = p.model ?? model

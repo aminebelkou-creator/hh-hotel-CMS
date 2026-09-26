@@ -43,7 +43,7 @@ export function blockData(b: BlockInput, l: Loc): Record<string, unknown> {
     case 'quote':
       return { blockType: 'quote', text: v(b.text, l), author: v(b.author, l) }
     case 'cta':
-      return { blockType: 'cta', heading: v(b.heading, l), text: v(b.text, l), buttonLabel: v(b.button?.label, l), buttonHref: b.button?.href, imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l) }
+      return { blockType: 'cta', variant: b.variant ?? 'band', heading: v(b.heading, l), text: v(b.text, l), points: (b.points ?? []).map((t) => ({ text: v(t, l) })), buttonLabel: v(b.button?.label, l), buttonHref: b.button?.href, imageUrl: b.image?.url, imageAlt: v(b.image?.alt, l), provenance: prov }
     case 'contact':
       return { blockType: 'contact', heading: v(b.heading, l), intro: v(b.intro, l) }
     case 'map':
@@ -95,6 +95,7 @@ const pageData = (p: PageInput, l: Loc, siteId: number, tenantId: number) => ({
   navOrder: p.navOrder,
   showInNav: p.showInNav ?? true,
   showInFooter: p.showInFooter ?? false,
+  navCondition: p.navCondition ?? 'always',
   _status: 'published' as const,
   blocks: p.blocks.map((b) => blockData(b, l)),
   meta: { title: v(p.seo?.title, l), description: v(p.seo?.description, l) },
@@ -304,6 +305,7 @@ export async function applySite(payload: Payload, content: SiteContent) {
         enabledLocales: content.site.enabledLocales,
         defaultLocale: content.site.defaultLocale,
         cta: { label: v(content.site.cta.label, l), href: content.site.cta.href },
+        booking: content.site.booking ?? { engine: 'link', url: null },
       } as never,
       overrideAccess: true,
     })

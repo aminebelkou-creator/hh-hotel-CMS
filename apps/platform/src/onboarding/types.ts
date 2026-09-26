@@ -10,7 +10,7 @@ export type BlockInput =
   | { blockType: 'mediaBand'; image: Img }
   | { blockType: 'gallery'; heading?: L; images: Img[] }
   | { blockType: 'quote'; text: L; author?: L }
-  | { blockType: 'cta'; heading?: L; text?: L; button?: { label: L; href: string }; image?: Img }
+  | { blockType: 'cta'; variant?: 'band' | 'strip'; heading?: L; text?: L; points?: L[]; button?: { label: L; href: string }; image?: Img }
   | { blockType: 'contact'; heading?: L; intro?: L }
   | { blockType: 'map'; heading?: L; text?: L; zoom?: number }
   | { blockType: 'rooms'; heading?: L; intro?: L; limit?: number; layout?: 'cards' | 'detailed'; link?: { label: L; href: string } }
@@ -21,7 +21,7 @@ export type BlockInput =
   | { blockType: 'news'; heading?: L; intro?: L; layout?: 'latest' | 'list'; limit?: number; link?: { label: L; href: string } }
   | { blockType: 'policies'; heading?: L; showTimes?: boolean; items: { title: L; text: L }[] }
 
-export type PageInput = { slug: string; title: L; navLabel?: L; navOrder: number; showInNav?: boolean; showInFooter?: boolean; seo?: { title?: L; description?: L }; blocks: BlockInput[] }
+export type PageInput = { slug: string; title: L; navLabel?: L; navOrder: number; showInNav?: boolean; showInFooter?: boolean; navCondition?: 'always' | 'offers'; seo?: { title?: L; description?: L }; blocks: BlockInput[] }
 
 export type RoomInput = {
   slug: string
@@ -87,6 +87,8 @@ export type SiteContent = {
     defaultLocale: 'fr' | 'en'
     enabledLocales: ('fr' | 'en')[]
     cta: { label: L; href: string }
+    /** The hotel's own booking engine ("book" links open it). */
+    booking?: { engine: 'link' | 'clock-pms'; url: string }
   }
   rooms: RoomInput[]
   offers?: OfferInput[]

@@ -2,6 +2,34 @@ import type { PageInput } from '../types'
 import { IMG } from './hotel-herse-dor.images'
 import { accessibility, houseRulesAndTerms, legalNotice, privacy } from './hotel-herse-dor.legal'
 
+const BOOK = { label: { fr: 'Réserver', en: 'Book' }, href: 'book' }
+
+/** Reasons to book direct, in the hotel's own words (its home page and contact FAQ, read 26 Sep 2026). */
+const BOOK_DIRECT_POINTS = [
+  { fr: 'Meilleurs prix et conditions d’annulation garantis', en: 'Best prices and cancellation terms, guaranteed' },
+  { fr: 'Sans intermédiaire, sans frais supplémentaires', en: 'No middleman, no extra fees' },
+  { fr: 'Les dernières chambres disponibles, en temps réel', en: 'The last available rooms, in real time' },
+  { fr: 'Assistance directe de l’hôtel, 24h/24', en: 'Direct help from the hotel, 24 hours a day' },
+]
+
+const BOOK_DIRECT_STRIP: PageInput['blocks'][number] = {
+  blockType: 'cta',
+  variant: 'strip',
+  heading: { fr: 'Réservez en direct', en: 'Book direct' },
+  points: BOOK_DIRECT_POINTS,
+  button: BOOK,
+}
+
+/** The closing call to action of a page: one per page, always to the booking engine. */
+const bookBand = (heading: { fr: string; en: string }, text: { fr: string; en: string }, image?: (typeof IMG)[keyof typeof IMG], withPoints = true): PageInput['blocks'][number] => ({
+  blockType: 'cta',
+  heading,
+  text,
+  points: withPoints ? BOOK_DIRECT_POINTS : undefined,
+  button: BOOK,
+  image,
+})
+
 const home: PageInput = {
   slug: 'home',
   navOrder: 0,
@@ -32,6 +60,8 @@ const home: PageInput = {
       // free commercial use, no attribution required (credited in public/stock/paris/SOURCES.md).
       video: { src: '/stock/paris/seine-conciergerie-1280.mp4', mobileSrc: '/stock/paris/seine-conciergerie-540x960.mp4' },
     },
+    // Why book direct: the hotel's own promises, from its current site (home page and contact FAQ, read 26 Sep 2026).
+    BOOK_DIRECT_STRIP,
     {
       blockType: 'quote',
       text: { fr: 'Respirer Paris, cela conserve l’âme.', en: 'To breathe Paris preserves the soul.' },
@@ -101,16 +131,15 @@ const home: PageInput = {
       heading: { fr: 'En images', en: 'In pictures' },
       images: [IMG.patio, IMG.sup, IMG.buffet, IMG.lift, IMG.comfort, IMG.stone],
     },
-    {
-      blockType: 'cta',
-      heading: { fr: 'Réservez en direct', en: 'Book direct' },
-      text: {
+    bookBand(
+      { fr: 'Réservez en direct', en: 'Book direct' },
+      {
         fr: 'En réservant directement auprès de l’hôtel, vous bénéficiez des meilleures conditions et d’un interlocuteur unique pour tout votre séjour.',
         en: 'Book directly with the hotel for the best conditions and a single point of contact for your whole stay.',
       },
-      button: { label: { fr: 'Nous contacter', en: 'Contact us' }, href: 'contact' },
-      image: IMG.view,
-    },
+      IMG.view,
+      false, // the strip under the hero already lists the reasons
+    ),
   ],
 }
 
@@ -144,12 +173,10 @@ const rooms: PageInput = {
       heading: { fr: 'Nos offres', en: 'Our offers' },
       limit: 3,
     },
-    {
-      blockType: 'cta',
-      heading: { fr: 'Une question sur votre chambre ?', en: 'A question about your room?' },
-      text: { fr: 'Notre équipe vous répond à toute heure.', en: 'Our team answers at any time of day or night.' },
-      button: { label: { fr: 'Nous contacter', en: 'Contact us' }, href: 'contact' },
-    },
+    bookBand(
+      { fr: 'Réservez votre chambre', en: 'Book your room' },
+      { fr: 'Une question avant de réserver ? Notre équipe vous répond à toute heure.', en: 'A question before you book? Our team answers at any time of day or night.' },
+    ),
   ],
 }
 
@@ -176,8 +203,8 @@ const services: PageInput = {
       eyebrow: { fr: 'Petit-déjeuner', en: 'Breakfast' },
       heading: { fr: 'Un buffet à la française', en: 'A French-style buffet' },
       body: {
-        fr: 'Servi de 7h à 10h30 en salle : boissons chaudes, viennoiseries, jus d’orange pressé, pains, confitures et miel, fruits secs, yaourts, fromages, compote et fruits frais. Certains produits sont locaux et bio, par engagement pour les circuits courts.\n\nLe petit-déjeuner peut aussi être servi en chambre sur plateau, à réserver la veille avant 18h.',
-        en: 'Served from 7:00 to 10:30 in the breakfast room: hot drinks, pastries, freshly squeezed orange juice, breads, jams and honey, dried fruit, yoghurts, cheeses, compote and fresh fruit. Some products are local and organic, in support of short supply chains.\n\nBreakfast can also be served on a tray in your room; order it the day before by 18:00.',
+        fr: 'Servi de 7h à 10h30 en salle : boissons chaudes, viennoiseries, jus d’orange pressé, pains, confitures et miel, fruits secs, yaourts, fromages, compote et fruits frais. Certains produits sont locaux et bio, par engagement pour les circuits courts.\n\nLe buffet est en option, au prix de 15 € par personne. Il peut aussi être servi en chambre sur plateau, à réserver la veille avant 18h.',
+        en: 'Served from 7:00 to 10:30 in the breakfast room: hot drinks, pastries, freshly squeezed orange juice, breads, jams and honey, dried fruit, yoghurts, cheeses, compote and fresh fruit. Some products are local and organic, in support of short supply chains.\n\nThe buffet is optional, at €15 per person. It can also be served on a tray in your room; order it the day before by 18:00.',
       },
       image: IMG.buffet,
       imagePosition: 'right',
@@ -219,13 +246,18 @@ const services: PageInput = {
       heading: { fr: 'Bon à savoir', en: 'Good to know' },
       showTimes: true,
       items: [
-        { title: { fr: 'Petit-déjeuner', en: 'Breakfast' }, text: { fr: 'Buffet de 7h à 10h30 ; en chambre sur réservation la veille avant 18h.', en: 'Buffet from 7:00 to 10:30; in your room if ordered the day before by 18:00.' } },
-        { title: { fr: 'Animaux', en: 'Pets' }, text: { fr: 'Chiens et chats acceptés, avec supplément.', en: 'Dogs and cats welcome, for a supplement.' } },
+        { title: { fr: 'Petit-déjeuner', en: 'Breakfast' }, text: { fr: 'Buffet de 7h à 10h30, en option à 15 € par personne ; en chambre sur réservation la veille avant 18h.', en: 'Buffet from 7:00 to 10:30, optional at €15 per person; in your room if ordered the day before by 18:00.' } },
+        { title: { fr: 'Animaux', en: 'Pets' }, text: { fr: 'Petits animaux (chiens, chats) acceptés, supplément de 20 € par animal et par nuit.', en: 'Small pets (dogs, cats) welcome, €20 per pet per night.' } },
         { title: { fr: 'Bagages', en: 'Luggage' }, text: { fr: 'Consigne gratuite avant l’arrivée et après le départ.', en: 'Free storage before check-in and after check-out.' } },
         { title: { fr: 'Tabac', en: 'Smoking' }, text: { fr: 'Hôtel entièrement non-fumeur.', en: 'The whole hotel is non-smoking.' } },
         { title: { fr: 'Réception', en: 'Reception' }, text: { fr: 'Ouverte 24h/24, équipe multilingue.', en: 'Open 24 hours, multilingual team.' } },
       ],
     },
+    bookBand(
+      { fr: 'Votre séjour au cœur du Marais', en: 'Your stay in the heart of the Marais' },
+      { fr: 'Réservez directement auprès de l’hôtel, en quelques clics.', en: 'Book directly with the hotel, in a few clicks.' },
+      IMG.patio,
+    ),
   ],
 }
 
@@ -273,6 +305,11 @@ const area: PageInput = {
       ],
     },
     { blockType: 'map', heading: { fr: 'Sur le plan', en: 'On the map' }, zoom: 16 },
+    bookBand(
+      { fr: 'Le Marais depuis votre chambre', en: 'The Marais from your room' },
+      { fr: 'Place des Vosges à 100 m, Bastille à 200 m : réservez directement auprès de l’hôtel.', en: 'Place des Vosges 100 m away, Bastille 200 m: book directly with the hotel.' },
+      IMG.view,
+    ),
   ],
 }
 
@@ -286,6 +323,7 @@ const gallery: PageInput = {
       heading: { fr: 'Galerie', en: 'Gallery' },
       images: [IMG.lounge, IMG.sup, IMG.patio, IMG.buffet, IMG.supTriple, IMG.lift, IMG.comfort, IMG.stone, IMG.bath, IMG.twin, IMG.buffetBar, IMG.double, IMG.tablet, IMG.comfortTwin, IMG.breakfastRoom, IMG.view],
     },
+    bookBand({ fr: 'Envie d’y séjourner ?', en: 'Fancy staying here?' }, { fr: 'Réservez directement auprès de l’hôtel.', en: 'Book directly with the hotel.' }),
   ],
 }
 
@@ -310,15 +348,10 @@ const contact: PageInput = {
     },
     { blockType: 'map', zoom: 16 },
     {
-      blockType: 'faq',
-      heading: { fr: 'Questions fréquentes', en: 'Frequently asked questions' },
-      items: [
-        { question: { fr: 'À quelle heure puis-je arriver et partir ?', en: 'What time can I check in and out?' }, answer: { fr: 'Les chambres sont disponibles à partir de 15h30 et doivent être libérées avant 11h. La réception est ouverte 24h/24 et garde vos bagages gratuitement.', en: 'Rooms are ready from 15:30 and must be vacated by 11:00. Reception is open 24 hours and keeps your luggage free of charge.' } },
-        { question: { fr: 'Le petit-déjeuner est-il inclus ?', en: 'Is breakfast included?' }, answer: { fr: 'Le buffet est servi de 7h à 10h30. Demandez à la réception s’il est inclus dans votre tarif.', en: 'The buffet is served from 7:00 to 10:30. Ask reception whether it is included in your rate.' } },
-        { question: { fr: 'L’hôtel est-il accessible ?', en: 'Is the hotel accessible?' }, answer: { fr: 'Oui, l’ascenseur est accessible aux personnes à mobilité réduite. Précisez-nous vos besoins avant l’arrivée.', en: 'Yes, the lift is accessible to guests with reduced mobility. Let us know your needs before you arrive.' } },
-        { question: { fr: 'Où se garer ?', en: 'Where can I park?' }, answer: { fr: 'Un parking public couvert et gardé se trouve 45 rue du Faubourg Saint-Antoine, à quelques minutes à pied.', en: 'A covered, guarded public car park is at 45 rue du Faubourg Saint-Antoine, a few minutes’ walk away.' } },
-        { question: { fr: 'Comment venir ?', en: 'How do I get here?' }, answer: { fr: 'Métro Bastille (lignes 1, 5 et 8) ou Saint-Paul (ligne 1), à quelques pas de l’hôtel. Nous pouvons réserver un taxi pour les aéroports.', en: 'Bastille metro (lines 1, 5 and 8) or Saint-Paul (line 1), a short walk away. We can book a taxi to the airports.' } },
-      ],
+      blockType: 'cta',
+      heading: { fr: 'Une question avant de venir ?', en: 'A question before you come?' },
+      text: { fr: 'Horaires, petit-déjeuner, animaux, bagages, accès : les réponses aux questions les plus fréquentes.', en: 'Times, breakfast, pets, luggage, getting here: answers to the questions guests ask most.' },
+      button: { label: { fr: 'Questions fréquentes', en: 'Frequently asked questions' }, href: 'faq' },
     },
   ],
 }
@@ -349,4 +382,68 @@ const blog: PageInput = {
   ],
 }
 
-export const pages: PageInput[] = [home, rooms, services, area, blog, gallery, contact, legalNotice, privacy, houseRulesAndTerms, accessibility]
+/**
+ * Questions guests ask, answered from the hotel's own site (services, access, contact FAQ and
+ * house rules pages, read 26 Sep 2026). Footer link; FAQPage data comes with the block.
+ */
+const faq: PageInput = {
+  slug: 'faq',
+  navOrder: 6,
+  showInNav: false,
+  showInFooter: true,
+  title: { fr: 'Questions fréquentes', en: 'Frequently asked questions' },
+  navLabel: { fr: 'FAQ', en: 'FAQ' },
+  seo: {
+    description: {
+      fr: 'Arrivée et départ, petit-déjeuner, animaux, bagages, taxe de séjour, accès : les réponses de l’Hôtel de la Herse d’Or.',
+      en: 'Check-in and check-out, breakfast, pets, luggage, city tax, getting here: answers from the Hôtel de la Herse d’Or.',
+    },
+  },
+  blocks: [
+    {
+      blockType: 'faq',
+      heading: { fr: 'Questions fréquentes', en: 'Frequently asked questions' },
+      items: [
+        { question: { fr: 'Comment réserver ?', en: 'How do I book?' }, answer: { fr: 'En ligne sur ce site avec le bouton Réserver, par téléphone ou par e-mail : la réception est ouverte 24h/24. En réservant en direct, vous n’avez ni intermédiaire ni frais supplémentaires.', en: 'Online on this site with the Book button, by phone or by email: reception is open 24 hours a day. Booking direct means no middleman and no extra fees.' } },
+        { question: { fr: 'À quelle heure puis-je arriver et partir ?', en: 'What time can I check in and out?' }, answer: { fr: 'Les chambres sont disponibles à partir de 15h30 et doivent être libérées avant 11h. La réception est ouverte 24h/24 et garde vos bagages gratuitement.', en: 'Rooms are ready from 15:30 and must be vacated by 11:00. Reception is open 24 hours and keeps your luggage free of charge.' } },
+        { question: { fr: 'Puis-je m’enregistrer seul ?', en: 'Can I check in on my own?' }, answer: { fr: 'Oui : enregistrez-vous et récupérez votre clé à la borne de la réception ou depuis votre propre appareil. L’équipe reste disponible 24h/24.', en: 'Yes: check in and collect your key at the kiosk in reception or from your own device. The team is still there 24 hours a day.' } },
+        { question: { fr: 'Le petit-déjeuner est-il inclus ?', en: 'Is breakfast included?' }, answer: { fr: 'Le buffet est en option, au prix de 15 € par personne, servi de 7h à 10h30. Il peut aussi être servi en chambre sur plateau, à réserver la veille avant 18h.', en: 'The buffet is optional, at €15 per person, served from 7:00 to 10:30. It can also be served on a tray in your room if ordered the day before by 18:00.' } },
+        { question: { fr: 'Les animaux sont-ils acceptés ?', en: 'Are pets allowed?' }, answer: { fr: 'Oui, les petits animaux de compagnie (chiens, chats) sont acceptés, avec un supplément de 20 € par animal et par nuit.', en: 'Yes, small pets (dogs, cats) are welcome, for €20 per pet per night.' } },
+        { question: { fr: 'Puis-je laisser mes bagages ?', en: 'Can I leave my luggage?' }, answer: { fr: 'Oui, la consigne à bagages est gratuite, avant votre arrivée comme après votre départ.', en: 'Yes, luggage storage is free, before check-in and after check-out.' } },
+        { question: { fr: 'La taxe de séjour est-elle comprise ?', en: 'Is the city tax included?' }, answer: { fr: 'Non. Conformément à la réglementation de la ville de Paris, une taxe de séjour est due par chaque client de plus de 18 ans, en plus du prix de la chambre.', en: 'No. Under the City of Paris rules, a city tax is due for each guest over 18, on top of the room price.' } },
+        { question: { fr: 'L’hôtel est-il accessible ?', en: 'Is the hotel accessible?' }, answer: { fr: 'L’ascenseur dessert tous les niveaux et est accessible aux personnes à mobilité réduite. Précisez-nous vos besoins avant l’arrivée.', en: 'The lift serves every floor and is accessible to guests with reduced mobility. Let us know your needs before you arrive.' } },
+        { question: { fr: 'Y a-t-il le Wi-Fi ?', en: 'Is there Wi-Fi?' }, answer: { fr: 'Oui, le Wi-Fi très haut débit est gratuit et illimité dans tout l’hôtel.', en: 'Yes, high-speed Wi-Fi is free and unlimited throughout the hotel.' } },
+        { question: { fr: 'Où se garer ?', en: 'Where can I park?' }, answer: { fr: 'Un parking public payant, couvert et gardé se trouve au 45 rue du Faubourg Saint-Antoine, à moins de 10 minutes à pied de l’hôtel.', en: 'A paying, covered and guarded public car park is at 45 rue du Faubourg Saint-Antoine, under 10 minutes’ walk from the hotel.' } },
+        { question: { fr: 'Comment venir depuis les aéroports ?', en: 'How do I get here from the airports?' }, answer: { fr: 'Depuis Roissy-CDG : RER B jusqu’à Châtelet, puis ligne 1 direction Château de Vincennes jusqu’à Bastille. Depuis Orly : OrlyVal jusqu’à Antony, RER B jusqu’à Châtelet, puis ligne 1 jusqu’à Bastille. La réception peut aussi vous réserver un taxi.', en: 'From Charles de Gaulle: RER B to Châtelet, then line 1 towards Château de Vincennes to Bastille. From Orly: OrlyVal to Antony, RER B to Châtelet, then line 1 to Bastille. Reception can also book you a taxi.' } },
+        { question: { fr: 'Quelles stations de métro sont proches ?', en: 'Which metro stations are nearby?' }, answer: { fr: 'Bastille (lignes 1, 5 et 8) et Saint-Paul (ligne 1), à quelques pas. RER A à Gare de Lyon, RER B à Châtelet.', en: 'Bastille (lines 1, 5 and 8) and Saint-Paul (line 1), a short walk away. RER A at Gare de Lyon, RER B at Châtelet.' } },
+      ],
+    },
+    bookBand({ fr: 'Prêt à réserver ?', en: 'Ready to book?' }, { fr: 'Choisissez vos dates : la réservation se fait directement auprès de l’hôtel.', en: 'Choose your dates: you book directly with the hotel.' }),
+  ],
+}
+
+/** The hotel's current offers; in the menu only while at least one is running. */
+const offres: PageInput = {
+  slug: 'offres',
+  navOrder: 1.5,
+  navCondition: 'offers',
+  title: { fr: 'Offres', en: 'Offers' },
+  seo: {
+    description: {
+      fr: 'Les offres du moment de l’Hôtel de la Herse d’Or, à réserver directement auprès de l’hôtel.',
+      en: 'Current offers at the Hôtel de la Herse d’Or, to book directly with the hotel.',
+    },
+  },
+  blocks: [
+    {
+      blockType: 'hero',
+      heading: { fr: 'Nos offres', en: 'Our offers' },
+      subheading: { fr: 'À réserver directement auprès de l’hôtel.', en: 'To book directly with the hotel.' },
+      image: IMG.view,
+    },
+    { blockType: 'offers', limit: 12 },
+    bookBand({ fr: 'Réservez en direct', en: 'Book direct' }, { fr: 'Choisissez vos dates et votre chambre.', en: 'Choose your dates and your room.' }),
+  ],
+}
+
+export const pages: PageInput[] = [home, rooms, services, area, blog, gallery, contact, faq, offres, legalNotice, privacy, houseRulesAndTerms, accessibility]

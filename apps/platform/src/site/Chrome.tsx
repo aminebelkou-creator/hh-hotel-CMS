@@ -1,15 +1,26 @@
 import React from 'react'
 import { pick, type Localized, type SiteSnapshot } from '@/releases/snapshot'
+import { currentOffers } from '@hh/pack-hotel/render'
+import type { HotelSnapshot } from '@hh/pack-hotel'
 import { linkHref, pageHref } from './routing'
 import { practicalInfo } from './load'
 import { LOCALE_NAMES, type Labels } from './i18n'
 
 type Props = { snapshot: SiteSnapshot; locale: string; t: Labels; current: string }
 
-export function navPages(snapshot: SiteSnapshot) {
+/** A page whose menu entry depends on the moment (an Offers page while no offer runs) is hidden. */
+export function pageListed(snapshot: SiteSnapshot, p: SiteSnapshot['pages'][number], today?: string) {
+  if (p.navCondition === 'offers') {
+    const hotel = snapshot.packs?.hotel as HotelSnapshot | undefined
+    if (!currentOffers(hotel?.offers, today).length) return false
+  }
+  return true
+}
+
+export function navPages(snapshot: SiteSnapshot, today?: string) {
   // The blog page stays out of the menu until it has a post to show.
   const emptyBlog = (p: SiteSnapshot['pages'][number]) => !(snapshot.posts ?? []).length && p.blocks.some((b) => b.blockType === 'news' && b.layout === 'list')
-  return [...snapshot.pages].filter((p) => p.showInNav && !emptyBlog(p)).sort((a, b) => a.navOrder - b.navOrder || a.slug.localeCompare(b.slug))
+  return [...snapshot.pages].filter((p) => p.showInNav && !emptyBlog(p) && pageListed(snapshot, p, today)).sort((a, b) => a.navOrder - b.navOrder || a.slug.localeCompare(b.slug))
 }
 
 export function SiteHeader({ snapshot, locale, t, current }: Props) {
@@ -154,7 +165,7 @@ export function SiteFooter({ snapshot, locale, t, release }: Omit<Props, 'curren
       {snapshot.pages.some((pg) => pg.showInFooter) && (
         <nav className="hh-wrap hh-footer-legal" aria-label={t.legal}>
           {[...snapshot.pages]
-            .filter((pg) => pg.showInFooter)
+            .filter((pg) => pg.showInFooter && pageListed(snapshot, pg))
             .sort((a, b) => a.navOrder - b.navOrder)
             .map((pg) => (
               <a key={pg.slug} href={pageHref(snapshot, locale, pg.slug)}>

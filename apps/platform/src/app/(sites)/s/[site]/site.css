@@ -131,6 +131,26 @@ body.hh-site { margin: 0; }
 .hh-cta h2 { font-size: clamp(2rem, 4vw, 3rem); }
 .hh-cta p { opacity: .92; font-size: 1.1rem; margin-bottom: 1.6em; }
 .hh-cta .hh-btn { background: var(--hh-inverse-ink); color: var(--hh-inverse) !important; }
+/* Calls to action: reasons to book direct (ticked list) and a larger Book button. */
+.hh-cta-points { list-style: none; padding: 0; margin: 0 0 1.8em; display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: center; }
+.hh-cta-points li { position: relative; padding-left: 1.5em; font-size: 1rem; }
+.hh-cta-points li::before { content: ''; position: absolute; left: 0; top: .35em; width: .9em; height: .5em; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }
+.hh-btn--book { font-size: 1rem; padding: 15px 34px; }
+.hh-cta-strip { background: var(--hh-card); border-bottom: 1px solid var(--hh-line); color: var(--hh-ink); }
+.hh-cta-strip-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 30px; padding-top: 22px; padding-bottom: 22px; }
+.hh-cta-strip-title { margin: 0; font-weight: 700; font-size: 1.05rem; }
+.hh-cta-strip .hh-cta-points { margin: 0; justify-content: flex-start; flex: 1 1 420px; gap: 8px 24px; }
+.hh-cta-strip .hh-cta-points li { font-size: .95rem; }
+.hh-cta-strip .hh-cta-points li::before { color: var(--hh-accent-text, var(--hh-accent)); }
+.hh-cta-strip .hh-btn { margin-left: auto; }
+/* Phones: the sticky Call · Book bar is always there, so the strip keeps only its reasons. */
+@media (max-width: 700px) { .hh-cta-strip .hh-btn { display: none; } .hh-cta-strip-inner { gap: 10px; padding-top: 18px; padding-bottom: 18px; } }
+.hh-room-book, .hh-room--detailed .hh-room-book { margin: 28px 0 0; }
+/* Overall scores on review sites (confirmed facts), above the reviews. */
+.hh-review-scores { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-wrap: wrap; gap: 12px; }
+.hh-review-scores li > a, .hh-review-scores li:not(:has(> a)) { display: inline-flex; align-items: baseline; gap: 8px; padding: 10px 16px; border: 1px solid var(--hh-line); border-radius: var(--hh-radius); color: inherit; text-decoration: none; }
+.hh-review-scores strong { font-size: 1.15rem; }
+.hh-review-scores-count { color: var(--hh-muted); font-size: .9rem; }
 
 /* Rooms (hotel pack) */
 .hh-room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-top: 36px; }
@@ -531,6 +551,14 @@ body.hh-site { margin: 0; }
 [data-template='lumiere'] .hh-cta p { font-size: 20px; opacity: 1; }
 [data-template='lumiere'] .hh-cta .hh-btn { background: var(--hh-accent); color: var(--hh-accent-ink) !important; }
 [data-template='lumiere'] .hh-cta :focus-visible { outline-color: #fcfcfc; }
+[data-template='lumiere'] .hh-cta .hh-cta-points { justify-content: flex-start; font-size: 18px; }
+[data-template='lumiere'] .hh-cta .hh-btn--book { font-size: 18px; padding: 18px 44px; }
+[data-template='lumiere'] .hh-cta-strip { background: #030303; color: #fcfcfc; border-bottom: 0; }
+[data-template='lumiere'] .hh-cta-strip-title { font-family: var(--hh-serif); font-weight: 400; font-size: 24px; }
+[data-template='lumiere'] .hh-cta-strip .hh-cta-points li::before { color: var(--hh-accent); }
+[data-template='lumiere'] .hh-cta-strip .hh-btn { background: var(--hh-accent); color: var(--hh-accent-ink) !important; }
+[data-template='lumiere'] .hh-cta-strip :focus-visible { outline-color: #fcfcfc; }
+[data-template='atelier'] .hh-cta-strip .hh-btn, [data-template='soiree'] .hh-cta-strip .hh-btn { margin-left: auto; }
 
 /* Contact, rules, FAQ, forms */
 [data-template='lumiere'] .hh-facts, [data-template='lumiere'] .hh-policies > div { background: rgba(203, 161, 83, .1); border: 1px solid rgba(3, 3, 3, .25); border-radius: 8px; }

@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 import { packs } from '../packs'
 import { ensureStaticMap } from '../media/static-map'
+import { bookingOf } from '../site/booking'
 
 /**
  * A release snapshot holds everything the renderer needs for one site, so serving a release
@@ -20,6 +21,8 @@ export type SnapshotPage = {
   navOrder: number
   showInNav: boolean
   showInFooter?: boolean
+  /** 'offers': in the menu and footer only while an offer is running. */
+  navCondition?: string
   blocks: SnapshotBlock[]
   seo?: { title?: Localized<string>; description?: Localized<string>; image?: Localized<string> | null } | null
 }
@@ -81,6 +84,8 @@ export type SiteSnapshot = {
     template: string
     brand: Record<string, string | null> | null
     cta: { label: Localized<string> | null; href: string | null }
+    /** The hotel's own booking engine ("book" links open it), or null. */
+    booking?: { engine: string; url: string } | null
     /** Render-time only, never stored: '' when served on the hotel's own domain, else /s/<slug>. */
     basePath?: string
     /** Render-time only (set by resolve.ts from the site row): 'canary' sites get template changes first. */
@@ -266,6 +271,7 @@ export async function buildSnapshot(payload: Payload, tenantId: number, siteId: 
       template: (s.template as string) || 'maison',
       brand: brandOf(s.brand),
       cta: { label: cta.label ?? null, href: cta.href ?? null },
+      booking: bookingOf(s.booking as { engine?: string; url?: string } | null),
     },
     pages: pages.docs.map((p) => toSnapshotPage(p, imageUrl)),
     posts,
@@ -357,6 +363,7 @@ export function toSnapshotPage(p: unknown, imageUrl?: Map<number, string | null>
     navOrder: Number(d.navOrder ?? 0),
     showInNav: d.showInNav !== false,
     showInFooter: d.showInFooter === true,
+    navCondition: d.navCondition === 'offers' ? 'offers' : 'always',
     blocks: ((d.blocks ?? []) as SnapshotBlock[]).map((b) => ({ ...b })),
     seo,
   }

@@ -70,6 +70,10 @@
       "reason": "Translation, run after src/generate/endpoints.ts has checked the caller's access to the site; every query filters on the explicit tenantId, writes drafts, never overwrites a person's text. Proven by tests/int/generate.int.spec.ts."
     },
     {
+      "file": "src/onboarding/add-facts.ts",
+      "reason": "Engineer-run onboarding script: adds confirmed facts read on the hotel's own site to one named site, every query filtered on that site's tenant; never removes or changes a fact."
+    },
+    {
       "file": "src/generate/post-drafts.ts",
       "reason": "Blog draft suggestion, run after src/generate/endpoints.ts has checked the caller's access to the site; every query filters on the explicit tenantId and site, it only creates DRAFT posts from confirmed facts and never publishes. Proven by tests/int/generate.int.spec.ts."
     },

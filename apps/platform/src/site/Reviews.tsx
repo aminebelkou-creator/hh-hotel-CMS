@@ -36,6 +36,47 @@ function Rating({ r, locale, t }: { r: SnapshotReview; locale: string; t: Labels
   )
 }
 
+/**
+ * The hotel's overall scores on review sites, from confirmed facts only (never computed from the
+ * few reviews shown): reviews.<source>.score ("4.6/5", "8.9/10"), .count and .url.
+ */
+export function reviewScores(snapshot: SiteSnapshot) {
+  const facts = snapshot.facts ?? []
+  const get = (k: string) => facts.find((f) => f.key === k)?.value
+  const sources = [...new Set(facts.map((f) => /^reviews\.([a-z]+)\.score$/.exec(f.key)?.[1]).filter(Boolean) as string[])]
+  return sources
+    .map((s) => {
+      const m = /^\s*(\d+(?:[.,]\d+)?)\s*\/\s*(\d+)\s*$/.exec(get(`reviews.${s}.score`) ?? '')
+      if (!m) return null
+      const count = Number((get(`reviews.${s}.count`) ?? '').replace(/[^\d]/g, '')) || null
+      const url = get(`reviews.${s}.url`)
+      return { source: s, name: SOURCE_NAMES[s] ?? s, score: Number(m[1].replace(',', '.')), scale: Number(m[2]), count, url: url && /^https:\/\//.test(url) ? url : null }
+    })
+    .filter((x): x is NonNullable<typeof x> => Boolean(x && x.scale > 0 && x.score <= x.scale))
+}
+
+function Scores({ ctx }: { ctx: Ctx }) {
+  const { snapshot, locale, t } = ctx
+  const scores = reviewScores(snapshot)
+  if (!scores.length) return null
+  return (
+    <ul className="hh-review-scores">
+      {scores.map((s) => {
+        const body = (
+          <>
+            <span className="hh-review-scores-name">{s.name}</span>
+            <strong>
+              {num(s.score, locale)}/{num(s.scale, locale)}
+            </strong>
+            {s.count ? <span className="hh-review-scores-count">{t.reviewsCount.replace('{n}', new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-GB').format(s.count))}</span> : null}
+          </>
+        )
+        return <li key={s.source}>{s.url ? <a href={s.url} rel="noopener nofollow">{body}</a> : body}</li>
+      })}
+    </ul>
+  )
+}
+
 /** Guest reviews, word for word in the guest's language (lang attribute), with where they come from. */
 export function ReviewsBlock({ block, ctx, headingLevel }: { block: Record<string, unknown>; ctx: Ctx; headingLevel: 'h1' | 'h2' }) {
   const { snapshot, locale, t } = ctx
@@ -49,6 +90,7 @@ export function ReviewsBlock({ block, ctx, headingLevel }: { block: Record<strin
       <div className="hh-wrap">
         {p(block.heading) && <Heading className="hh-section-title">{p(block.heading)}</Heading>}
         {p(block.intro) && <p className="hh-lead">{p(block.intro)}</p>}
+        <Scores ctx={ctx} />
         <ul className="hh-review-grid">
           {reviews.map((r) => {
             const name = SOURCE_NAMES[r.source]

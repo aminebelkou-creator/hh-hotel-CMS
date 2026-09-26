@@ -175,7 +175,7 @@ describe('public hotel site', () => {
     expect(form).toMatch(/action="[^"]*\/s\/site-5\/contact"/)
     expect(form).toContain('method="get"')
     expect(form).toContain('aria-label="Check availability"')
-    expect(home).toMatch(/<input id="[^"]+-in" type="date" name="arrival"\/>/)
+    expect(home).toMatch(/<input id="[^"]+-in" [^>]*name="arrival"[^>]*type="date"[^>]*\/>|<input id="[^"]+-in" [^>]*type="date"[^>]*name="arrival"[^>]*\/>/)
     expect(home).toMatch(/<select id="[^"]+-n" name="guests">/)
     expect(home).toContain('<section class="hh-section hh-banners">')
     expect(home).toContain('<div class="hh-section-head hh-section-head--center">')
@@ -267,5 +267,70 @@ describe('public hotel site', () => {
     expect((await fetch(`${base}/blog/nope`)).status).toBe(404)
     const sitemap = await (await fetch(`${base}/sitemap.xml`)).text()
     expect(sitemap).toMatch(/<loc>[^<]*\/s\/site-5\/blog\/walks-nearby<\/loc>/)
+  })
+
+  it('book direct: "book" links open the hotel’s booking engine, reasons strip, room Book buttons, offers menu entry, review-site scores', async (ctx) => {
+    if (!reachable) ctx.skip()
+    const ENGINE = 'https://sky-eu1.clock-software.com/spa/pms-wbe/#/hotel/12223'
+    const site0 = await payload.findByID({ collection: 'sites', id: A.siteId, depth: 0, overrideAccess: true })
+    const created: { pages: number[]; offers: number[]; facts: number[] } = { pages: [], offers: [], facts: [] }
+    const publish = async () => expect((await post(A, `/sites/${A.siteId}/publish`)).status).toBe(200)
+    try {
+      await payload.update({ collection: 'sites', id: A.siteId, data: { cta: { href: 'book' }, booking: { engine: 'clock-pms', url: ENGINE } } as never, overrideAccess: true })
+      const page = (slug: string, extra: Record<string, unknown>) =>
+        payload.create({ collection: 'pages', data: { tenant: A.tenantId, site: A.siteId, slug, title: slug, navOrder: 9, _status: 'published', ...extra } as never, overrideAccess: true })
+      created.pages.push(
+        Number(
+          (
+            await page('why-direct', {
+              showInNav: false,
+              blocks: [
+                { blockType: 'cta', variant: 'strip', heading: 'Book direct', points: [{ text: 'No extra fees' }, { text: 'Help 24 hours a day' }], buttonLabel: 'Book now', buttonHref: 'book' },
+                { blockType: 'reviews', heading: 'Scores' },
+              ],
+            })
+          ).id,
+        ),
+      )
+      created.pages.push(Number((await page('deals', { showInNav: true, navLabel: 'Deals', navCondition: 'offers', blocks: [{ blockType: 'offers' }] })).id))
+      const offers = await payload.count({ collection: 'offers' as 'pages', where: { and: [{ tenant: { equals: A.tenantId } }, { active: { equals: true } }] }, overrideAccess: true })
+      for (const [key, value] of [['reviews.google.score', '4.6/5'], ['reviews.google.count', '1234'], ['reviews.google.url', 'https://example.test/place']]) {
+        const f = await payload.create({ collection: 'facts', data: { tenant: A.tenantId, site: A.siteId, key, value, method: 'manual', confidence: 1, decisionNote: 'booktest' } as never, overrideAccess: true })
+        await payload.update({ collection: 'facts', id: f.id, data: { status: 'confirmed' }, overrideAccess: true })
+        created.facts.push(Number(f.id))
+      }
+      await publish()
+      const home = await (await fetch(`${BASE}/s/${A.slug}`)).text()
+      // Header, sticky bar and booking bar all go to the engine, in the page's language.
+      expect(home).toContain(`<a class="hh-btn hh-header-cta" href="${ENGINE}?site_language=en">`)
+      expect(home).toContain(`<a class="hh-btn hh-sticky-book" href="${ENGINE}?site_language=en">`)
+      const form = home.match(/<form class="hh-booking-bar"[^>]*>/)?.[0] ?? ''
+      expect(form, form).toContain(`action="${ENGINE}?site_language=en"`)
+      expect(form).toContain('method="get"')
+      const fr = await (await fetch(`${BASE}/s/${A.slug}/fr`)).text()
+      expect(fr).toContain(`href="${ENGINE}?site_language=fr"`)
+      // An offers page is in the menu only while an offer runs.
+      expect(home.includes('>Deals</a>')).toBe(offers.totalDocs > 0)
+      if (offers.totalDocs === 0) {
+        const o = await payload.create({ collection: 'offers' as 'pages', data: { tenant: A.tenantId, slug: 'booktest-offer', order: 1, active: true, title: 'Autumn nights', summary: 'Two nights in autumn.' } as never, overrideAccess: true })
+        created.offers.push(Number(o.id))
+        await publish()
+        expect(await (await fetch(`${BASE}/s/${A.slug}`)).text()).toContain('>Deals</a>')
+      }
+      const why = await (await fetch(`${BASE}/s/${A.slug}/why-direct`)).text()
+      expect(why).toContain('<section class="hh-cta-strip" aria-label="Book direct"><div class="hh-wrap hh-cta-strip-inner"><p class="hh-cta-strip-title">Book direct</p><ul class="hh-cta-points"><li>No extra fees</li><li>Help 24 hours a day</li></ul>')
+      expect(why).toContain(`<a class="hh-btn hh-btn--book" href="${ENGINE}?site_language=en">Book now</a>`)
+      // Overall score from confirmed facts only, linked to the source; still no Review markup.
+      expect(why).toMatch(/<ul class="hh-review-scores"><li><a href="https:\/\/example.test\/place" rel="noopener nofollow"><span class="hh-review-scores-name">Google<\/span><strong>4.6<!-- -->\/<!-- -->5<\/strong><span class="hh-review-scores-count">1,234 reviews<\/span><\/a><\/li><\/ul>/)
+      expect(why).not.toMatch(/"@type":"(Review|AggregateRating)"/)
+      const rooms = await (await fetch(`${BASE}/s/${A.slug}/rooms`)).text()
+      expect(rooms).toMatch(new RegExp(`<p class="hh-room-book"><a class="hh-btn hh-btn--book" href="${ENGINE.replace(/[.#/?]/g, '\\$&')}\\?site_language=en" aria-label="Book: [^"]+">Book</a></p>`))
+    } finally {
+      await payload.update({ collection: 'sites', id: A.siteId, data: { cta: { href: (site0 as { cta?: { href?: string } }).cta?.href ?? null }, booking: { engine: 'link', url: null } } as never, overrideAccess: true })
+      for (const id of created.pages) await payload.delete({ collection: 'pages', id, overrideAccess: true })
+      for (const id of created.offers) await payload.delete({ collection: 'offers' as 'pages', id, overrideAccess: true })
+      for (const id of created.facts) await payload.delete({ collection: 'facts', id, overrideAccess: true })
+      await publish()
+    }
   })
 })

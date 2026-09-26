@@ -1,0 +1,5 @@
+[
+  { "key": "breakfast.hours", "value": "07:00-10:30", "source": "https://www.hotel-herse-dor.com/hotel-et-services/", "note": "« Servi de 7h à 10h30 » (Hôtel et services, read 26 Sep 2026)" },
+  { "key": "breakfast.price", "value": "15 €", "source": "https://www.hotel-herse-dor.com/hotel-et-services/", "note": "« en option, au prix de 15 EUR par personne » (read 26 Sep 2026)" },
+  { "key": "booking.url", "value": "https://sky-eu1.clock-software.com/spa/pms-wbe/#/hotel/12223", "source": "https://www.hotel-herse-dor.com/", "note": "Clock PMS+ booking engine opened by the hotel’s current site (read 26 Sep 2026)" }
+]

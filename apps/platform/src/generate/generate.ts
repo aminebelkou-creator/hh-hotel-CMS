@@ -88,13 +88,13 @@ const gen = (slot: string, block: Record<string, unknown>): Block => ({ ...block
 
 function pageBlocks(kind: keyof typeof PAGE_SLUGS, copy: SiteCopy, f: FactMap, locale: Locale): Block[] {
   const fr = locale === 'fr'
-  const booking = first(f, 'booking.url')
+  // 'book' opens the site's booking engine (Sites > Booking engine, else a confirmed booking.url fact, else the contact page).
   const contactSlug = PAGE_SLUGS.contact[locale]
   const roomsSlug = PAGE_SLUGS.rooms[locale]
   if (kind === 'home') {
     const amenities = all(f, 'amenity')
     return [
-      gen('gen:home:hero', { blockType: 'hero', heading: copy.home.heading, subheading: copy.home.subheading, ctaLabel: copy.home.cta, ctaHref: booking ?? contactSlug }),
+      gen('gen:home:hero', { blockType: 'hero', heading: copy.home.heading, subheading: copy.home.subheading, ctaLabel: copy.home.cta, ctaHref: 'book' }),
       gen('gen:home:about', { blockType: 'text', heading: copy.home.aboutHeading, body: copy.home.about }),
       ...(amenities.length
         ? [gen('gen:home:features', { blockType: 'features', heading: copy.home.featuresHeading, items: amenities.slice(0, 6).map((a) => ({ title: amenityTitle(a, locale) })) })]
@@ -104,7 +104,7 @@ function pageBlocks(kind: keyof typeof PAGE_SLUGS, copy: SiteCopy, f: FactMap, l
       gen('gen:home:offers', { blockType: 'offers', heading: fr ? 'Offres du moment' : 'Special offers', limit: 3 }),
       // The latest blog posts: renders nothing until the hotel publishes its first post.
       gen('gen:home:news', { blockType: 'news', heading: fr ? 'Actualités' : 'News', layout: 'latest', limit: 3, linkLabel: fr ? 'Tous les articles' : 'All posts', linkHref: 'blog' }),
-      gen('gen:home:cta', { blockType: 'cta', heading: copy.home.cta, text: fr ? 'Le meilleur tarif est ici, en direct.' : 'The best rate is here, direct.', buttonLabel: copy.home.cta, buttonHref: booking ?? contactSlug }),
+      gen('gen:home:cta', { blockType: 'cta', heading: copy.home.cta, text: fr ? 'Réservez directement auprès de l’hôtel.' : 'Book directly with the hotel.', buttonLabel: copy.home.cta, buttonHref: 'book' }),
     ]
   }
   if (kind === 'rooms') {
@@ -112,7 +112,7 @@ function pageBlocks(kind: keyof typeof PAGE_SLUGS, copy: SiteCopy, f: FactMap, l
       gen('gen:rooms:hero', { blockType: 'hero', heading: copy.rooms.heading, subheading: copy.rooms.intro }),
       gen('gen:rooms:rooms', { blockType: 'rooms', layout: 'detailed' }),
       gen('gen:rooms:offers', { blockType: 'offers', heading: fr ? 'Offres' : 'Offers' }),
-      gen('gen:rooms:cta', { blockType: 'cta', heading: copy.home.cta, buttonLabel: copy.home.cta, buttonHref: booking ?? contactSlug }),
+      gen('gen:rooms:cta', { blockType: 'cta', heading: copy.home.cta, buttonLabel: copy.home.cta, buttonHref: 'book' }),
     ]
   }
   if (kind === 'services') {

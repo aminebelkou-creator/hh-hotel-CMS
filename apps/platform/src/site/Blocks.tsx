@@ -4,7 +4,8 @@ import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical
 import { HeroRating, OffersBlock, PoliciesBlock, RoomsBlock } from '@hh/pack-hotel/render'
 import type { HotelSnapshot } from '@hh/pack-hotel'
 import { pick, type Localized, type SiteSnapshot, type SnapshotBlock } from '@/releases/snapshot'
-import { linkHref, pageHref } from './routing'
+import { bookHref, linkHref, pageHref, siteBooking } from './routing'
+import { BookingBar } from './BookingBar'
 import { practicalInfo } from './load'
 import type { Labels } from './i18n'
 import { FormBlock } from './FormBlock'
@@ -32,8 +33,9 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
   const hasHero = blocks[0]?.blockType === 'hero'
   // The page that lists room types in detail, if any: room cards elsewhere link to it.
   const roomsPage = snapshot.pages.find((pg) => pg.blocks.some((bb) => bb.blockType === 'rooms' && bb.layout === 'detailed'))
-  // The site's Book link (header button); the hero booking bar submits to it.
-  const book = linkHref(snapshot, locale, snapshot.site.cta?.href ?? undefined)
+  // The hotel's booking engine, if any; else the site's Book link (header button). The hero booking bar opens it.
+  const booking = siteBooking(snapshot)
+  const book = booking ? bookHref(snapshot, locale) : linkHref(snapshot, locale, snapshot.site.cta?.href ?? undefined)
   return (
     <>
       {blocks.map((b, i) => {
@@ -60,28 +62,14 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                 </div>
                 {b.bookingBar && book ? (
                   <div className="hh-wrap">
-                    {/* Opens the site's Book link with the chosen dates: no availability, no prices (owner decision, 24 Sep). */}
-                    <form className="hh-booking-bar" action={book} method="get" aria-label={t.checkAvailability}>
-                      <p className="hh-booking-field">
-                        <label htmlFor={`${key}-in`}>{t.arrival}</label>
-                        <input id={`${key}-in`} name="arrival" type="date" />
-                      </p>
-                      <p className="hh-booking-field">
-                        <label htmlFor={`${key}-out`}>{t.departure}</label>
-                        <input id={`${key}-out`} name="departure" type="date" />
-                      </p>
-                      <p className="hh-booking-field">
-                        <label htmlFor={`${key}-n`}>{t.guests}</label>
-                        <select id={`${key}-n`} name="guests" defaultValue="2">
-                          {[1, 2, 3, 4].map((n) => (
-                            <option key={n} value={n}>
-                              {t.guestsN.replace('{n}', String(n)).replace('(s)', n > 1 ? 's' : '')}
-                            </option>
-                          ))}
-                        </select>
-                      </p>
-                      <button type="submit">{t.book}</button>
-                    </form>
+                    {/* Opens the hotel's booking engine (or the Book link) with the chosen dates: no availability, no prices (owner decision, 24 Sep). */}
+                    <BookingBar
+                      id={key}
+                      booking={booking}
+                      action={book}
+                      locale={locale}
+                      labels={{ checkAvailability: t.checkAvailability, arrival: t.arrival, departure: t.departure, guests: t.guests, guestsN: t.guestsN, book: t.book }}
+                    />
                   </div>
                 ) : null}
               </section>
@@ -299,17 +287,39 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
             )
           case 'cta': {
             const href = linkHref(snapshot, locale, b.buttonHref as string)
+            const points = ((b.points as { text?: unknown }[] | undefined) ?? []).map((pt) => p<string>(pt.text)).filter(Boolean) as string[]
+            const button = href && p<string>(b.buttonLabel) && (
+              <a className="hh-btn hh-btn--book" href={href}>
+                {p<string>(b.buttonLabel)}
+              </a>
+            )
+            const list = points.length > 0 && (
+              <ul className="hh-cta-points">
+                {points.map((pt, k) => (
+                  <li key={k}>{pt}</li>
+                ))}
+              </ul>
+            )
+            if (b.variant === 'strip') {
+              // A slim line right under the hero: why book direct, and the button.
+              return (
+                <section key={key} className="hh-cta-strip" aria-label={p<string>(b.heading) || undefined}>
+                  <div className="hh-wrap hh-cta-strip-inner">
+                    {p<string>(b.heading) && <p className="hh-cta-strip-title">{p<string>(b.heading)}</p>}
+                    {list}
+                    {button}
+                  </div>
+                </section>
+              )
+            }
             return (
               <section key={key} className={b.imageUrl ? 'hh-cta hh-cta--image' : 'hh-cta'}>
                 {b.imageUrl ? <Img src={b.imageUrl as string} alt="" sizes="full" /> : null}
                 <div className="hh-wrap hh-cta-inner">
                   {p<string>(b.heading) && <h2>{p<string>(b.heading)}</h2>}
                   {p<string>(b.text) && <p>{p<string>(b.text)}</p>}
-                  {href && p<string>(b.buttonLabel) && (
-                    <a className="hh-btn" href={href}>
-                      {p<string>(b.buttonLabel)}
-                    </a>
-                  )}
+                  {list}
+                  {button}
                 </div>
               </section>
             )
@@ -427,6 +437,7 @@ export function Blocks({ blocks, ctx }: { blocks: SnapshotBlock[]; ctx: Ctx }) {
                 locale={locale}
                 defaultLocale={d}
                 roomsHref={roomsPage ? pageHref(snapshot, locale, roomsPage.slug) : undefined}
+                bookHref={booking ? (bookHref(snapshot, locale) ?? undefined) : undefined}
                 linkHref={linkHref(snapshot, locale, b.linkHref as string) ?? undefined}
                 images={snapshot.images}
                 headingLevel={!hasHero && i === 0 ? 'h1' : 'h2'}

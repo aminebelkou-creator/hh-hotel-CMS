@@ -1,4 +1,5 @@
 import type { SiteSnapshot } from '@/releases/snapshot'
+import { bookingOf, bookingUrl, type Booking, type Stay } from './booking'
 
 /**
  * Public URL scheme (preview host): /s/<site>[/<locale>][/<page>]
@@ -31,9 +32,22 @@ export function pageHrefWithBase(snapshot: SiteSnapshot, base: string, locale: s
   return `${base}${prefix}${tail}` || '/'
 }
 
-/** A link field: absolute URL, tel:, mailto:, #anchor or a page slug of this site. */
+/** The site's booking engine setting, else a confirmed booking.url fact (plain link), else null. */
+export function siteBooking(snapshot: SiteSnapshot): Booking | null {
+  return bookingOf(snapshot.site.booking) ?? bookingOf({ engine: 'link', url: snapshot.facts?.find((f) => f.key === 'booking.url')?.value })
+}
+
+/** Where "book" goes: the hotel's booking engine (with the stay when given), else its contact page. */
+export function bookHref(snapshot: SiteSnapshot, locale: string, stay?: Stay) {
+  const b = siteBooking(snapshot)
+  if (b) return bookingUrl(b, locale, stay)
+  return snapshot.pages.some((p) => p.slug === 'contact') ? pageHref(snapshot, locale, 'contact') : null
+}
+
+/** A link field: "book", absolute URL, tel:, mailto:, #anchor or a page slug of this site. */
 export function linkHref(snapshot: SiteSnapshot, locale: string, href: string | null | undefined) {
   if (!href) return null
+  if (href === 'book') return bookHref(snapshot, locale)
   if (/^(https?:|tel:|mailto:|#)/.test(href)) return href
   const slug = href.replace(/^\/+|\/+$/g, '')
   return pageHref(snapshot, locale, slug || 'home')

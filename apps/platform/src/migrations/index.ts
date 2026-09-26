@@ -19,6 +19,7 @@ import * as migration_20260925_125537_butler_font from './20260925_125537_butler
 import * as migration_20260925_193747_blog_posts from './20260925_193747_blog_posts';
 import * as migration_20260925_201351_guest_reviews from './20260925_201351_guest_reviews';
 import * as migration_20260926_001943_hero_video from './20260926_001943_hero_video';
+import * as migration_20260926_192537_booking_engine_cta_points from './20260926_192537_booking_engine_cta_points';
 
 export const migrations = [
   {
@@ -124,6 +125,11 @@ export const migrations = [
   {
     up: migration_20260926_001943_hero_video.up,
     down: migration_20260926_001943_hero_video.down,
-    name: '20260926_001943_hero_video'
+    name: '20260926_001943_hero_video',
+  },
+  {
+    up: migration_20260926_192537_booking_engine_cta_points.up,
+    down: migration_20260926_192537_booking_engine_cta_points.down,
+    name: '20260926_192537_booking_engine_cta_points'
   },
 ];

@@ -306,11 +306,18 @@ export interface Site {
    */
   logoUrl?: string | null;
   /**
-   * The "Book" button in the header. A page slug (e.g. contact), a URL, tel: or mailto:. No booking logic runs on the platform
+   * The "Book" button in the header. "book" (the booking engine below), a page slug (e.g. contact), a URL, tel: or mailto:. No booking logic runs on the platform
    */
   cta?: {
     label?: string | null;
     href?: string | null;
+  };
+  /**
+   * The hotel’s own online booking engine. Every link set to "book" (header, hero booking bar, room cards, calls to action) opens it, with the chosen dates when the engine accepts them. Empty: "book" links go to the contact page.
+   */
+  booking?: {
+    engine?: ('link' | 'clock-pms') | null;
+    url?: string | null;
   };
   /**
    * Set by the release pipeline. Rollback moves this pointer.
@@ -402,6 +409,10 @@ export interface Page {
    * Legal and practical pages
    */
   showInFooter?: boolean | null;
+  /**
+   * When the page shows in the menu and footer (e.g. an Offers page)
+   */
+  navCondition?: ('always' | 'offers') | null;
   blocks?:
     | (
         | {
@@ -418,7 +429,7 @@ export interface Page {
             imageAlt?: string | null;
             ctaLabel?: string | null;
             /**
-             * A page slug (e.g. contact), a full URL, tel: or mailto:
+             * "book" (the site’s booking engine), a page slug (e.g. contact), a full URL, tel: or mailto:
              */
             ctaHref?: string | null;
             /**
@@ -508,7 +519,7 @@ export interface Page {
               | null;
             linkLabel?: string | null;
             /**
-             * A page slug (e.g. contact), a full URL, tel: or mailto:
+             * "book" (the site’s booking engine), a page slug (e.g. contact), a full URL, tel: or mailto:
              */
             linkHref?: string | null;
             /**
@@ -599,11 +610,21 @@ export interface Page {
             blockType: 'quote';
           }
         | {
+            variant?: ('band' | 'strip') | null;
             heading?: string | null;
             text?: string | null;
+            /**
+             * Short reasons to book direct, each one true for this hotel (no rate or perk the hotel does not give)
+             */
+            points?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
             buttonLabel?: string | null;
             /**
-             * A page slug (e.g. contact), a full URL, tel: or mailto:
+             * "book" (the site’s booking engine), a page slug (e.g. contact), a full URL, tel: or mailto:
              */
             buttonHref?: string | null;
             /**
@@ -866,7 +887,7 @@ export interface NewsBlock {
   limit?: number | null;
   linkLabel?: string | null;
   /**
-   * A page slug (e.g. contact), a full URL, tel: or mailto:
+   * "book" (the site’s booking engine), a page slug (e.g. contact), a full URL, tel: or mailto:
    */
   linkHref?: string | null;
   /**
@@ -1983,6 +2004,12 @@ export interface SitesSelect<T extends boolean = true> {
         label?: T;
         href?: T;
       };
+  booking?:
+    | T
+    | {
+        engine?: T;
+        url?: T;
+      };
   currentRelease?: T;
   publish?:
     | T
@@ -2007,6 +2034,7 @@ export interface PagesSelect<T extends boolean = true> {
   navOrder?: T;
   showInNav?: T;
   showInFooter?: T;
+  navCondition?: T;
   blocks?:
     | T
     | {
@@ -2121,8 +2149,15 @@ export interface PagesSelect<T extends boolean = true> {
         cta?:
           | T
           | {
+              variant?: T;
               heading?: T;
               text?: T;
+              points?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
               buttonLabel?: T;
               buttonHref?: T;
               imageUrl?: T;

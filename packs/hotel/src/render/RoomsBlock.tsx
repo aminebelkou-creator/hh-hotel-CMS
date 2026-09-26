@@ -13,12 +13,14 @@ type Props = {
   defaultLocale: string
   /** Where "details" links point: the rooms page of the site, in the current locale */
   roomsHref?: string
+  /** The hotel's booking engine: detailed room entries get a "Book" button. */
+  bookHref?: string
   headingLevel?: 'h1' | 'h2'
 }
 
 const T = {
-  fr: { guests: (n: number) => `${n} personne${n > 1 ? 's' : ''}`, size: 'm²', details: 'Voir la chambre', features: 'Équipements' },
-  en: { guests: (n: number) => `${n} guest${n > 1 ? 's' : ''}`, size: 'm²', details: 'View room', features: 'In the room' },
+  fr: { guests: (n: number) => `${n} personne${n > 1 ? 's' : ''}`, size: 'm²', details: 'Voir la chambre', features: 'Équipements', book: 'Réserver', bookRoom: (n: string) => `Réserver : ${n}` },
+  en: { guests: (n: number) => `${n} guest${n > 1 ? 's' : ''}`, size: 'm²', details: 'View room', features: 'In the room', book: 'Book', bookRoom: (n: string) => `Book: ${n}` },
 }
 
 // Small line icons for the card facts (24-box, 1.5 stroke, currentColor), our own paths.
@@ -31,7 +33,7 @@ const Ico = ({ d }: { d: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" dangerouslySetInnerHTML={{ __html: d }} />
 )
 
-export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, headingLevel = 'h2', linkHref, images }: Props) {
+export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, bookHref, headingLevel = 'h2', linkHref, images }: Props) {
   const t = locale === 'fr' ? T.fr : T.en
   const p = <V,>(v: Localized<V> | null | undefined) => pick(v, locale, defaultLocale)
   const rooms = (hotel?.rooms ?? []).slice(0, block.limit || undefined)
@@ -129,6 +131,13 @@ export function RoomsBlock({ block, hotel, locale, defaultLocale, roomsHref, hea
                         </a>
                       ))}
                     </div>
+                  )}
+                  {detailed && bookHref && (
+                    <p className="hh-room-book">
+                      <a className="hh-btn hh-btn--book" href={bookHref} aria-label={t.bookRoom(p(r.name) || '')}>
+                        {t.book}
+                      </a>
+                    </p>
                   )}
                   {!detailed && roomsHref && (
                     <a className="hh-link-arrow" href={`${roomsHref}#room-${r.slug}`}>

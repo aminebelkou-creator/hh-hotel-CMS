@@ -13,7 +13,7 @@ const remoteImage = (name = 'image'): Field[] => [
 
 const link = (prefix: string): Field[] => [
   { name: `${prefix}Label`, type: 'text', localized: true },
-  { name: `${prefix}Href`, type: 'text', admin: { description: 'A page slug (e.g. contact), a full URL, tel: or mailto:' } },
+  { name: `${prefix}Href`, type: 'text', admin: { description: '"book" (the site’s booking engine), a page slug (e.g. contact), a full URL, tel: or mailto:' } },
 ]
 
 /** Generic, industry-neutral blocks. Vertical packs add their own (see src/packs.ts). */
@@ -149,8 +149,23 @@ export const coreBlocks: Block[] = [
     slug: 'cta',
     labels: { singular: 'Call to action', plural: 'Calls to action' },
     fields: [
+      {
+        name: 'variant',
+        type: 'select',
+        defaultValue: 'band',
+        options: [
+          { label: 'Band (large, optional photo)', value: 'band' },
+          { label: 'Strip (slim line of reasons to book direct, under the hero)', value: 'strip' },
+        ],
+      },
       { name: 'heading', type: 'text', localized: true },
       { name: 'text', type: 'textarea', localized: true },
+      {
+        name: 'points',
+        type: 'array',
+        admin: { description: 'Short reasons to book direct, each one true for this hotel (no rate or perk the hotel does not give)' },
+        fields: [{ name: 'text', type: 'text', required: true, localized: true }],
+      },
       ...link('button'),
       ...remoteImage(),
       provenance,
@@ -251,7 +266,7 @@ export const coreBlocks: Block[] = [
 ]
 
 /** Path segments the public site uses itself, plus locale codes (a page cannot be called "en"). */
-export const RESERVED_SLUGS = ['sitemap.xml', 'robots.txt', 'preview', 'api', 'admin', 'en', 'fr', 'de', 'es', 'it']
+export const RESERVED_SLUGS = ['sitemap.xml', 'robots.txt', 'preview', 'api', 'admin', 'book', 'en', 'fr', 'de', 'es', 'it']
 
 /** Page: a composition of typed blocks, never a canvas. Drafts and versions on. */
 export const makePages = (extraBlocks: Block[] = []): CollectionConfig => ({
@@ -294,6 +309,16 @@ export const makePages = (extraBlocks: Block[] = []): CollectionConfig => ({
         { name: 'showInNav', type: 'checkbox', defaultValue: true },
         { name: 'showInFooter', type: 'checkbox', defaultValue: false, admin: { description: 'Legal and practical pages' } },
       ],
+    },
+    {
+      name: 'navCondition',
+      type: 'select',
+      defaultValue: 'always',
+      options: [
+        { label: 'Always', value: 'always' },
+        { label: 'Only while at least one offer is running', value: 'offers' },
+      ],
+      admin: { description: 'When the page shows in the menu and footer (e.g. an Offers page)', condition: (_, s) => Boolean(s?.showInNav || s?.showInFooter) },
     },
     { name: 'blocks', type: 'blocks', blocks: [...coreBlocks, ...extraBlocks] },
     // Page metadata (title, description, image) is the SEO plugin's `meta` group (payload.config.ts).
