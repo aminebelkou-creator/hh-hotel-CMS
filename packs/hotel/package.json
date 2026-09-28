@@ -9,12 +9,12 @@
     "./render": "./src/render/index.tsx"
   },
   "peerDependencies": {
-    "payload": "3.90.1",
+    "payload": "3.90.2",
     "react": "^19.2.0"
   },
   "devDependencies": {
     "@types/react": "19.3.0",
-    "payload": "3.90.1",
+    "payload": "3.90.2",
     "react": "19.3.0"
   }
 }
